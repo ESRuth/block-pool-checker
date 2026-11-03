@@ -10,3 +10,9 @@ allowBuilds:
 overrides:
   # gaxios (Google Cloud libraries) pins uuid 9; 11.1.1 fixes a bounds check advisory. Only v4 is used, which is unchanged.
   uuid: ">=11.1.1 <12"
+  # Stopgap for two advisories (glob abort-signal bypass, minimatch DoS) that reach us through unused Google Cloud dependencies
+  # (@google-cloud/firestore-api 0.2 -> google-gax 5 -> gaxios 7 -> rimraf 5) and through workbox-build (PWA build only).
+  # Tested: PWA precache list identical, lint, tests and e2e pass. Remove once Firestore moves to firestore-api on google-gax 6
+  # and workbox-build updates; check with `pnpm why glob minimatch -r`.
+  glob: ">=14.0.2"
+  minimatch: ">=11.0.1"
