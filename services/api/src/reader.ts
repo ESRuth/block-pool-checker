@@ -58,10 +58,11 @@ export function parseGrid(text: string): Array<Array<string | null>> {
 }
 
 function parseModelJson(text: string): unknown {
-  const m = /\{[\s\S]*\}/.exec(text);
-  if (!m) throw new ReaderError("model returned no JSON");
+  const start = text.indexOf("{"),
+    end = text.lastIndexOf("}");
+  if (start < 0 || end < start) throw new ReaderError("model returned no JSON");
   try {
-    return JSON.parse(m[0]);
+    return JSON.parse(text.slice(start, end + 1));
   } catch {
     throw new ReaderError("model returned invalid JSON");
   }

@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Major versions (ESLint, TypeScript, vitest, the Google Cloud libraries, ...) are upgraded by hand and tested first.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       dev-tooling:
         dependency-type: development

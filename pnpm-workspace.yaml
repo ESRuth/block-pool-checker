@@ -6,3 +6,7 @@ packages:
 allowBuilds:
   esbuild: true
   protobufjs: false
+
+overrides:
+  # gaxios (Google Cloud libraries) pins uuid 9; 11.1.1 fixes a bounds check advisory. Only v4 is used, which is unchanged.
+  uuid: ">=11.1.1 <12"

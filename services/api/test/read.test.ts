@@ -89,6 +89,10 @@ describe("parseRead / GeminiReader", () => {
     const json = JSON.stringify(reads["eagles_commanders"]);
     expect(parseRead(`here you go:\n${json}\nthanks`).top_team).toBe("EAGLES");
     expect(() => parseRead("no json here")).toThrow(ReaderError);
+    // Many "{" and no "}" must fail fast, not take quadratic time (a regex-based version did).
+    const t0 = performance.now();
+    expect(() => parseRead("{".repeat(60_000))).toThrow(ReaderError);
+    expect(performance.now() - t0).toBeLessThan(500);
     expect(() => parseRead('{"top_team": 3}')).toThrow(ReaderError);
   });
   it("calls Vertex with the image and skips thought parts", async () => {
