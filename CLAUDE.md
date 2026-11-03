@@ -36,6 +36,7 @@ First time on a machine: `pnpm --filter @bpc/e2e install-browser` (downloads Chr
 - `samples/`: four sample photos (names are made up, grid lines redrawn at known corners in `packages/vision/test/fixtures/parity.json`). Never commit a real pool photo: it shows people's handwriting and phone numbers.
 
 ## Conventions
+- Each tsconfig lists its `types` explicitly (TypeScript 7 no longer includes every `@types/*` package on its own). `@types/node` stays on the major that matches the runtime (24); Dependabot ignores major versions, so those upgrades are done by hand and tested first.
 - Types crossing a boundary are Zod schemas with `z.infer` types, in the engine package.
 - Scores are cumulative; ending = `score % 10`; top team = columns, left team = rows; rows/cols are 1-based; owners keyed `"row,col"`.
 - CI (`.github/workflows/ci.yml`) runs a dependency audit (fails on high or critical), lint, format check, typecheck, unit and e2e tests on every push to `main` and on PRs; its actions are pinned to commit SHAs and Dependabot (`.github/dependabot.yml`) proposes weekly updates. The repo is public: `main` blocks force-pushes and deletion (a ruleset), and nothing real (photos, names, phone numbers, keys) may be committed. Work on `main` is still fine (private, solo repo); open a PR when you want CI before merging.
