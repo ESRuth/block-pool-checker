@@ -18,6 +18,14 @@ export interface Who {
 
 const OWNER = "Owner";
 
+/** The owner code is the master key and has no attempt limit, so against real data it must be long enough to be unguessable (generate one with `openssl rand -base64url 24`). */
+export const MIN_OWNER_CODE_LENGTH = 20;
+export function assertStrongOwnerCode(code: string | undefined): void {
+  if (!code) throw new Error("INVITE_CODE is required when GCP_PROJECT is set");
+  if (code.length < MIN_OWNER_CODE_LENGTH)
+    throw new Error(`INVITE_CODE must be at least ${MIN_OWNER_CODE_LENGTH} characters when GCP_PROJECT is set (try: openssl rand -base64url 24)`);
+}
+
 /**
  * Who is asking, and how much they may spend. The owner code (INVITE_CODE) is the master key and runs /admin;
  * everyone else uses a personal key the owner made for them.

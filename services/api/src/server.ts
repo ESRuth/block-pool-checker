@@ -3,6 +3,7 @@ import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { EspnNfl } from "@bpc/scores";
 import { createApp } from "./app.js";
+import { assertStrongOwnerCode } from "./access.js";
 import { FirestoreUserRepository } from "./users.js";
 import { FirestoreSheetRepository, GcsSheetPhotos, MemorySheetPhotos, MemorySheetRepository } from "./sheets.js";
 import { GeminiReader, StubReader } from "./reader.js";
@@ -12,7 +13,7 @@ import { stubGames, stubScores } from "./stub.js";
 // With GCP_PROJECT unset the server runs fully in memory (local dev): sheets vanish on restart.
 const useGcp = !!process.env.GCP_PROJECT;
 // Without INVITE_CODE the API treats every caller as the owner (handy for local dev). Never let that happen against real data.
-if (useGcp && !process.env.INVITE_CODE) throw new Error("INVITE_CODE is required when GCP_PROJECT is set");
+if (useGcp) assertStrongOwnerCode(process.env.INVITE_CODE);
 const stub = process.env.READER === "stub";
 if (stub && useGcp) throw new Error("READER=stub is for local development and cannot run with GCP_PROJECT");
 const espn = new EspnNfl();

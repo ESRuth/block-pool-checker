@@ -25,7 +25,7 @@ It takes a few minutes. Check it with `gcloud run services describe block-pool-c
 | `GCP_PROJECT` | Set = use Firestore and Cloud Storage; unset = in memory. The server refuses to start with it set and no `INVITE_CODE`. |
 | `GOOGLE_CLOUD_PROJECT` | Project for Vertex AI (Gemini). Unset = photo reading is off. |
 | `PHOTO_BUCKET` | Private bucket for sheet photos (`sheets/<id>.jpg`). |
-| `INVITE_CODE` | The owner's master code. Anyone presenting it (header `X-Invite-Code`) is the owner. |
+| `INVITE_CODE` | The owner's master code. Anyone presenting it (header `X-Invite-Code`) is the owner. With `GCP_PROJECT` set it must be at least 20 characters (generate one with `openssl rand -base64url 24`); there is no failed-attempt limit, so length is the protection. Personal keys are 120 random bits and need no change. To rotate it, change `INVITE_CODE_PROD` in `.env` and redeploy; the old code stops working at once, personal links are unaffected. |
 | `READ_CAP_PER_DAY` | Model reads per invited person per UTC day. Default 40; 0 = off; the owner is exempt. |
 | `READER`, `READER_MODEL`, `READER_THINKING` | `stub` = offline mode (recorded reader answers and one recorded game; refuses to start with `GCP_PROJECT`); model id (default `gemini-3.6-flash`); thinking level (`minimal`; 3.7/3.8 Flash need `low`). |
 | `WEB_DIR`, `PORT` | Set by the Dockerfile / Cloud Run. |

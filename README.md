@@ -2,6 +2,13 @@
 
 Installable, mobile-first PWA for checking football squares pools during the game. Photograph the handwritten 10x10 sheet, confirm the grid, and the app reads the teams, digits and names, finds the game, and shows the same photo with the winning squares boxed (each box carries its period number 1, 2, 3 or F; colours are chosen to work for colour-blind users), plus a short report that updates with the live score. Independent product: its own repo, GCP project, Firestore and storage. No dependency on Beventra.
 
+<p>
+  <img src="docs/screenshots/1-check-the-grid.png" alt="Confirming that the grid lines sit on the squares of the photographed sheet" width="300">
+  <img src="docs/screenshots/2-winners.png" alt="The result: the score, the four winners, and the same photo with the winning squares boxed and numbered" width="300">
+</p>
+
+Screenshots come from the offline demo mode (`READER=stub`) with a made-up sample sheet.
+
 Start with `docs/PLAN.md` (product, decisions, status). Board rules are in `docs/POOL_FORMAT.md`; the production setup is in `docs/DEPLOY.md`.
 
 ## Layout
@@ -15,8 +22,8 @@ Start with `docs/PLAN.md` (product, decisions, status). Board rules are in `docs
 - `docs/legacy/`: the original Custom GPT prototype spec and acceptance list (history only). `docs/READER_RESULTS.md`: the reader experiments behind the model choice.
 
 ## How it works
-- **Access.** There is no sign-up. The owner holds the master code (`INVITE_CODE`) and makes a personal link per person at `/admin`. The key lives in the link; installing the app from that link makes a home-screen icon that opens signed in.
-- **Sheets.** A sheet is saved on the server. `/s/<id>` views it; `/s/<id>#k=<edit token>` edits it (the token lives in the URL fragment, only its hash is stored). The person who made a sheet, and the owner, can also edit it through their key. Marked squares ("mine") are private to editors. A sheet is deleted 30 days after the game (or after its last edit, if later).
+- **Access.** There is no sign-up. The owner holds the master code (`INVITE_CODE`, at least 20 random characters: `openssl rand -base64url 24`; the server refuses to start against real data with a shorter one) and makes a personal link per person at `/admin`. The key lives in the link; installing the app from that link makes a home-screen icon that opens signed in.
+- **Sheets.** A sheet is saved on the server. `/s/<id>` views it; `/s/<id>#k=<edit token>` edits it (the token lives in the URL fragment, only its hash is stored). The person who made a sheet, and the owner, can also edit it through their key. Anyone who has a sheet's view link can see its photo and names (the link is the secret, so share it only with people in the pool); only editors see the marked squares ("mine"). A sheet is deleted 30 days after the game (or after its last edit, if later).
 - **Reading.** One call reads the teams, digit rows and grid corners from the photo; one call reads every name from a straightened image of the grid. The model only proposes; digits must be a 0-9 permutation or it is a hard stop, and names stay "?" (unconfirmed) until a person confirms them.
 - **Scores.** Fetched on demand with a ~20 s server cache; every score carries its source, status and `fetchedAt`, and a cached score is never shown as live.
 

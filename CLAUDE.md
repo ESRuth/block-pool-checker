@@ -10,8 +10,9 @@ Block Pool Checker: an installable, mobile-first PWA for checking football squar
 - GCP is the host. Firestore is approved (server-side `@google-cloud/firestore` only, behind a repository interface). Do NOT mandate Firebase SDK/Auth/Hosting.
 - No AI-tool integrations (GPT/MCP/skills) are planned. Any vision model only PROPOSES teams, digits, corners and names from a photo; a human confirms (digits by the 0-9 check and the marked photo, names by tapping "?" or retyping). Which model is open (see PLAN P2).
 - **Never present cached scores as live.** Every score carries source, status and `fetchedAt`; the UI shows freshness and offline state.
+- The owner code (`INVITE_CODE`) must be 20+ random characters with `GCP_PROJECT` set (checked at startup). It has no attempt limit; length is the protection.
 - Digits must be a 0-9 permutation or it's a hard stop (never guess). "Currently winning" is provisional until a period is official. Names the user hasn't confirmed stay "Unverified".
-- Pool photos show handwritten names: keep storage private (photos are served only through the API, never by public or signed URL), don't log or publish them. The bucket lifecycle rule is the backstop for the 30-day deletion.
+- Pool photos show handwritten names: keep storage private (photos are served only through the API, never by public or signed URL), don't log or publish them. The bucket's 60-day lifecycle rule is the backstop for the 30-day deletion.
 
 ## Commands
 Node >= 24, pnpm 11.
