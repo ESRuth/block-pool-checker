@@ -27,6 +27,9 @@ Start with `docs/PLAN.md` (product, decisions, status). Board rules are in `docs
 - **Reading.** One call reads the teams, digit rows and grid corners from the photo; one call reads every name from a straightened image of the grid. The model only proposes; digits must be a 0-9 permutation or it is a hard stop, and names stay "?" (unconfirmed) until a person confirms them.
 - **Scores.** Fetched on demand with a ~20 s server cache; every score carries its source, status and `fetchedAt`, and a cached score is never shown as live.
 
+## Status
+Early (v0.1). Tested on phone and desktop with real sheets, and end to end offline. Live-game and overtime scoring are tested with demo games (`READER=stub`) and recorded fixtures, but have not yet been watched on a real game. No per-sheet price has been measured; the first week of billing suggests well under a cent or two per sheet.
+
 ## What you need
 | To | You need |
 |---|---|
