@@ -1,0 +1,83 @@
+{
+ "header": {
+  "id": "401772636",
+  "competitions": [
+   {
+    "id": "401772636",
+    "date": "2025-11-09T14:30Z",
+    "status": {
+     "type": {
+      "id": "3",
+      "name": "STATUS_FINAL",
+      "state": "post",
+      "completed": true,
+      "description": "Final",
+      "detail": "Final/OT",
+      "shortDetail": "Final/OT",
+      "altDetail": "OT"
+     }
+    },
+    "competitors": [
+     {
+      "homeAway": "home",
+      "score": "31",
+      "linescores": [
+       {
+        "displayValue": "13"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "12"
+       },
+       {
+        "displayValue": "6"
+       }
+      ],
+      "team": {
+       "id": "11",
+       "abbreviation": "IND",
+       "displayName": "Indianapolis Colts",
+       "shortDisplayName": "Colts",
+       "location": "Indianapolis",
+       "name": "Colts"
+      }
+     },
+     {
+      "homeAway": "away",
+      "score": "25",
+      "linescores": [
+       {
+        "displayValue": "7"
+       },
+       {
+        "displayValue": "7"
+       },
+       {
+        "displayValue": "3"
+       },
+       {
+        "displayValue": "8"
+       },
+       {
+        "displayValue": "0"
+       }
+      ],
+      "team": {
+       "id": "1",
+       "abbreviation": "ATL",
+       "displayName": "Atlanta Falcons",
+       "shortDisplayName": "Falcons",
+       "location": "Atlanta",
+       "name": "Falcons"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

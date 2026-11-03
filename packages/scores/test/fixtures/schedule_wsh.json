@@ -1,0 +1,889 @@
+{
+ "events": [
+  {
+   "id": "401872929",
+   "date": "2026-09-13T20:25Z",
+   "name": "Washington Commanders at Philadelphia Eagles",
+   "week": {
+    "number": 1,
+    "text": "Week 1"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872944",
+   "date": "2026-09-20T20:25Z",
+   "name": "Washington Commanders at Dallas Cowboys",
+   "week": {
+    "number": 2,
+    "text": "Week 2"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "6",
+        "abbreviation": "DAL",
+        "displayName": "Dallas Cowboys",
+        "shortDisplayName": "Cowboys",
+        "location": "Dallas",
+        "name": "Cowboys"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872955",
+   "date": "2026-09-27T17:00Z",
+   "name": "Seattle Seahawks at Washington Commanders",
+   "week": {
+    "number": 3,
+    "text": "Week 3"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "26",
+        "abbreviation": "SEA",
+        "displayName": "Seattle Seahawks",
+        "shortDisplayName": "Seahawks",
+        "location": "Seattle",
+        "name": "Seahawks"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872965",
+   "date": "2026-10-04T13:30Z",
+   "name": "Indianapolis Colts at Washington Commanders",
+   "week": {
+    "number": 4,
+    "text": "Week 4"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "11",
+        "abbreviation": "IND",
+        "displayName": "Indianapolis Colts",
+        "shortDisplayName": "Colts",
+        "location": "Indianapolis",
+        "name": "Colts"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872988",
+   "date": "2026-10-11T17:00Z",
+   "name": "New York Giants at Washington Commanders",
+   "week": {
+    "number": 5,
+    "text": "Week 5"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 5,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final/OT",
+       "shortDetail": "Final/OT",
+       "altDetail": "OT"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "19",
+        "abbreviation": "NYG",
+        "displayName": "New York Giants",
+        "shortDisplayName": "Giants",
+        "location": "New York",
+        "name": "Giants"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873008",
+   "date": "2026-10-20T00:15Z",
+   "name": "Washington Commanders at San Francisco 49ers",
+   "week": {
+    "number": 6,
+    "text": "Week 6"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "25",
+        "abbreviation": "SF",
+        "displayName": "San Francisco 49ers",
+        "shortDisplayName": "49ers",
+        "location": "San Francisco",
+        "name": "49ers"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873035",
+   "date": "2026-11-02T01:20Z",
+   "name": "Philadelphia Eagles at Washington Commanders",
+   "week": {
+    "number": 8,
+    "text": "Week 8"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873043",
+   "date": "2026-11-08T18:00Z",
+   "name": "Los Angeles Rams at Washington Commanders",
+   "week": {
+    "number": 9,
+    "text": "Week 9"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "14",
+        "abbreviation": "LAR",
+        "displayName": "Los Angeles Rams",
+        "shortDisplayName": "Rams",
+        "location": "Los Angeles",
+        "name": "Rams"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873052",
+   "date": "2026-11-13T01:15Z",
+   "name": "Washington Commanders at New York Giants",
+   "week": {
+    "number": 10,
+    "text": "Week 10"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Thu, November 12th at 8:15 PM EST",
+       "shortDetail": "11/12 - 8:15 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "19",
+        "abbreviation": "NYG",
+        "displayName": "New York Giants",
+        "shortDisplayName": "Giants",
+        "location": "New York",
+        "name": "Giants"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873078",
+   "date": "2026-11-24T01:15Z",
+   "name": "Cincinnati Bengals at Washington Commanders",
+   "week": {
+    "number": 11,
+    "text": "Week 11"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Mon, November 23rd at 8:15 PM EST",
+       "shortDetail": "11/23 - 8:15 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "4",
+        "abbreviation": "CIN",
+        "displayName": "Cincinnati Bengals",
+        "shortDisplayName": "Bengals",
+        "location": "Cincinnati",
+        "name": "Bengals"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873092",
+   "date": "2026-11-29T21:25Z",
+   "name": "Washington Commanders at Arizona Cardinals",
+   "week": {
+    "number": 12,
+    "text": "Week 12"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 29th at 4:25 PM EST",
+       "shortDetail": "11/29 - 4:25 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "22",
+        "abbreviation": "ARI",
+        "displayName": "Arizona Cardinals",
+        "shortDisplayName": "Cardinals",
+        "location": "Arizona",
+        "name": "Cardinals"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873102",
+   "date": "2026-12-06T18:00Z",
+   "name": "Washington Commanders at Tennessee Titans",
+   "week": {
+    "number": 13,
+    "text": "Week 13"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, December 6th at 1:00 PM EST",
+       "shortDetail": "12/6 - 1:00 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "10",
+        "abbreviation": "TEN",
+        "displayName": "Tennessee Titans",
+        "shortDisplayName": "Titans",
+        "location": "Tennessee",
+        "name": "Titans"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873113",
+   "date": "2026-12-13T18:00Z",
+   "name": "Houston Texans at Washington Commanders",
+   "week": {
+    "number": 14,
+    "text": "Week 14"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, December 13th at 1:00 PM EST",
+       "shortDetail": "12/13 - 1:00 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "34",
+        "abbreviation": "HOU",
+        "displayName": "Houston Texans",
+        "shortDisplayName": "Texans",
+        "location": "Houston",
+        "name": "Texans"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873127",
+   "date": "2026-12-20T18:00Z",
+   "name": "Atlanta Falcons at Washington Commanders",
+   "week": {
+    "number": 15,
+    "text": "Week 15"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, December 20th at 1:00 PM EST",
+       "shortDetail": "12/20 - 1:00 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "1",
+        "abbreviation": "ATL",
+        "displayName": "Atlanta Falcons",
+        "shortDisplayName": "Falcons",
+        "location": "Atlanta",
+        "name": "Falcons"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873147",
+   "date": "2026-12-27T05:00Z",
+   "name": "Washington Commanders at Minnesota Vikings",
+   "week": {
+    "number": 16,
+    "text": "Week 16"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "12/27 - TBD",
+       "shortDetail": "TBD"
+      },
+      "isTBDFlex": true
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "16",
+        "abbreviation": "MIN",
+        "displayName": "Minnesota Vikings",
+        "shortDisplayName": "Vikings",
+        "location": "Minnesota",
+        "name": "Vikings"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873160",
+   "date": "2027-01-03T05:00Z",
+   "name": "Washington Commanders at Jacksonville Jaguars",
+   "week": {
+    "number": 17,
+    "text": "Week 17"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "1/3 - TBD",
+       "shortDetail": "TBD"
+      },
+      "isTBDFlex": true
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "30",
+        "abbreviation": "JAX",
+        "displayName": "Jacksonville Jaguars",
+        "shortDisplayName": "Jaguars",
+        "location": "Jacksonville",
+        "name": "Jaguars"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873175",
+   "date": "2027-01-10T05:00Z",
+   "name": "Dallas Cowboys at Washington Commanders",
+   "week": {
+    "number": 18,
+    "text": "Week 18"
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "1/10 - TBD",
+       "shortDetail": "TBD"
+      },
+      "isTBDFlex": true
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "6",
+        "abbreviation": "DAL",
+        "displayName": "Dallas Cowboys",
+        "shortDisplayName": "Cowboys",
+        "location": "Dallas",
+        "name": "Cowboys"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

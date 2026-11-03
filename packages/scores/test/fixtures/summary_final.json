@@ -1,0 +1,76 @@
+{
+ "header": {
+  "id": "401873026",
+  "competitions": [
+   {
+    "id": "401873026",
+    "date": "2026-11-01T18:00Z",
+    "status": {
+     "type": {
+      "id": "3",
+      "name": "STATUS_FINAL",
+      "state": "post",
+      "completed": true,
+      "description": "Final",
+      "detail": "Final",
+      "shortDetail": "Final"
+     }
+    },
+    "competitors": [
+     {
+      "homeAway": "home",
+      "score": "36",
+      "linescores": [
+       {
+        "displayValue": "10"
+       },
+       {
+        "displayValue": "6"
+       },
+       {
+        "displayValue": "7"
+       },
+       {
+        "displayValue": "13"
+       }
+      ],
+      "team": {
+       "id": "2",
+       "abbreviation": "BUF",
+       "displayName": "Buffalo Bills",
+       "shortDisplayName": "Bills",
+       "location": "Buffalo",
+       "name": "Bills"
+      }
+     },
+     {
+      "homeAway": "away",
+      "score": "10",
+      "linescores": [
+       {
+        "displayValue": "7"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "3"
+       },
+       {
+        "displayValue": "0"
+       }
+      ],
+      "team": {
+       "id": "33",
+       "abbreviation": "BAL",
+       "displayName": "Baltimore Ravens",
+       "shortDisplayName": "Ravens",
+       "location": "Baltimore",
+       "name": "Ravens"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

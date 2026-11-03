@@ -1,0 +1,8 @@
+packages:
+  - "packages/*"
+  - "services/*"
+  - "apps/*"
+  - "e2e"
+allowBuilds:
+  esbuild: true
+  protobufjs: false

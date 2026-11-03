@@ -1,0 +1,943 @@
+{
+ "team": {
+  "id": "21",
+  "abbreviation": "PHI"
+ },
+ "events": [
+  {
+   "id": "401872929",
+   "date": "2026-09-13T20:25Z",
+   "name": "Washington Commanders at Philadelphia Eagles",
+   "week": {
+    "number": 1,
+    "text": "Week 1"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872939",
+   "date": "2026-09-20T17:00Z",
+   "name": "Philadelphia Eagles at Tennessee Titans",
+   "week": {
+    "number": 2,
+    "text": "Week 2"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "10",
+        "abbreviation": "TEN",
+        "displayName": "Tennessee Titans",
+        "shortDisplayName": "Titans",
+        "location": "Tennessee",
+        "name": "Titans"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872963",
+   "date": "2026-09-29T00:15Z",
+   "name": "Philadelphia Eagles at Chicago Bears",
+   "week": {
+    "number": 3,
+    "text": "Week 3"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "3",
+        "abbreviation": "CHI",
+        "displayName": "Chicago Bears",
+        "shortDisplayName": "Bears",
+        "location": "Chicago",
+        "name": "Bears"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872970",
+   "date": "2026-10-04T17:00Z",
+   "name": "Los Angeles Rams at Philadelphia Eagles",
+   "week": {
+    "number": 4,
+    "text": "Week 4"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "14",
+        "abbreviation": "LAR",
+        "displayName": "Los Angeles Rams",
+        "shortDisplayName": "Rams",
+        "location": "Los Angeles",
+        "name": "Rams"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872981",
+   "date": "2026-10-11T13:30Z",
+   "name": "Philadelphia Eagles at Jacksonville Jaguars",
+   "week": {
+    "number": 5,
+    "text": "Week 5"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "30",
+        "abbreviation": "JAX",
+        "displayName": "Jacksonville Jaguars",
+        "shortDisplayName": "Jaguars",
+        "location": "Jacksonville",
+        "name": "Jaguars"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872998",
+   "date": "2026-10-18T17:00Z",
+   "name": "Carolina Panthers at Philadelphia Eagles",
+   "week": {
+    "number": 6,
+    "text": "Week 6"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "29",
+        "abbreviation": "CAR",
+        "displayName": "Carolina Panthers",
+        "shortDisplayName": "Panthers",
+        "location": "Carolina",
+        "name": "Panthers"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873009",
+   "date": "2026-10-27T00:15Z",
+   "name": "Dallas Cowboys at Philadelphia Eagles",
+   "week": {
+    "number": 7,
+    "text": "Week 7"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "6",
+        "abbreviation": "DAL",
+        "displayName": "Dallas Cowboys",
+        "shortDisplayName": "Cowboys",
+        "location": "Dallas",
+        "name": "Cowboys"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873035",
+   "date": "2026-11-02T01:20Z",
+   "name": "Philadelphia Eagles at Washington Commanders",
+   "week": {
+    "number": 8,
+    "text": "Week 8"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 4,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "location": "Washington",
+        "name": "Commanders"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873044",
+   "date": "2026-11-08T18:00Z",
+   "name": "New York Giants at Philadelphia Eagles",
+   "week": {
+    "number": 9,
+    "text": "Week 9"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "19",
+        "abbreviation": "NYG",
+        "displayName": "New York Giants",
+        "shortDisplayName": "Giants",
+        "location": "New York",
+        "name": "Giants"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873076",
+   "date": "2026-11-22T21:25Z",
+   "name": "Pittsburgh Steelers at Philadelphia Eagles",
+   "week": {
+    "number": 11,
+    "text": "Week 11"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 22nd at 4:25 PM EST",
+       "shortDetail": "11/22 - 4:25 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "23",
+        "abbreviation": "PIT",
+        "displayName": "Pittsburgh Steelers",
+        "shortDisplayName": "Steelers",
+        "location": "Pittsburgh",
+        "name": "Steelers"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873080",
+   "date": "2026-11-26T21:30Z",
+   "name": "Philadelphia Eagles at Dallas Cowboys",
+   "week": {
+    "number": 12,
+    "text": "Week 12"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Thu, November 26th at 4:30 PM EST",
+       "shortDetail": "11/26 - 4:30 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "6",
+        "abbreviation": "DAL",
+        "displayName": "Dallas Cowboys",
+        "shortDisplayName": "Cowboys",
+        "location": "Dallas",
+        "name": "Cowboys"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873104",
+   "date": "2026-12-06T21:05Z",
+   "name": "Philadelphia Eagles at Arizona Cardinals",
+   "week": {
+    "number": 13,
+    "text": "Week 13"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, December 6th at 4:05 PM EST",
+       "shortDetail": "12/6 - 4:05 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "22",
+        "abbreviation": "ARI",
+        "displayName": "Arizona Cardinals",
+        "shortDisplayName": "Cardinals",
+        "location": "Arizona",
+        "name": "Cardinals"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873114",
+   "date": "2026-12-13T18:00Z",
+   "name": "Indianapolis Colts at Philadelphia Eagles",
+   "week": {
+    "number": 14,
+    "text": "Week 14"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, December 13th at 1:00 PM EST",
+       "shortDetail": "12/13 - 1:00 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "11",
+        "abbreviation": "IND",
+        "displayName": "Indianapolis Colts",
+        "shortDisplayName": "Colts",
+        "location": "Indianapolis",
+        "name": "Colts"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873125",
+   "date": "2026-12-19T22:00Z",
+   "name": "Seattle Seahawks at Philadelphia Eagles",
+   "week": {
+    "number": 15,
+    "text": "Week 15"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sat, December 19th at 5:00 PM EST",
+       "shortDetail": "12/19 - 5:00 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "26",
+        "abbreviation": "SEA",
+        "displayName": "Seattle Seahawks",
+        "shortDisplayName": "Seahawks",
+        "location": "Seattle",
+        "name": "Seahawks"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873140",
+   "date": "2026-12-25T01:15Z",
+   "name": "Houston Texans at Philadelphia Eagles",
+   "week": {
+    "number": 16,
+    "text": "Week 16"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Thu, December 24th at 8:15 PM EST",
+       "shortDetail": "12/24 - 8:15 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "34",
+        "abbreviation": "HOU",
+        "displayName": "Houston Texans",
+        "shortDisplayName": "Texans",
+        "location": "Houston",
+        "name": "Texans"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873170",
+   "date": "2027-01-04T01:20Z",
+   "name": "Philadelphia Eagles at San Francisco 49ers",
+   "week": {
+    "number": 17,
+    "text": "Week 17"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, January 3rd at 8:20 PM EST",
+       "shortDetail": "1/3 - 8:20 PM EST"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "25",
+        "abbreviation": "SF",
+        "displayName": "San Francisco 49ers",
+        "shortDisplayName": "49ers",
+        "location": "San Francisco",
+        "name": "49ers"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873182",
+   "date": "2027-01-10T05:00Z",
+   "name": "Philadelphia Eagles at New York Giants",
+   "week": {
+    "number": 18,
+    "text": "Week 18"
+   },
+   "seasonType": {
+    "type": 2
+   },
+   "competitions": [
+    {
+     "status": {
+      "clock": 0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "1/10 - TBD",
+       "shortDetail": "TBD"
+      },
+      "isTBDFlex": true
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "team": {
+        "id": "19",
+        "abbreviation": "NYG",
+        "displayName": "New York Giants",
+        "shortDisplayName": "Giants",
+        "location": "New York",
+        "name": "Giants"
+       }
+      },
+      {
+       "homeAway": "away",
+       "team": {
+        "id": "21",
+        "abbreviation": "PHI",
+        "displayName": "Philadelphia Eagles",
+        "shortDisplayName": "Eagles",
+        "location": "Philadelphia",
+        "name": "Eagles"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

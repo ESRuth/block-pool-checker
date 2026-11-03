@@ -1,0 +1,5 @@
+# New sample photos stay out of git by default: they carry GPS metadata, names and phone numbers.
+# The four sample photos here are already tracked and use made-up names (ignore rules do not affect them).
+# To add one deliberately: strip EXIF first, then `git add -f samples/<file>`.
+*
+!.gitignore
