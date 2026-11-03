@@ -12,8 +12,8 @@
   "dependencies": {
     "@bpc/engine": "workspace:*",
     "@bpc/scores": "workspace:*",
-    "@google-cloud/firestore": "^8.0.0",
-    "@google-cloud/storage": "^7.0.0",
+    "@google-cloud/firestore": "^9.4.0",
+    "@google-cloud/storage": "^8.4.0",
     "@hono/node-server": "^2.1.6",
     "google-auth-library": "^11.3.2",
     "hono": "^4.0.0",
