@@ -36,12 +36,11 @@ export function NextScores({ rows, digits, names, teams, mine, ball, downDistanc
     <section className="sec nextscores" aria-label="What could happen next">
       <h2>If there's a score next</h2>
       <p className="sub">
-        {teamName("top")} {o.now.top}, {teamName("left")} {o.now.left}. Leading {PERIOD_NAME[o.period]} now: {who(o.leader)}.
-        {!live && " This is the last score we got, not a live one."}
+        {teamName("top")} {o.now.top}, {teamName("left")} {o.now.left}. Leading {PERIOD_NAME[o.period]} now: {who(o.leader)}.{!live && " Score might be stale."}
       </p>
       {o.ball && (
         <p className="sub">
-          {teamName(o.ball)} has the ball{downDistance ? ` (${downDistance})` : ""}, so their scores are listed first.
+          {teamName(o.ball)} have the ball{downDistance ? ` (${downDistance})` : ""}, so their scores are listed first.
         </p>
       )}
       {sides.map((team) => (

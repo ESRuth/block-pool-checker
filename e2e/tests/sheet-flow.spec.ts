@@ -62,9 +62,9 @@ test("the demo games show each state: live, halftime, not started, overtime", as
   await expect(page.locator(".detail-text")).toContainText("3rd Quarter");
   await expect(page.locator("[data-tag]")).toHaveText(["1", "2", "3"]); // periods 1 and 2 are official, 3 is "currently winning" and not final
 
-  // Who leads now, and who would lead after the next score, with the team that has the ball listed first.
+  // Who leads now, and who would lead after the next score, with the team with the ball listed first.
   const next = page.getByRole("region", { name: "What could happen next" });
-  await expect(next).toContainText("has the ball (2nd & 7 at PHI 34)");
+  await expect(next).toContainText("have the ball (2nd & 7 at PHI 34)");
   await expect(next.locator("h3").first()).toContainText("(with the ball)");
   await expect(next.locator("li").first()).toContainText("a field goal");
 
