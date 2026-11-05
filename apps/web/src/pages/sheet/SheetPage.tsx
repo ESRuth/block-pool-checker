@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { gridExtent } from "@bpc/engine";
 import { GamePicker } from "../../components/GamePicker";
+import { NextScores } from "./NextScores";
 import { Results } from "./Results";
 import { SquarePanel } from "./SquarePanel";
 import { useGridHistory } from "../../hooks/useGridHistory";
@@ -169,6 +170,18 @@ export function SheetPage({ id }: { id: string }) {
                 onConfirm={(cell) => edit((c) => ({ ...c, names: { ...c.names, [cell]: { ...c.names[cell]!, confirmed: true } } }))}
               />
             </section>
+          )}
+          {outcome?.ok && digits && snap && snap.status === "in_progress" && (
+            <NextScores
+              rows={outcome.rows}
+              digits={digits}
+              names={sheet.names}
+              teams={sheet.teams}
+              mine={squares.mine}
+              ball={outcome.ball}
+              downDistance={outcome.downDistance}
+              live={status?.tone === "live"}
+            />
           )}
           <PhotoCard
             url={url}

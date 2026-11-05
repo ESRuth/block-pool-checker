@@ -1,5 +1,5 @@
 import type { DigitsOutcome, Period } from "@bpc/engine";
-import { PERIOD_NAME, endingsFor, myWins, outlook } from "../../lib/mine";
+import { PERIOD_NAME, endingsFor, myWins } from "../../lib/mine";
 import { pretty } from "../../lib/report";
 import type { NameEntry } from "../../lib/sheetApi";
 import type { PeriodRow } from "../../lib/winners";
@@ -16,11 +16,10 @@ interface Props {
   finished: boolean;
 }
 
-/** What your marked squares have won, could win next, and need to win. Only ever built from the real score. */
+/** What your marked squares have won and what each needs to win. Only ever built from the real score. */
 export function MySquares({ mine, names, rows, digits, teams, finished }: Props) {
   const label = (cell: string) => names[cell]?.text.trim() || "a square with no name";
   const wins = myWins(rows, mine);
-  const out = finished ? null : outlook(rows, digits, mine);
   const periods: Period[] = "shared" in digits ? ["Q1"] : ["Q1", "Half", "Q3", "Final"];
   const cells = [...mine].sort((a, b) => {
     const [ar, ac] = a.split(",").map(Number) as [number, number],
@@ -46,26 +45,6 @@ export function MySquares({ mine, names, rows, digits, teams, finished }: Props)
         </ul>
       )}
       {finished && wins.length === 0 && <p className="sub">None of your squares won this game.</p>}
-
-      {out && (
-        <div className="outlook">
-          <h3>Could win {PERIOD_NAME[out.period]}</h3>
-          <p className="sub">
-            It's {pretty(teams.top)} {out.now.top}, {pretty(teams.left)} {out.now.left} now. The next score would put one of your squares in the lead if:
-          </p>
-          {out.chances.length > 0 ? (
-            <ul>
-              {out.chances.map((c) => (
-                <li key={`${c.team}${c.play}`}>
-                  <b>{pretty(teams[c.team])}</b> score {c.play} ({c.score.top}-{c.score.left}): {label(c.cell)}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="sub">Nothing: none of your squares wins from one score alone.</p>
-          )}
-        </div>
-      )}
 
       <details className="needs">
         <summary>What each of your squares needs to win</summary>

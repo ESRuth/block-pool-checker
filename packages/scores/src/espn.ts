@@ -15,6 +15,7 @@ const defaultFetcher: Fetcher = async (url) => {
 // --- loose response schemas (only what we read) ------------------------------
 
 const EspnTeam = z.object({
+  id: z.string().optional(),
   abbreviation: z.string(),
   displayName: z.string(),
   location: z.string().optional(),
@@ -34,6 +35,7 @@ const EspnCompetition = z.object({
   date: z.string().optional(),
   status: EspnStatus,
   competitors: z.array(EspnCompetitor).length(2),
+  situation: z.unknown().optional(),
 });
 const EspnEvent = z.object({
   id: z.string(),
@@ -43,7 +45,9 @@ const EspnEvent = z.object({
 });
 const Scoreboard = z.object({ week: z.object({ number: z.number() }).optional(), events: z.array(EspnEvent).default([]) });
 const Schedule = z.object({ events: z.array(EspnEvent).default([]) });
-const Summary = z.object({ header: z.object({ id: z.string(), competitions: z.array(EspnCompetition).min(1) }) });
+const Summary = z.object({ header: z.object({ id: z.string(), competitions: z.array(EspnCompetition).min(1) }), situation: z.unknown().optional() });
+/** ESPN's live "situation": `possession` is a team id; `downDistanceText` is display text. Every field may be missing. */
+const EspnSituation = z.object({ possession: z.union([z.string(), z.number()]).optional(), downDistanceText: z.string().optional() });
 const Teams = z.object({ sports: z.array(z.object({ leagues: z.array(z.object({ teams: z.array(z.object({ team: EspnTeam })) })) })) });
 
 // --- mapping -----------------------------------------------------------------
@@ -111,6 +115,11 @@ export class EspnNfl implements ScoreProvider, GameDirectory {
     const away = side(c, "away");
     const pts = (x: typeof home) => (x.linescores ?? []).map((l) => Number(l.displayValue));
     const status = mapStatus(c.status.type.name);
+    // Only trust a possession while play is on; the source may put the block on the summary or on the competition.
+    const sit = status === "in_progress" ? EspnSituation.safeParse(parsed.situation ?? c.situation) : undefined;
+    const ball = sit?.success && sit.data.possession !== undefined ? String(sit.data.possession) : undefined;
+    const possession = ball === undefined ? undefined : ball === home.team.id ? "home" : ball === away.team.id ? "away" : undefined;
+    const downDistance = sit?.success ? sit.data.downDistanceText : undefined;
     // Period points are only meaningful once play has started; before that ESPN may send placeholders.
     const periods = status === "scheduled" ? { home: [], away: [] } : { home: pts(home), away: pts(away) };
     return ScoreSnapshotSchema.parse({
@@ -125,6 +134,7 @@ export class EspnNfl implements ScoreProvider, GameDirectory {
       away: teamRef(away.team),
       periods,
       total: status === "scheduled" ? { home: 0, away: 0 } : { home: scoreOf(home), away: scoreOf(away) },
+      situation: possession || downDistance ? { possession, downDistance } : undefined,
     });
   }
 

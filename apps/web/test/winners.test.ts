@@ -52,6 +52,23 @@ describe("computeWinners", () => {
     expect(r.ok && r.rows[2]!.cell).toEqual({ row: 5, col: 8 }); // same square as when it ends 10-16
     expect(r.ok && r.rows[3]!.cell).toBeUndefined();
   });
+  it("maps who has the ball onto the sheet's teams, only while the game is in progress", () => {
+    const live = snap({
+      status: "in_progress",
+      periods: { home: [3, 10, 3], away: [10, 0, 0] },
+      total: { home: 16, away: 10 },
+      situation: { possession: "home", downDistance: "2nd & 7 at PHI 34" },
+    });
+    const r = computeWinners(live, "EAGLES", "COMMANDERS", digits, true); // sheet: top = Eagles (away), left = Commanders (home)
+    expect(r.ok && r.ball).toBe("left");
+    expect(r.ok && r.downDistance).toBe("2nd & 7 at PHI 34");
+    const flipped = computeWinners(live, "COMMANDERS", "EAGLES", digits, true);
+    expect(flipped.ok && flipped.ball).toBe("top");
+    const noInfo = computeWinners({ ...live, situation: undefined }, "EAGLES", "COMMANDERS", digits, true);
+    expect(noInfo.ok && noInfo.ball).toBeUndefined();
+    const over = computeWinners({ ...live, status: "final" }, "EAGLES", "COMMANDERS", digits, true);
+    expect(over.ok && over.ball).toBeUndefined(); // a stale possession is never shown once the game is over
+  });
   it("overtime setting changes Final", () => {
     const ot = snap({ periods: { home: [3, 10, 3, 11, 0], away: [10, 0, 0, 0, 3] }, total: { home: 27, away: 13 } });
     const withOt = computeWinners(ot, "EAGLES", "COMMANDERS", digits, true);

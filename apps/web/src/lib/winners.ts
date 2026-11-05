@@ -12,7 +12,17 @@ export interface PeriodRow {
   cell?: { row: number; col: number };
 }
 
-export type WinnersOutcome = { ok: true; rows: PeriodRow[]; orientation: { top: "home" | "away"; left: "home" | "away" } } | { ok: false; reason: string };
+export type WinnersOutcome =
+  | {
+      ok: true;
+      rows: PeriodRow[];
+      orientation: { top: "home" | "away"; left: "home" | "away" };
+      /** Which sheet team has the ball, when the score source says (in-progress games only). */
+      ball?: "top" | "left";
+      /** e.g. "2nd & 7 at PHI 34". */
+      downDistance?: string;
+    }
+  | { ok: false; reason: string };
 
 /** Per-period box score and winning square for a game, given the sheet's teams and digits. Pure; nothing is guessed. */
 export function computeWinners(
@@ -34,5 +44,7 @@ export function computeWinners(
     const w = winningCell(pool, period, score.top, score.left);
     return { period, state: r.state, score, ending: { top: w.topEnding, left: w.leftEnding }, cell: { row: w.row, col: w.col } };
   });
-  return { ok: true, rows, orientation: o };
+  const poss = snapshot.status === "in_progress" ? snapshot.situation?.possession : undefined;
+  const ball = poss ? (o.top === poss ? "top" : "left") : undefined;
+  return { ok: true, rows, orientation: o, ball, downDistance: ball ? snapshot.situation?.downDistance : undefined };
 }

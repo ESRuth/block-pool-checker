@@ -46,32 +46,40 @@ export function myWins(rows: PeriodRow[], mine: Set<string>): Win[] {
   });
 }
 
-export interface Chance {
+export interface Scenario {
   team: Side;
   play: string;
+  /** The score after this one play. */
   score: { top: number; left: number };
+  /** The square that would lead the period after it. */
   cell: string;
+  /** Common plays are shown up front; the rest sit behind "other scores". */
+  common: boolean;
 }
 export interface Outlook {
   period: Period;
   /** Current score for the period being played. */
   now: { top: number; left: number };
-  /** The square that wins if nothing else is scored. */
+  /** The square leading now: it wins if nothing else is scored. */
   leader: string;
-  /** Single scoring plays after which one of YOUR squares would be winning the period. */
-  chances: Chance[];
+  /** Which team has the ball, when the score source says. Teams with the ball come first. */
+  ball?: Side;
+  /** What one scoring play by either team would do. The team with the ball first, then the other. */
+  scenarios: Scenario[];
 }
 
-/** For the period being played: which scoring plays would put one of your squares in the lead. Real current score only. */
-export function outlook(rows: PeriodRow[], digits: Digits, mine: Set<string>): Outlook | null {
+const COMMON_PLAYS = new Set([3, 7]);
+
+/** For the period being played: who leads now and who would lead after each single scoring play. Real current score only. */
+export function outlook(rows: PeriodRow[], digits: Digits, ball?: Side): Outlook | null {
   const cur = rows.find((r) => r.state === "in_progress" && r.score);
   if (!cur?.score) return null;
-  const chances: Chance[] = [];
-  for (const team of ["top", "left"] as const)
-    for (const p of PLAYS) {
-      const score = { ...cur.score, [team]: cur.score[team] + p.pts };
-      const cell = cellAt(digits, cur.period, score.top, score.left);
-      if (mine.has(cell)) chances.push({ team, play: p.label, score, cell });
-    }
-  return { period: cur.period, now: cur.score, leader: cellAt(digits, cur.period, cur.score.top, cur.score.left), chances };
+  const order: Side[] = ball === "left" ? ["left", "top"] : ["top", "left"];
+  const scenarios: Scenario[] = order.flatMap((team) =>
+    PLAYS.map((p) => {
+      const score = { ...cur.score!, [team]: cur.score![team] + p.pts };
+      return { team, play: p.label, score, cell: cellAt(digits, cur.period, score.top, score.left), common: COMMON_PLAYS.has(p.pts) };
+    }),
+  );
+  return { period: cur.period, now: cur.score, leader: cellAt(digits, cur.period, cur.score.top, cur.score.left), ball, scenarios };
 }

@@ -14,6 +14,8 @@ interface StubGame {
   /** Points per period as reported (not cumulative); 5 entries means overtime. */
   home: number[];
   away: number[];
+  /** Who has the ball and the down, for the live demo only. */
+  ball?: { team: "home" | "away"; downDistance: string };
 }
 
 /**
@@ -32,6 +34,7 @@ const GAMES: StubGame[] = [
     detail: "3rd Quarter 4:12",
     home: [3, 10, 0],
     away: [10, 0, 3],
+    ball: { team: "home", downDistance: "2nd & 7 at PHI 34" },
   },
   { id: "stub-phi-wsh-half", label: "Demo: halftime", kickoff: { hoursFromNow: -1.5 }, status: "halftime", detail: "Halftime", home: [3, 10], away: [10, 0] },
   { id: "stub-phi-wsh-next", label: "Demo: not started", kickoff: { hoursFromNow: 26 }, status: "scheduled", detail: "Upcoming", home: [], away: [] },
@@ -63,6 +66,7 @@ const snapshot = (g: StubGame): ScoreSnapshot => ({
   away: eagles,
   periods: { home: g.home, away: g.away },
   total: { home: sum(g.home), away: sum(g.away) },
+  situation: g.ball && g.status === "in_progress" ? { possession: g.ball.team, downDistance: g.ball.downDistance } : undefined,
 });
 
 /** Recorded and made-up games for offline development and the end-to-end tests (READER=stub). It never touches the network. */

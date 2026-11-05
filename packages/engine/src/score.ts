@@ -31,6 +31,14 @@ export const ScoreSnapshotSchema = z.object({
   /** Points scored in each period as reported (not cumulative); index 4+ is overtime. */
   periods: z.object({ home: Points, away: Points }),
   total: z.object({ home: z.number().int().nonnegative(), away: z.number().int().nonnegative() }),
+  /** Who has the ball, when the provider says. Only meaningful while the game is in progress; never required. */
+  situation: z
+    .object({
+      possession: z.enum(["home", "away"]).optional(),
+      /** Provider's text, e.g. "2nd & 7 at PHI 34". */
+      downDistance: z.string().optional(),
+    })
+    .optional(),
 });
 export type ScoreSnapshot = z.infer<typeof ScoreSnapshotSchema>;
 

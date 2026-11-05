@@ -30,26 +30,33 @@ describe("mine", () => {
     ]);
     expect(myWins(rows, new Set(["7,1"]))[0]).toMatchObject({ period: "Q3", official: false });
   });
-  it("outlook: which single scoring plays would put one of your squares in the lead", () => {
+  it("outlook: who leads now and who would lead after each single score, team with the ball first", () => {
     const rows: PeriodRow[] = [
       { period: "Q1", state: "official", score: { top: 7, left: 0 }, cell: { row: 1, col: 8 } },
       { period: "Half", state: "in_progress", score: { top: 7, left: 3 }, cell: { row: 4, col: 8 } },
       { period: "Q3", state: "not_started" },
       { period: "Final", state: "not_started" },
     ];
-    // Half is being played at 7-3. Left (Commanders) field goal -> 7-6 = row 7, col 8. Top touchdown+XP -> 14-3 = row 4, col 5.
-    const o = outlook(rows, digits, new Set(["7,8", "4,5", "1,1"]))!;
+    // Half is being played at 7-3. Left field goal -> 7-6 = row 7, col 8. Top touchdown+XP -> 14-3 = row 4, col 5.
+    const o = outlook(rows, digits)!;
     expect(o.period).toBe("Half");
     expect(o.leader).toBe("4,8");
-    expect(o.chances.map((c) => [c.team, c.play, c.cell])).toEqual([
-      ["top", "a touchdown and extra point", "4,5"],
-      ["left", "a field goal", "7,8"],
-    ]);
+    expect(o.ball).toBeUndefined();
+    const pick = (t: string, p: string) => o.scenarios.find((s) => s.team === t && s.play === p)!;
+    expect(pick("left", "a field goal").cell).toBe("7,8");
+    expect(pick("top", "a touchdown and extra point").cell).toBe("4,5");
+    expect(o.scenarios.filter((s) => s.common).map((s) => s.play)).toEqual(Array(2).fill(["a field goal", "a touchdown and extra point"]).flat());
+    expect(o.scenarios.slice(0, 5).every((s) => s.team === "top")).toBe(true); // no ball info: top team first
+    // With the left team holding the ball its scores come first.
+    expect(
+      outlook(rows, digits, "left")!
+        .scenarios.slice(0, 5)
+        .every((s) => s.team === "left"),
+    ).toBe(true);
     expect(
       outlook(
         rows.map((r) => ({ ...r, state: r.state === "in_progress" ? "official" : r.state })),
         digits,
-        new Set(["7,8"]),
       ),
     ).toBeNull(); // nothing is being played: no outlook
   });

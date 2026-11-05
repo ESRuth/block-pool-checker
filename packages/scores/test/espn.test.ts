@@ -41,6 +41,28 @@ describe("getScore", () => {
     expect(s.total).toEqual({ home: 36, away: 10 });
     expect(s.periods.home).toEqual([10, 6, 7, 13]);
   });
+  it("reads who has the ball from a live game, matched by team id, and ignores it otherwise", async () => {
+    const base = fx("summary_final");
+    const c = base.header.competitions[0];
+    const [a, b] = c.competitors; // ids are added: the recorded copy is anonymous about them
+    a.team.id = "21";
+    b.team.id = "28";
+    const live = (situation: unknown, name = "STATUS_IN_PROGRESS") => {
+      const copy = structuredClone(base);
+      copy.header.competitions[0].status.type.name = name;
+      copy.situation = situation;
+      return new EspnNfl(
+        async () => copy,
+        () => NOW,
+      );
+    };
+    const home = c.competitors.find((x: { homeAway: string }) => x.homeAway === "home").team.id;
+    const got = await live({ possession: home, downDistanceText: "1st & 10 at WSH 25" }).getScore("x");
+    expect(got.situation).toEqual({ possession: "home", downDistance: "1st & 10 at WSH 25" });
+    expect((await live({ possession: 999 }).getScore("x")).situation).toBeUndefined(); // unknown team id
+    expect((await live({ possession: home }, "STATUS_FINAL").getScore("x")).situation).toBeUndefined(); // not in progress
+    expect((await live("garbage").getScore("x")).situation).toBeUndefined(); // malformed block never breaks the score
+  });
   it("maps statuses", () => {
     expect(mapStatus("STATUS_IN_PROGRESS")).toBe("in_progress");
     expect(mapStatus("STATUS_END_PERIOD")).toBe("in_progress");
