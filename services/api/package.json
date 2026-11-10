@@ -15,8 +15,8 @@
     "@google-cloud/firestore": "^9.4.0",
     "@google-cloud/storage": "^8.4.0",
     "@hono/node-server": "^2.1.6",
-    "google-auth-library": "^11.3.2",
-    "hono": "^4.0.0",
+    "google-auth-library": "^11.3.3",
+    "hono": "^4.13.17",
     "tsx": "^4.0.0",
     "zod": "^4.0.0"
   },
