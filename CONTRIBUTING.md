@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for looking. This is a small solo project, so please open an issue before a large change.
+Thanks for looking. This is a small solo project, so please open an issue before a large change. Work is tracked in [GitHub Issues](https://github.com/ESRuth/block-pool-checker/issues); reference an issue in your pull request ("Fixes #12").
 
 ## Set up
 Node 24 and pnpm 11 (see `.nvmrc`).

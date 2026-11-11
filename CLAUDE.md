@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for Claude Code in this repo. Read `docs/HOW_IT_WORKS.md` first: it defines the product (photo of the pool sheet in, same photo out with winning blocks marked). What is not yet verified, and the open questions, are in `docs/DEVELOPING.md` (Project status). Keep both describing the app as it is now.
+Guidance for Claude Code in this repo. Read `docs/HOW_IT_WORKS.md` first: it defines the product (photo of the pool sheet in, same photo out with winning blocks marked). Open work, including what is not yet verified, is tracked in GitHub Issues (`gh issue list`), not in the docs: file or close an issue instead of writing a status list. Commits that finish one say "Fixes #N". Keep both describing the app as it is now.
 
 Use the words in `docs/GLOSSARY.md` (pool, sheet, block, venue, runner, owner, posted, draft, published, pass …) in the app, docs and code comments; if you meet a different word for one of those things, fix it or flag it.
 

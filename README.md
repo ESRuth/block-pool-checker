@@ -45,7 +45,7 @@ There is no sign-up and no viewer account. Access is a code or link, a PIN, or a
 | [CLAUDE.md](CLAUDE.md) | Conventions for working on the code with Claude Code |
 
 ## Status
-Tested on phone and desktop with real sheets, and end to end offline. Some things are not yet verified (a real live game, the installed iPhone app): see [Project status](docs/DEVELOPING.md#project-status).
+Used on phone and desktop with real sheets, and tested end to end offline. Work on this project, including what is not yet verified, is tracked in [GitHub Issues](https://github.com/ESRuth/block-pool-checker/issues): open issues labelled `verify` are things not yet checked in real use.
 
 ## License
 [MIT](LICENSE). Contributions: [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md). Conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
