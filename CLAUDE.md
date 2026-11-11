@@ -37,6 +37,7 @@ First time on a machine: `pnpm --filter @bpc/e2e install-browser` (downloads Chr
 - `docs/READER_RESULTS.md`: the measured reader results (model, thinking level and layout comparisons) behind the choice of Gemini Flash.
 - `services/api`: Hono API (saved sheets and their photos, personal keys and `/owner`, photo and name reading, scores, games). Runs in memory without `GCP_PROJECT`; Dockerfile at repo root; deploy steps, env vars and GCP setup in `docs/DEPLOY.md`. Live on Cloud Run; always `--project block-pool-checker`.
 - `apps/web`: Vite + React + vite-plugin-pwa viewer. Dev on :5173 (proxies `/api` to :8080);
+- `docs/screenshots/`: the two README images, made from the offline demo (`READER=stub`) with a sample sheet. Keep them WebP, 720 px wide, quality 85 (about 75 KB each); a full-size PNG is about 1 MB. Redo them when the screens change noticeably.
 - `samples/`: four sample photos (names are made up, grid lines redrawn at known corners in `packages/vision/test/fixtures/parity.json`). Never commit a real pool photo: it shows people's handwriting and phone numbers.
 
 ## Conventions

@@ -5,8 +5,8 @@
 Check a football block pool from your phone. Photograph the handwritten 10x10 sheet, confirm the grid, and the app reads the teams, digits and names, finds the game, and shows the same photo with the winning blocks boxed. It follows the live score and says who is winning now.
 
 <p>
-  <img src="docs/screenshots/1-check-the-grid.png" alt="Confirming that the grid lines sit on the blocks of the photographed sheet" width="300">
-  <img src="docs/screenshots/2-winners.png" alt="The result: the score, the four winners, and the same photo with the winning blocks boxed and numbered" width="300">
+  <img src="docs/screenshots/1-check-the-grid.webp" alt="Confirming that the grid lines sit on the blocks of the photographed sheet" width="300">
+  <img src="docs/screenshots/2-winners.webp" alt="The result: the score, the four winners, and the same photo with the winning blocks boxed and numbered" width="300">
 </p>
 
 Screenshots come from the offline demo mode (`READER=stub`) with a made-up sample sheet.
