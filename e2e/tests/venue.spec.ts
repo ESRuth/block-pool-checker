@@ -54,6 +54,19 @@ test("post a sheet, add the photo, publish: viewers need the venue PIN and see n
   await expect(page.getByLabel("Draft")).toContainText("Only you and the other runners");
   await viewer.reload();
   await expect(viewer.locator(".tag", { hasText: "Open for blocks" })).toBeVisible();
+  // The lines of the row stack: status, then name, then the day, all against the left edge, at phone width and on a desktop screen.
+  for (const size of [
+    { width: 412, height: 800 },
+    { width: 1280, height: 800 },
+  ]) {
+    await viewer.setViewportSize(size);
+    const tag = (await viewer.locator(".sheetcard .tag").boundingBox())!;
+    const name = (await viewer.locator(".sheetcard b").boundingBox())!;
+    const day = (await viewer.locator(".sheetcard .sub").boundingBox())!;
+    expect(name.y).toBeGreaterThan(tag.y + tag.height - 2); // the name is below the status, not beside it
+    expect(day.y).toBeGreaterThan(name.y);
+    expect(Math.abs(name.x - tag.x)).toBeLessThan(3);
+  }
   await expect(viewer.getByRole("link", { name: sheetLabel })).toHaveCount(0);
   await page.goto(`/v/${v.id}`);
   await expect(page.locator(".tag", { hasText: "Draft" })).toBeVisible();

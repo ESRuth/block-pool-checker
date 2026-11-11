@@ -1138,12 +1138,13 @@ details.allnames > summary {
 .sheetcard b {
   font-size: 1.02rem;
 }
-.sheetcard .sub {
+/* Every line of a card (status, name, day) stacks in the first column; only the arrow sits in the second. */
+.sheetcard > :not(.go) {
   grid-column: 1;
 }
 .sheetcard .go {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 3;
   font-size: 1.6rem;
   color: var(--accent);
 }
