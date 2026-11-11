@@ -6,17 +6,15 @@ import { myVenues, type VenueSummary } from "../../lib/venueApi";
 
 interface Props {
   id: string;
-  title: string;
   /** When this sheet is removed (ISO), shown to the runner. */
   expiresAt: string;
   settings?: Settings;
   /** Called with whatever the server says is now true. */
-  onChanged: (m: { title?: string; settings: Settings; expiresAt: string }) => void;
+  onChanged: (m: { tag?: string; settings: Settings; expiresAt: string }) => void;
 }
 
-/** For editors: this sheet's name, whether it is published, its own PIN (overrides the venue's) and whether viewers may see the photo. */
-export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Props) {
-  const [name, setName] = useState(title);
+/** For editors (the Access tab): whether the sheet is published, its own PIN (overrides the venue's) and whether viewers may see the photo. */
+export function SheetSettings({ id, expiresAt, settings, onChanged }: Props) {
   const [venues, setVenues] = useState<VenueSummary[]>([]);
   const [pin, setPin] = useState("");
   const [pinTick, setPinTick] = useState(0);
@@ -33,7 +31,7 @@ export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Pro
   async function save(patch: Parameters<typeof patchSettings>[1], done: string) {
     try {
       const r = await patchSettings(id, patch);
-      onChanged({ title: r.title, settings: r.settings, expiresAt: r.expiresAt });
+      onChanged({ tag: r.tag, settings: r.settings, expiresAt: r.expiresAt });
       setNote(done);
     } catch (e) {
       setNote(e instanceof Error ? e.message : "That didn't work.");
@@ -43,15 +41,6 @@ export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Pro
 
   return (
     <div className="settings">
-      <h3>This sheet</h3>
-      <label className="field">
-        Name
-        <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="e.g. Team A v Team B 11/11 $10" />
-      </label>
-      <div className="actions">
-        <button onClick={() => save({ title: name.trim() || null }, "Name saved.")}>Save name</button>
-      </div>
-
       <h3>Who can see it</h3>
       <p className="sub">
         {venue ? (

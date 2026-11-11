@@ -13,9 +13,9 @@ export class SheetError extends Error {
   }
 }
 
-/** The sheet is behind a PIN and this phone has no pass yet. Only the runner's title for it is known. */
+/** The sheet is behind a PIN and this phone has no pass yet. Nothing about the sheet is known. */
 export class PinRequired extends Error {
-  constructor(readonly title: string) {
+  constructor() {
     super("PIN required");
   }
 }
@@ -52,7 +52,8 @@ export interface SheetSettings {
 }
 export interface LoadedSheet {
   doc: Sheet;
-  title?: string;
+  /** A short label the runner added ("$10"). */
+  tag?: string;
   /** The venue it is on (its page lists the other sheets). */
   venueId?: string;
   hasPhoto: boolean;
@@ -68,8 +69,8 @@ export interface LoadedSheet {
 export async function loadSheet(id: string): Promise<LoadedSheet> {
   const res = await fetch(`/api/sheets/${encodeURIComponent(id)}`, { headers: auth() }); // the key proves edit rights, so marked blocks come back too
   if (res.status === 401) {
-    const b = (await res.json().catch(() => ({}))) as { pinRequired?: boolean; title?: string };
-    if (b.pinRequired) throw new PinRequired(b.title ?? "");
+    const b = (await res.json().catch(() => ({}))) as { pinRequired?: boolean };
+    if (b.pinRequired) throw new PinRequired();
   }
   return json(res, "could not open the sheet");
 }
@@ -92,7 +93,7 @@ export async function photoBlob(id: string): Promise<Blob> {
 }
 
 export interface SheetSettingsPatch {
-  title?: string | null;
+  tag?: string | null;
   showPhoto?: boolean;
   pin?: string | null;
   /** Move the sheet to this venue (owner only). */
@@ -100,7 +101,7 @@ export interface SheetSettingsPatch {
   /** false = publish to the venue's viewers; true = take it back to a draft. */
   draft?: boolean;
 }
-export async function patchSettings(id: string, patch: SheetSettingsPatch): Promise<{ title?: string; settings: SheetSettings; expiresAt: string }> {
+export async function patchSettings(id: string, patch: SheetSettingsPatch): Promise<{ tag?: string; settings: SheetSettings; expiresAt: string }> {
   return json(
     await fetch(`/api/sheets/${encodeURIComponent(id)}/settings`, {
       method: "PATCH",
@@ -117,7 +118,7 @@ export interface SheetSummary {
   teams: { top: string; left: string };
   kickoff: string;
   label: string;
-  title?: string;
+  tag?: string;
   /** Set for a deleted sheet that can still be restored, with the day it goes for good. */
   deletedAt?: string;
   goneOn?: string;

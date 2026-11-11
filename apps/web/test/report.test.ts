@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pretty, reportLines, reportTitle } from "../src/lib/report.js";
+import { gameDay, gameWhen, pretty, reportLines, reportTitle, sheetName, teamsForGame } from "../src/lib/report.js";
 import type { PeriodRow } from "../src/lib/winners.js";
 
 const rows: PeriodRow[] = [
@@ -32,5 +32,29 @@ describe("report text", () => {
     expect(l[0]!.wantsName).toBe(false);
     expect(l[0]!.block).toBeNull();
     expect(l[0]!.note).toMatch(/outside the photo/);
+  });
+});
+
+describe("rows in a venue's list", () => {
+  it("shows the day without the year", () => {
+    expect(gameDay("2026-11-22T18:00:00.000Z")).toBe("Sunday, Nov 22");
+  });
+  it("shows the day and the kickoff time", () => {
+    expect(gameWhen("2026-11-22T18:00:00.000Z")).toMatch(/^Sunday, Nov 22 · \d{1,2}:\d{2}\s[AP]M$/);
+  });
+  it("names a sheet by its teams, with the runner's tag when there is one", () => {
+    expect(sheetName("Eagles", "Steelers")).toBe("Eagles vs Steelers");
+    expect(sheetName("EAGLES", "GIANTS", "$5")).toBe("Eagles vs Giants · $5");
+  });
+});
+
+describe("teams for a new game", () => {
+  const game = { away: { nickname: "Eagles" }, home: { nickname: "Giants" } };
+  it("keeps the team that was across the top on top when it plays in the new game", () => {
+    expect(teamsForGame({ top: "Giants", left: "Steelers" }, game)).toEqual({ top: "Giants", left: "Eagles" });
+    expect(teamsForGame({ top: "EAGLES", left: "Steelers" }, game)).toEqual({ top: "Eagles", left: "Giants" });
+  });
+  it("puts the away team on top when neither team carries over", () => {
+    expect(teamsForGame({ top: "Chiefs", left: "Steelers" }, game)).toEqual({ top: "Eagles", left: "Giants" });
   });
 });

@@ -11,7 +11,7 @@ import { useGrayPhoto, usePhotoImage, usePhotoSrc } from "../../hooks/usePhoto";
 import { useScore } from "../../hooks/useScore";
 import { useSheetDoc } from "../../hooks/useSheetDoc";
 import { useBlocks } from "../../hooks/useBlocks";
-import { EditTab } from "./EditTab";
+import { SheetDetails } from "./SheetDetails";
 import { FindTab } from "./FindTab";
 import { GridBanners } from "./GridBanners";
 import { HelpTab } from "./HelpTab";
@@ -23,12 +23,12 @@ import { winnerBoxes } from "../../lib/boxes";
 import { rowsToDigits } from "../../lib/digits";
 import { badge } from "../../lib/fresh";
 import { fetchGameScore } from "../../lib/gameApi";
-import { gameDate, matchup, reportLines } from "../../lib/report";
+import { gameDate, reportLines, sheetName, teamsForGame } from "../../lib/report";
 import { navigate } from "../../lib/router";
 import { deleteSheet, eraseSheet, enterSheet, patchSettings, restoreSheet } from "../../lib/sheetApi";
 import { computeWinners } from "../../lib/winners";
 
-type Tab = "blocks" | "names" | "edit" | "settings" | "help";
+type Tab = "blocks" | "names" | "details" | "access" | "help";
 
 /** One saved sheet: the score, the winners, the photo with the winning blocks boxed, and tabs for finding blocks, names, editing, settings (runners) and help. */
 export function SheetPage({ id }: { id: string }) {
@@ -51,7 +51,7 @@ export function SheetPage({ id }: { id: string }) {
   const digits = useMemo(() => (sheet ? rowsToDigits(sheet.rows, sheet.mode) : null), [sheet]);
   const loaded = !!sheet;
   useEffect(() => {
-    if (loaded && canEdit && !digits) setTab("edit"); // bad digits: open the tab that fixes them, once, when the sheet arrives
+    if (loaded && canEdit && !digits) setTab("details"); // bad digits: open the tab that fixes them, once, when the sheet arrives
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded, canEdit]);
   const outcome = useMemo(
@@ -102,15 +102,12 @@ export function SheetPage({ id }: { id: string }) {
           <a href={back} className="back" aria-label="Back">
             ‹
           </a>
-          <h1>{meta.title || matchup(sheet.teams.top, sheet.teams.left)}</h1>
+          <h1>{sheetName(sheet.teams.top, sheet.teams.left, meta.tag)}</h1>
         </header>
         <section className="sec" aria-label="Posted sheet">
           <p>
             <b>Posted.</b> People with the venue's PIN can see that this sheet is open for blocks. When the blocks are filled and the digits are drawn, add the
             photo of the sheet.
-          </p>
-          <p className="sub">
-            {matchup(sheet.teams.top, sheet.teams.left)} · {gameDate(sheet.game.kickoff)}
           </p>
           <div className="actions">
             <a className="bigbtn" href={`/new?sheet=${encodeURIComponent(id)}`}>
@@ -128,6 +125,34 @@ export function SheetPage({ id }: { id: string }) {
             </button>
           </div>
         </section>
+        {changingGame ? (
+          <section className="sec">
+            <h2>Which game?</h2>
+            <GamePicker
+              upcoming
+              onPick={(g) => {
+                update({ game: g, teams: teamsForGame(sheet.teams, g) }); // keep the team that was across the top, on top, when it still plays
+                setChangingGame(false);
+              }}
+            />
+            <button className="linkbtn" onClick={() => setChangingGame(false)}>
+              Cancel
+            </button>
+          </section>
+        ) : (
+          <section className="sec" aria-label="Details">
+            <SheetDetails
+              id={id}
+              sheet={sheet}
+              update={update}
+              tag={meta.tag ?? ""}
+              onTag={(t) => setMeta((cur) => ({ ...cur, tag: t || undefined }))}
+              onChangeGame={() => setChangingGame(true)}
+              onDeleted={() => navigate(back)}
+              posted
+            />
+          </section>
+        )}
       </main>
     );
 
@@ -141,8 +166,8 @@ export function SheetPage({ id }: { id: string }) {
     ["names", "Names"],
     ...(canEdit
       ? ([
-          ["edit", "Edit"],
-          ["settings", "Settings"],
+          ["details", "Details"],
+          ["access", "Access"],
         ] as Array<[Tab, string]>)
       : []),
     ["help", "Help"],
@@ -155,9 +180,8 @@ export function SheetPage({ id }: { id: string }) {
           ‹
         </a>
         <div>
-          <h1>{meta.title || matchup(sheet.teams.top, sheet.teams.left)}</h1>
+          <h1>{sheetName(sheet.teams.top, sheet.teams.left, meta.tag)}</h1>
           <p className="when">
-            {meta.title ? `${matchup(sheet.teams.top, sheet.teams.left)} · ` : ""}
             {gameDate(sheet.game.kickoff)}
             {addedBy ? ` · Added by ${addedBy}` : ""}
           </p>
@@ -250,7 +274,7 @@ export function SheetPage({ id }: { id: string }) {
           )}
           {!digits && (
             <p className="warn" role="alert">
-              Some digits need fixing before winners can be found. Open the Edit tab below.
+              Some digits need fixing before winners can be found. Open the Details tab below.
             </p>
           )}
           {outcome?.ok && (
@@ -332,13 +356,20 @@ export function SheetPage({ id }: { id: string }) {
           />
         )}
         {tab === "names" && <NamesTab names={sheet.names} mine={blocks.mine} onOpen={blocks.setSelected} />}
-        {tab === "edit" && canEdit && (
-          <EditTab id={id} sheet={sheet} onDeleted={() => navigate(back)} update={update} onChangeGame={() => setChangingGame(true)} />
+        {tab === "details" && canEdit && (
+          <SheetDetails
+            id={id}
+            sheet={sheet}
+            update={update}
+            tag={meta.tag ?? ""}
+            onTag={(t) => setMeta((cur) => ({ ...cur, tag: t || undefined }))}
+            onChangeGame={() => setChangingGame(true)}
+            onDeleted={() => navigate(back)}
+          />
         )}
-        {tab === "settings" && canEdit && (
+        {tab === "access" && canEdit && (
           <SheetSettings
             id={id}
-            title={meta.title ?? ""}
             expiresAt={meta.expiresAt}
             settings={meta.settings}
             onChanged={(m) => setMeta((cur) => ({ ...cur, ...m, venueId: m.settings?.venueId ?? cur.venueId }))}

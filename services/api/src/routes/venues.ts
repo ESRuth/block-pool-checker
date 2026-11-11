@@ -39,7 +39,7 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
       ? list.map((r) => ({
           id: r.id,
           stage: stageOf(r),
-          title: r.title,
+          tag: r.tag,
           teams: r.doc.teams,
           kickoff: r.doc.game.kickoff,
           ownPin: !!r.pinHash,
@@ -49,8 +49,8 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
           .filter((r) => !r.deletedAt)
           .map((r) =>
             r.posted || r.draft
-              ? { stage: "posted", title: r.title, teams: r.doc.teams, kickoff: r.doc.game.kickoff }
-              : { id: r.id, stage: "published", title: r.title, teams: r.doc.teams, kickoff: r.doc.game.kickoff, ownPin: !!r.pinHash },
+              ? { stage: "posted", tag: r.tag, teams: r.doc.teams, kickoff: r.doc.game.kickoff }
+              : { id: r.id, stage: "published", tag: r.tag, teams: r.doc.teams, kickoff: r.doc.game.kickoff, ownPin: !!r.pinHash },
           );
     return c.json({
       name: v.name,
@@ -135,7 +135,7 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
     if (!(await runs(c, v))) return c.json({ error: "you don't run this venue" }, 403);
     const who = await a.access(c, false);
     const b = z
-      .object({ teams: SheetDocSchema.shape.teams, game: SheetDocSchema.shape.game, title: z.string().trim().max(80).optional() })
+      .object({ teams: SheetDocSchema.shape.teams, game: SheetDocSchema.shape.game, tag: z.string().trim().max(30).optional() })
       .parse(await c.req.json());
     const t = now().toISOString();
     const kickoff = Date.parse(b.game.kickoff);
@@ -162,7 +162,7 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
       createdById: who?.id,
       updatedBy: who?.name,
       venueId: v.id,
-      title: b.title || undefined,
+      tag: b.tag || undefined,
       posted: true,
       createdAt: t,
       updatedAt: t,

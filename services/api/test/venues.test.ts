@@ -52,7 +52,7 @@ async function venueWithSheet(s: S, over: { pin?: string; publish?: boolean } = 
   ).json()) as any;
   const made = (await (await s.req("/api/sheets", { body: { venueId: v.id, doc: doc() }, key: runner.key })).json()) as any; // a sheet made from a photo starts as a draft
   await s.req(`/api/sheets/${made.id}/photo`, { method: "PUT", raw: new Uint8Array([1, 2, 3]), type: "image/jpeg", key: runner.key });
-  await s.req(`/api/sheets/${made.id}/settings`, { method: "PATCH", body: { title: "Eagles v Chiefs 11/11 $10" }, key: runner.key });
+  await s.req(`/api/sheets/${made.id}/settings`, { method: "PATCH", body: { tag: "$10" }, key: runner.key });
   if (over.publish !== false) await s.req(`/api/sheets/${made.id}/settings`, { method: "PATCH", body: { draft: false }, key: runner.key });
   return { runner, other: me, v, sheet: made };
 }
@@ -78,7 +78,7 @@ describe("venues", () => {
     expect(ok.headers.get("set-cookie")).toMatch(/HttpOnly/i);
     expect(ok.headers.get("set-cookie")).toMatch(/SameSite=Strict/i);
     const after = (await (await s.req(`/api/venues/${v.id}`, { cookie: cookieOf(ok) })).json()) as any;
-    expect(after.sheets.map((x: any) => x.title)).toEqual(["Eagles v Chiefs 11/11 $10"]);
+    expect(after.sheets.map((x: any) => x.tag)).toEqual(["$10"]);
     expect(after.canManage).toBe(false);
   });
 
@@ -97,7 +97,7 @@ describe("venues", () => {
     const { v, sheet, runner } = await venueWithSheet(s);
     const raw = await s.req(`/api/sheets/${sheet.id}`);
     expect(raw.status).toBe(401);
-    expect(await raw.json()).toEqual({ error: "PIN required", pinRequired: true, title: "Eagles v Chiefs 11/11 $10" });
+    expect(await raw.json()).toEqual({ error: "PIN required", pinRequired: true });
     expect((await s.req(`/api/sheets/${sheet.id}/photo`)).status).toBe(401);
 
     const pass = cookieOf(await s.req(`/api/venues/${v.id}/enter`, { body: { pin: "4821" } }));
@@ -179,7 +179,7 @@ describe("venues", () => {
     const s = setup();
     const { v, runner, other } = await venueWithSheet(s);
     const game = { ...doc().game, kickoff: "2026-11-12T01:00:00.000Z" };
-    const body = { teams: { top: "Eagles", left: "Chiefs" }, game, title: "Eagles v Chiefs 11/11 $5" };
+    const body = { teams: { top: "Eagles", left: "Chiefs" }, game, tag: "$5" };
     expect((await s.req(`/api/venues/${v.id}/sheets`, { body: { title: "x" }, key: runner.key })).status).toBe(400); // needs a game and the teams' places
     expect((await s.req(`/api/venues/${v.id}/sheets`, { body })).status).toBe(403);
     expect((await s.req(`/api/venues/${v.id}/sheets`, { body, key: other.key })).status).toBe(403);
@@ -189,7 +189,7 @@ describe("venues", () => {
     const pass = cookieOf(await s.req(`/api/venues/${v.id}/enter`, { body: { pin: "4821" } }));
     const seen = (await (await s.req(`/api/venues/${v.id}`, { cookie: pass })).json()) as any;
     const line = seen.sheets.find((x: any) => x.stage === "posted");
-    expect(line).toEqual({ stage: "posted", title: "Eagles v Chiefs 11/11 $5", teams: { top: "Eagles", left: "Chiefs" }, kickoff: game.kickoff });
+    expect(line).toEqual({ stage: "posted", tag: "$5", teams: { top: "Eagles", left: "Chiefs" }, kickoff: game.kickoff });
     expect((await s.req(`/api/sheets/${posted.id}`, { cookie: pass })).status).toBe(404);
     expect((await s.req(`/api/sheets/${posted.id}/enter`, { body: { pin: "4821" } })).status).toBe(404);
 

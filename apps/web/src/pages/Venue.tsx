@@ -4,7 +4,7 @@ import { GamePicker } from "../components/GamePicker";
 import { PinGate } from "../components/PinGate";
 import { PinReveal } from "../components/PinReveal";
 import type { GameRef } from "../lib/gameApi";
-import { gameDate, matchup } from "../lib/report";
+import { gameDate, gameWhen, sheetName } from "../lib/report";
 import { enterVenue, getVenue, getVenuePin, patchVenue, postSheet, venueLink, type VenueSheet, type VenueView } from "../lib/venueApi";
 
 /** A venue's QR code scans to here: the PIN, then the sheets on it. Its runners (and the owner) also get the QR to print and the tools. */
@@ -61,9 +61,12 @@ export function VenuePage({ id }: { id: string }) {
       <section aria-label="Sheets">
         <h2>This week</h2>
         {v.sheets?.length === 0 && <p className="sub">Nothing is up yet. Check back closer to game time.</p>}
+        {!v.canManage && v.sheets?.some((p) => p.stage === "posted") && (
+          <p className="sub">Sheets marked Open for blocks are still taking blocks: see the venue to get one.</p>
+        )}
         <div className="sheetlist">
           {v.sheets?.map((p, i) => (
-            <SheetRow key={p.id ?? i} sheet={p} runner={!!v.canManage} />
+            <SheetRow key={p.id ?? i} sheet={p} />
           ))}
         </div>
       </section>
@@ -79,20 +82,20 @@ const STAGE_WORD: Record<VenueSheet["stage"], string> = { posted: "Open for bloc
  * One sheet in the venue's list. Viewers get a plain line for a sheet that is only posted (the game, the date, no way in) and a link for a
  * published one. Runners get every sheet with its stage in words, and a link to open it (a posted one opens to "add the photo").
  */
-function SheetRow({ sheet: p, runner }: { sheet: VenueSheet; runner: boolean }) {
-  const name = p.title || matchup(p.teams.top, p.teams.left);
+function SheetRow({ sheet: p }: { sheet: VenueSheet }) {
+  const name = sheetName(p.teams.top, p.teams.left, p.tag);
   const word = STAGE_WORD[p.stage];
   const body = (
     <>
-      <b>
-        {word && <span className="tag">{word}</span>}
-        {name}
-      </b>
+      {word && (
+        <span className="statusline">
+          <span className="tag">{word}</span>
+        </span>
+      )}
+      <b>{name}</b>
       <span className="sub">
-        {p.title ? `${matchup(p.teams.top, p.teams.left)} · ` : ""}
-        {gameDate(p.kickoff)}
+        {gameWhen(p.kickoff)}
         {p.ownPin ? " · has its own PIN" : ""}
-        {p.stage === "posted" && !runner ? " · Not filled in yet. Ask at the venue to get a block." : ""}
       </span>
     </>
   );
@@ -273,12 +276,10 @@ function PostSheet({ id, reload }: { id: string; reload: () => Promise<unknown> 
                   try {
                     const top = sides.top.nickname;
                     const left = sides.left.nickname;
-                    const d = new Date(game.kickoff);
-                    const tag = label.trim() ? ` ${label.trim()}` : "";
                     await postSheet(id, {
                       teams: { top, left },
                       game: { gameId: game.gameId, kickoff: game.kickoff, status: game.status, home: game.home, away: game.away, label: game.label },
-                      title: `${top} v ${left} ${d.getMonth() + 1}/${d.getDate()}${tag}`,
+                      tag: label.trim() || undefined,
                     });
                     setNote("Posted. People with the PIN can see it is open for blocks. When the digits are drawn, add the photo.");
                     reset();

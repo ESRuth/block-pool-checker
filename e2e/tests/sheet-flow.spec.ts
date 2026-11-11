@@ -21,15 +21,15 @@ test("make a sheet from a photo on a venue: it is a draft, then published behind
   await expect(page.getByLabel("Draft")).toHaveCount(0);
   await stranger.goto(`/s/${id}`);
   await expect(stranger.getByLabel("PIN")).toBeVisible();
-  await expect(stranger.getByRole("tab", { name: "Edit" })).toHaveCount(0);
+  await expect(stranger.getByRole("tab", { name: "Details" })).toHaveCount(0);
 
   // Home lists it, and the owner opens it editable.
   await page.getByRole("link", { name: "Sheets" }).click(); // the owner's Sheets tab
   const card = page.locator(`a.sheetcard[href='/s/${id}']`);
   await expect(card).toContainText("Eagles vs Commanders");
   await card.click();
-  await expect(page.getByRole("tab", { name: "Edit" })).toBeVisible();
-  await expect(page.getByRole("tab", { name: "Settings" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Details" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Access" })).toBeVisible();
 });
 
 test("the wizard shows the grid; a saved sheet hides it until Show grid", async ({ page }) => {
@@ -52,7 +52,7 @@ test("the demo games show each state: live, halftime, not started, overtime", as
   await signIn(page, OWNER_CODE);
   await createSheet(page);
   const show = async (label: string) => {
-    await page.getByRole("tab", { name: "Edit" }).click();
+    await page.getByRole("tab", { name: "Details" }).click();
     await page.getByRole("button", { name: "Change the game" }).click();
     await page.locator(".games button", { hasText: label }).click();
   };

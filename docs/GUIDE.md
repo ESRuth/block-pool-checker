@@ -48,18 +48,18 @@ Block Pool Checker shows who is winning a football block pool. You photograph th
 
 ### Two pools for one game
 
-Post a second sheet for the same game and give each its own name, for example “Team A v Team B 11/11 $10” and “… $5”. In a sheet's Settings tab, under **This sheet**, change its name. Viewers pick the one they bought into.
+Post a second sheet for the same game and give each its own **tag** when you post it, for example “$10” and “$5”. The teams and the day come from the game. A sheet's tag, game and team sides can be fixed in its **Details** tab, even before the photo is added, so a wrong game or tag never means deleting and posting again. Viewers pick the one they bought into.
 
 ### Changing things
 
-- **The PIN.** On the venue page, **Show PIN** reveals the current one for a few seconds, so you can tell people; to change it, enter a new PIN (4 to 8 digits). Everyone has to enter the new one. One sheet can have its own PIN instead, in its Settings tab, which replaces the venue's for that sheet only.
-- **The photo.** To let viewers see the photo of a sheet, turn it on in that sheet's Settings tab. Remember that it can show phone numbers.
-- **Hide it again.** A published sheet can go back to a draft from its Settings tab. Viewers stop seeing it until you publish it again.
+- **The PIN.** On the venue page, **Show PIN** reveals the current one for a few seconds, so you can tell people; to change it, enter a new PIN (4 to 8 digits). Everyone has to enter the new one. One sheet can have its own PIN instead, in its Access tab, which replaces the venue's for that sheet only.
+- **The photo.** To let viewers see the photo of a sheet, turn it on in that sheet's Access tab. Remember that it can show phone numbers.
+- **Hide it again.** A published sheet can go back to a draft from its Access tab. Viewers stop seeing it until you publish it again.
 - **A wrong name or a moved grid.** Fix them on the sheet at any time, even after publishing. Changes save by themselves.
 
 ### Deleting and bringing back
 
-Delete a sheet from its Edit tab. It disappears for everyone at once, but it is kept until its removal date (7 days after the game) and stays in your list, marked **Deleted**. Open it and tap **Restore this sheet** to bring it back exactly as it was. Only the owner can delete it for good before that date.
+Delete a sheet from its Details tab. It disappears for everyone at once, but it is kept until its removal date (7 days after the game) and stays in your list, marked **Deleted**. Open it and tap **Restore this sheet** to bring it back exactly as it was. Only the owner can delete it for good before that date.
 
 ### If a PIN gets out
 
@@ -77,7 +77,7 @@ The venue page tells you when wrong PINs are being tried. If a PIN has spread to
 ### What the owner can do
 
 - Everything a runner can, on every venue and sheet, without a PIN.
-- **Move a sheet to a venue** from its Settings tab: it lands there as a draft with a fresh week, and that venue's PIN applies. This also adopts a sheet made before every sheet had to be on a venue.
+- **Move a sheet to a venue** from its Access tab: it lands there as a draft with a fresh week, and that venue's PIN applies. This also adopts a sheet made before every sheet had to be on a venue.
 - See every sheet in the Sheets tab, including deleted ones, marked **Deleted** with the day each goes for good.
 - **Delete for good** a deleted sheet before its removal date. Runners can restore a deleted sheet; only the owner can erase one early.
 

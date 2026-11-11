@@ -70,7 +70,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
   const sheetView = (rec: SheetRecord) => ({
     id: rec.id,
     doc: rec.doc,
-    title: rec.title,
+    tag: rec.tag,
     venueId: rec.venueId,
     hasPhoto: rec.hasPhoto,
     createdBy: rec.createdBy,
@@ -123,8 +123,8 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     const lock = await lockOf(rec);
     if (!canEdit) {
       if (lock === "orphan") return c.json({ error: "not found" }, 404);
-      // Only the title is shown before the PIN: nothing about the sheet itself.
-      if (!pins.valid(c, lock.kind, lock.id, lock.version)) return c.json({ error: "PIN required", pinRequired: true, title: rec.title ?? "" }, 401);
+      // Nothing about the sheet is shown before the PIN.
+      if (!pins.valid(c, lock.kind, lock.id, lock.version)) return c.json({ error: "PIN required", pinRequired: true }, 401);
     }
     const photoVisible = canEdit || !!rec.showPhoto;
     const view = sheetView(rec);
@@ -169,7 +169,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
   });
 
   /**
-   * Name, photo visibility, own PIN and published state of a sheet. Editors only.
+   * Tag, photo visibility, own PIN and published state of a sheet. Editors only.
    * A new PIN signs out everyone who entered the old one.
    */
   app.patch("/api/sheets/:id/settings", async (c) => {
@@ -178,7 +178,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     if (!(await sheetAuthorized(c, rec))) return c.json({ error: "you cannot change this sheet" }, 403);
     const b = z
       .object({
-        title: z.string().trim().max(80).nullable().optional(),
+        tag: z.string().trim().max(30).nullable().optional(),
         showPhoto: z.boolean().optional(),
         pin: z.string().regex(PIN_RE, "A PIN is 4 to 8 digits.").nullable().optional(),
         draft: z.boolean().optional(),
@@ -187,7 +187,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
       })
       .parse(await c.req.json());
     const next: SheetRecord = { ...rec, updatedAt: now().toISOString() };
-    if (b.title !== undefined) next.title = b.title || undefined;
+    if (b.tag !== undefined) next.tag = b.tag || undefined;
     if (b.showPhoto !== undefined) next.showPhoto = b.showPhoto;
     if (b.pin !== undefined) {
       next.pinHash = b.pin ? hashPin(b.pin) : undefined;
@@ -233,7 +233,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
         teams: r.doc.teams,
         kickoff: r.doc.game.kickoff,
         label: r.doc.game.label,
-        title: r.title,
+        tag: r.tag,
         deletedAt: r.deletedAt,
         goneOn: r.deletedAt ? r.expiresAt : undefined,
         draft: r.draft || undefined,

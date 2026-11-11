@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { gameDate, matchup } from "../../lib/report";
+import { gameWhen, sheetName } from "../../lib/report";
 import { mySheets, type SheetSummary } from "../../lib/sheetApi";
 
 /** Owner only: every sheet on every venue, deleted ones last and marked (they can be restored or erased from their own page). */
@@ -24,15 +24,21 @@ export function AllSheets() {
       <div className="sheetlist">
         {sheets?.map((s) => (
           <a key={s.id} className={s.deletedAt ? "card sheetcard gone" : "card sheetcard"} href={`/s/${s.id}`}>
-            <b>
-              {s.deletedAt && <span className="tag">Deleted</span>}
-              {!s.deletedAt && s.posted && <span className="tag">Open for blocks</span>}
-              {!s.deletedAt && !s.posted && s.draft && <span className="tag">Draft</span>}
-              {s.title || matchup(s.teams.top, s.teams.left)}
-            </b>
+            {(s.deletedAt || s.posted || s.draft) && (
+              <span className="statusline">
+                {s.deletedAt ? (
+                  <span className="tag">Deleted</span>
+                ) : s.posted ? (
+                  <span className="tag">Open for blocks</span>
+                ) : (
+                  <span className="tag">Draft</span>
+                )}
+              </span>
+            )}
+            <b>{sheetName(s.teams.top, s.teams.left, s.tag)}</b>
             <span className="sub">
               {s.deletedAt && s.goneOn ? `Gone for good ${new Date(s.goneOn).toLocaleDateString()} · ` : ""}
-              {gameDate(s.kickoff)}
+              {gameWhen(s.kickoff)}
               {s.createdBy ? ` · Added by ${s.createdBy}` : ""}
             </span>
             <span className="go" aria-hidden="true">

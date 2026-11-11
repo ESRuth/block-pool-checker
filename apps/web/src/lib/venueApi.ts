@@ -26,7 +26,7 @@ export interface VenueSheet {
   /** Viewers are not given an id for a sheet that is posted or in draft: they only see that it exists. */
   id?: string;
   stage: Stage;
-  title?: string;
+  tag?: string;
   teams: { top: string; left: string };
   kickoff: string;
   ownPin?: boolean;
@@ -56,7 +56,7 @@ export const createVenue = (v: { name: string; pin: string; runnerIds: string[] 
 export const patchVenue = (id: string, p: { name?: string; pin?: string; runnerIds?: string[] }) =>
   call<VenueSummary>(`/api/venues/${encodeURIComponent(id)}`, "PATCH", p);
 /** Post a sheet on the venue's wall: the game and the teams' places. Its photo comes later. */
-export const postSheet = (id: string, b: { teams: { top: string; left: string }; game: Sheet["game"]; title?: string }) =>
+export const postSheet = (id: string, b: { teams: { top: string; left: string }; game: Sheet["game"]; tag?: string }) =>
   call<{ id: string }>(`/api/venues/${encodeURIComponent(id)}/sheets`, "POST", b);
 export const deleteVenue = (id: string) => call<void>(`/api/venues/${encodeURIComponent(id)}`, "DELETE");
 export const venueLink = (id: string) => `${location.origin}/v/${id}`;

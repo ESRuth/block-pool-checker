@@ -34,6 +34,16 @@ export const matchup = (topTeam: string, leftTeam: string) => `${pretty(topTeam)
 export const gameDate = (kickoffIso: string) =>
   new Date(kickoffIso).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" });
 
+/** "Sunday, Nov 22": the day of a game without the year, for lists of this week's sheets. */
+export const gameDay = (kickoffIso: string) => new Date(kickoffIso).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+
+/** "Sunday, Nov 22 · 1:00 PM": the day and kickoff time of a game, in the viewer's own time zone. */
+export const gameWhen = (kickoffIso: string) =>
+  `${gameDay(kickoffIso)} · ${new Date(kickoffIso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).replace(/\s/g, "\u00a0")}`; // no break inside the time
+
+/** What a sheet is called: the teams, from its game, and the runner's tag if there is one ("Eagles vs Steelers · $5"). */
+export const sheetName = (top: string, left: string, tag?: string) => `${matchup(top, left)}${tag ? ` · ${tag}` : ""}`;
+
 export function reportTitle(topTeam: string, leftTeam: string, kickoffIso: string): string {
   const d = new Date(kickoffIso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return `${pretty(topTeam)} vs ${pretty(leftTeam)}, ${d}`;
@@ -59,4 +69,18 @@ export function reportLines(rows: PeriodRow[], outside: Set<string>): ReportLine
       dim: false,
     };
   });
+}
+
+/**
+ * The teams for a new game, keeping the side the paper sheet has them on: if the team that was across the top plays in the new game it stays
+ * on top, otherwise the away team goes across the top. (Names written on a sheet are free text, so a team matches on its nickname.)
+ */
+export function teamsForGame(
+  prev: { top: string; left: string },
+  game: { away: { nickname: string }; home: { nickname: string } },
+): { top: string; left: string } {
+  const was = prev.top.trim().toLowerCase();
+  const mine = (nick: string) => was !== "" && (was.includes(nick.toLowerCase()) || nick.toLowerCase().includes(was));
+  if (mine(game.home.nickname) && !mine(game.away.nickname)) return { top: game.home.nickname, left: game.away.nickname };
+  return { top: game.away.nickname, left: game.home.nickname };
 }

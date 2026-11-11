@@ -16,7 +16,7 @@ export function useSheetDoc(id: string) {
   const [saving, setSaving] = useState<Saving>("saved");
   const [pinTitle, setPinTitle] = useState<string | null>(null); // set when the sheet is behind a PIN this phone has not entered
   const [meta, setMeta] = useState<{
-    title?: string;
+    tag?: string;
     venueId?: string;
     hasPhoto: boolean;
     expiresAt: string;
@@ -36,14 +36,14 @@ export function useSheetDoc(id: string) {
     loadSheet(id)
       .then((r) => {
         setPinTitle(null);
-        setMeta({ title: r.title, venueId: r.venueId, hasPhoto: r.hasPhoto, expiresAt: r.expiresAt, settings: r.settings, deleted: r.deleted });
+        setMeta({ tag: r.tag, venueId: r.venueId, hasPhoto: r.hasPhoto, expiresAt: r.expiresAt, settings: r.settings, deleted: r.deleted });
         setSheet(r.doc);
         setAddedBy(r.createdBy ?? "");
         setCanEdit(r.canEdit);
       })
       .catch((e) => {
         if (e instanceof PinRequired) {
-          setPinTitle(e.title);
+          setPinTitle("");
           setSheet(null);
         } else if (e instanceof SheetError && e.status === 404) setSheet(null);
         else setLoadError("Could not reach the server. Check your connection and try again.");

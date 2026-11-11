@@ -41,13 +41,13 @@ One name for each thing, used the same way in the app, the docs, the code and co
 |---|---|
 | **Venue** | A place that runs pools (a lodge, bar or club): one permanent QR code, one PIN, a few runners, and the sheets posted on it. |
 | **QR code** | The printed code for a venue. It never changes and shows no names. |
-| **Tag** | The runner's short label on a sheet ("$10"), added to its name. |
+| **Tag** | The runner's short label on a sheet ("$10"), added when the sheet is started to tell two pools for one game apart. Everything else shown about a sheet (teams, day) comes from its game. |
 
 A sheet's **stages**, in order:
 
 | Stage | Means | Who sees it |
 |---|---|---|
-| **Posted** | The sheet is on the venue's wall: the game is chosen and the teams are placed, but there is no photo yet, so no names or digits. Viewers see **Open for blocks**: the game, the date, the tag, and "ask at the venue to get a block". | Viewers see that bare line; runners and the owner see the sheet |
+| **Posted** | The sheet is on the venue's wall: the game is chosen and the teams are placed, but there is no photo yet, so no names or digits. Viewers see **Open for blocks**: the game, the date and the tag, with one line saying to see the venue to get a block. | Viewers see that bare line; runners and the owner see the sheet |
 | **Draft** | The photo (digits drawn) is in; the runner is checking the grid and names. A sheet made straight from a photo and put on a venue also starts here. | The people who could edit it. Viewers still see only "Open for blocks" |
 | **Published** | A runner tapped Publish. | Also anyone with the PIN |
 | **Pre-game / live / final** | Come from the score feed; not stored as a stage. | Same as published |

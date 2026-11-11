@@ -1253,6 +1253,13 @@ details.allnames > summary {
   font-size: 0.8em;
   font-weight: 600;
 }
+.statusline {
+  display: block;
+  margin-bottom: 2px;
+}
+.statusline .tag {
+  margin-right: 0;
+}
 .deletedbar {
   border: 2px dashed currentColor;
 }

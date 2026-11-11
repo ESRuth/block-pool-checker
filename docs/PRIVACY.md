@@ -15,7 +15,7 @@ This policy says what Block Pool Checker keeps about you and about the people na
 
 ## What is kept
 
-- **A sheet:** the teams, the game, the digits, the names (as the app read them or as someone typed them), which blocks an editor marked as theirs, a name you choose for the sheet, and the name of the person who made it.
+- **A sheet:** the teams, the game, the digits, the names (as the app read them or as someone typed them), which blocks an editor marked as theirs, a short tag you choose for the sheet (such as “$10”), and the name of the person who made it.
 - **The photo of the sheet.** Your phone shrinks it and removes location and camera details before it is sent. It may show handwriting and, if people wrote them, phone numbers.
 - **A person with a personal link:** the name the owner typed when making the link, a scrambled copy of the key (the key itself is not stored), how many times it was used and when it was last used.
 - **A venue:** its name, its PIN (a scrambled copy to check against, and an encrypted copy so the owner and the venue's runners can be shown it again), who runs it, and how many wrong PINs were tried lately.
