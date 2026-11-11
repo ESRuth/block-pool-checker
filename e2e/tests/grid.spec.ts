@@ -38,14 +38,14 @@ test("a corner dragged by touch stays on the photo, and Undo puts it back", asyn
 
 test("a corner that is already off the photo shows a banner, and Fix the grid brings it back", async ({ page }) => {
   await signIn(page, OWNER_CODE);
-  const { id, token } = await createSheet(page);
-  await settle(page, id, token);
-  const got = (await (await api(`/api/sheets/${id}`, { token })).json()) as { doc: { corners: number[][] } & Record<string, unknown> };
+  const { id } = await createSheet(page);
+  await settle(page, id);
+  const got = (await (await api(`/api/sheets/${id}`)).json()) as { doc: { corners: number[][] } & Record<string, unknown> };
   const doc = got.doc;
   doc.corners = [doc.corners[0]!, doc.corners[1]!, doc.corners[2]!, [-900, 2500]];
-  expect((await api(`/api/sheets/${id}`, { method: "PUT", token, body: JSON.stringify(doc) })).ok).toBe(true);
+  expect((await api(`/api/sheets/${id}`, { method: "PUT", body: JSON.stringify(doc) })).ok).toBe(true);
 
-  await page.goto(`/s/${id}#k=${token}`);
+  await page.goto(`/s/${id}`);
   await expect(page.getByText("A corner of the grid is outside the photo")).toBeVisible();
   await page.getByRole("button", { name: "Fix the grid" }).click();
   await expect(page.getByText("A corner of the grid is outside the photo")).toHaveCount(0);

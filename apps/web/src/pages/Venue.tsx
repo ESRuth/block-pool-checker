@@ -69,7 +69,7 @@ export function VenuePage({ id }: { id: string }) {
       {v.canManage && <PostSheet id={id} reload={load} />}
       {v.canManage && <Manage id={id} v={v} reload={load} />}
       <div className="footlinks">
-        <a href="/">My sheets</a>
+        {v.canManage && <a href="/">Home</a>}
         <a href={v.canManage ? "/help#run" : "/help#watch"}>Help</a>
         <a href="/privacy">Privacy</a>
       </div>

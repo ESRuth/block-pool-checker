@@ -16,16 +16,16 @@ export function usePhotoImage(url: string) {
 }
 
 /**
- * The sheet's photo as a local address, fetched with the person's key or edit link (an <img> tag cannot send them, and photos can be
+ * The sheet's photo as a local address, fetched with the person's key (an <img> tag cannot send it, and photos can be
  * restricted to the people who run a sheet). Empty until it arrives, or when this viewer is not shown a photo.
  */
-export function usePhotoSrc(id: string, token: string, enabled: boolean) {
+export function usePhotoSrc(id: string, enabled: boolean) {
   const [src, setSrc] = useState("");
   useEffect(() => {
     if (!enabled) return;
     let live = true;
     let made = "";
-    photoBlob(id, token)
+    photoBlob(id)
       .then((b) => {
         if (!live) return;
         made = URL.createObjectURL(b);
@@ -36,7 +36,7 @@ export function usePhotoSrc(id: string, token: string, enabled: boolean) {
       live = false;
       if (made) URL.revokeObjectURL(made);
     };
-  }, [id, token, enabled]);
+  }, [id, enabled]);
   return src;
 }
 

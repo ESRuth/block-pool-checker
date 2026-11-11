@@ -7,15 +7,22 @@ export type Saving = "saved" | "saving" | "error";
  * The saved sheet: loads it, and saves every edit a moment after it happens (only editors can save).
  * `sheet` is undefined while loading and null when the link opens nothing.
  */
-export function useSheetDoc(id: string, token: string) {
-  // The edit link carries the token; a person's own sheets also open editable through their personal key. The server says which.
-  const [canEdit, setCanEdit] = useState(!!token);
+export function useSheetDoc(id: string) {
+  // Whether this person may change the sheet is decided by the server (the owner, the maker, or a runner of its venue).
+  const [canEdit, setCanEdit] = useState(false);
   const [sheet, setSheet] = useState<Sheet | null | undefined>(undefined);
   const [loadError, setLoadError] = useState("");
   const [addedBy, setAddedBy] = useState("");
   const [saving, setSaving] = useState<Saving>("saved");
   const [pinTitle, setPinTitle] = useState<string | null>(null); // set when the sheet is behind a PIN this phone has not entered
-  const [meta, setMeta] = useState<{ title?: string; hasPhoto: boolean; expiresAt: string; settings?: SheetSettings; deleted?: LoadedSheet["deleted"] }>({
+  const [meta, setMeta] = useState<{
+    title?: string;
+    venueId?: string;
+    hasPhoto: boolean;
+    expiresAt: string;
+    settings?: SheetSettings;
+    deleted?: LoadedSheet["deleted"];
+  }>({
     hasPhoto: true,
     expiresAt: "",
   });
@@ -26,13 +33,13 @@ export function useSheetDoc(id: string, token: string) {
 
   useEffect(() => {
     setLoadError("");
-    loadSheet(id, token)
+    loadSheet(id)
       .then((r) => {
         setPinTitle(null);
-        setMeta({ title: r.title, hasPhoto: r.hasPhoto, expiresAt: r.expiresAt, settings: r.settings, deleted: r.deleted });
+        setMeta({ title: r.title, venueId: r.venueId, hasPhoto: r.hasPhoto, expiresAt: r.expiresAt, settings: r.settings, deleted: r.deleted });
         setSheet(r.doc);
         setAddedBy(r.createdBy ?? "");
-        setCanEdit(r.canEdit || !!token);
+        setCanEdit(r.canEdit);
       })
       .catch((e) => {
         if (e instanceof PinRequired) {
@@ -41,13 +48,13 @@ export function useSheetDoc(id: string, token: string) {
         } else if (e instanceof SheetError && e.status === 404) setSheet(null);
         else setLoadError("Could not reach the server. Check your connection and try again.");
       });
-  }, [id, token, tries]);
+  }, [id, tries]);
 
   useEffect(() => {
     if (!canEdit || rev === 0 || !sheet) return;
     setSaving("saving");
     const t = setTimeout(() => {
-      saveSheet(id, token, sheet)
+      saveSheet(id, sheet)
         .then(() => setSaving("saved"))
         .catch(() => setSaving("error"));
     }, 600);

@@ -43,15 +43,23 @@ const setup = (dailyReadCap?: number) => {
       readGrid: async () => ({ names: [], model: "fake" }),
     },
   });
-  const call = (path: string, key?: string, body?: unknown, method = body === undefined ? "GET" : "POST", token?: string) =>
+  const call = (path: string, key?: string, body?: unknown, method = body === undefined ? "GET" : "POST") =>
     app.request(path, {
       method,
       body: body === undefined ? undefined : JSON.stringify(body),
-      headers: { "Content-Type": "application/json", ...(key ? { "X-Invite-Code": key } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      headers: { "Content-Type": "application/json", ...(key ? { "X-Invite-Code": key } : {}) },
     });
   return { call, users };
 };
-const invite = async (s: ReturnType<typeof setup>, name: string) => (await (await s.call("/api/owner/users", "owner-code", { name })).json()) as any;
+type S = ReturnType<typeof setup>;
+const invite = async (s: S, name: string) => (await (await s.call("/api/owner/users", "owner-code", { name })).json()) as any;
+/** A person who runs a venue of their own, and a sheet they make on it. */
+const runnerWithSheet = async (s: S, name: string) => {
+  const person = await invite(s, name);
+  const v = (await (await s.call("/api/owner/venues", "owner-code", { name: `${name}'s place`, pin: "4821", runnerIds: [person.id] })).json()) as any;
+  const make = async (key = person.key) => (await s.call("/api/sheets", key, { venueId: v.id, doc })).json() as Promise<any>;
+  return { person, venueId: v.id as string, make };
+};
 
 describe("personal invite keys", () => {
   it("the owner makes a key for a person; the key is shown once and only its hash is stored", async () => {
@@ -78,60 +86,56 @@ describe("personal invite keys", () => {
 
   it("sheets record who created and last changed them", async () => {
     const s = setup();
-    const person = await invite(s, "Jordan");
-    const made = (await (await s.call("/api/sheets", person.key, doc)).json()) as any;
+    const { person, make } = await runnerWithSheet(s, "Jordan");
+    const made = await make();
     expect(made.createdBy).toBe("Jordan");
-    const view = (await (await s.call(`/api/sheets/${made.id}`)).json()) as any;
+    const view = (await (await s.call(`/api/sheets/${made.id}`, person.key)).json()) as any;
     expect(view.createdBy).toBe("Jordan");
-    const edit = (key?: string) => s.call(`/api/sheets/${made.id}`, key, doc, "PUT", made.editToken);
-    expect((await edit("owner-code")).status).toBe(200);
-    expect(((await (await s.call(`/api/sheets/${made.id}`)).json()) as any).updatedBy).toBe("Owner");
-    await edit(); // an edit link used without any personal key credits nobody new
-    expect(((await (await s.call(`/api/sheets/${made.id}`)).json()) as any).updatedBy).toBe("Owner");
+    expect((await s.call(`/api/sheets/${made.id}`, "owner-code", doc, "PUT")).status).toBe(200);
+    expect(((await (await s.call(`/api/sheets/${made.id}`, person.key)).json()) as any).updatedBy).toBe("Owner");
+    expect((await s.call(`/api/sheets/${made.id}`, undefined, doc, "PUT")).status).toBe(403); // no key, no change
   });
 
   it("uses are counted, and a revoked key stops working at once", async () => {
     const s = setup();
-    const u = await invite(s, "Jordan");
+    const { person: u, venueId } = await runnerWithSheet(s, "Jordan");
     await s.call("/api/read-names", u.key, { image: "AAAA" });
     await s.call("/api/read-names", u.key, { image: "AAAA" });
     expect(((await (await s.call("/api/owner/users", "owner-code")).json()) as any).users[0].uses).toBe(2);
     expect((await s.call(`/api/owner/users/${u.id}/revoke`, "owner-code", {})).status).toBe(200);
     expect((await s.call("/api/me", u.key)).status).toBe(403);
-    expect((await s.call("/api/sheets", u.key, doc)).status).toBe(403);
+    expect((await s.call("/api/sheets", u.key, { venueId, doc })).status).toBe(403);
   });
 });
 
 describe("My Sheets", () => {
-  it("lists a person's own sheets and lets them edit without the edit link; others cannot", async () => {
+  it("lists a person's own sheets; only they and the owner can edit them; others cannot", async () => {
     const s = setup();
-    const person = await invite(s, "Jordan");
-    const other = await invite(s, "Other");
-    const made = (await (await s.call("/api/sheets", person.key, doc)).json()) as any;
-    await s.call("/api/sheets", other.key, doc);
-    const mine = (await (await s.call("/api/my/sheets", person.key)).json()) as any;
+    const a = await runnerWithSheet(s, "Jordan");
+    const b = await runnerWithSheet(s, "Other");
+    const made = await a.make();
+    await b.make();
+    const mine = (await (await s.call("/api/my/sheets", a.person.key)).json()) as any;
     expect(mine.sheets).toHaveLength(1);
     expect(mine.sheets[0]).toMatchObject({ id: made.id, teams: { top: "Eagles", left: "Commanders" } });
-    expect(JSON.stringify(mine)).not.toContain("editToken");
     expect((await s.call("/api/my/sheets")).status).toBe(403);
     const all = (await (await s.call("/api/my/sheets", "owner-code")).json()) as any;
     expect(all.sheets.map((x: any) => x.createdBy).sort()).toEqual(["Jordan", "Other"]); // the owner sees everyone's
-    const canEdit = async (key?: string) => ((await (await s.call(`/api/sheets/${made.id}`, key)).json()) as any).canEdit;
-    expect(await canEdit(person.key)).toBe(true);
-    expect(await canEdit("owner-code")).toBe(true);
-    expect(await canEdit(other.key)).toBe(false);
-    expect(await canEdit()).toBe(false);
-    expect((await s.call(`/api/sheets/${made.id}`, person.key, doc, "PUT")).status).toBe(200);
-    expect((await s.call(`/api/sheets/${made.id}`, other.key, doc, "PUT")).status).toBe(403);
+    const open = async (key?: string) => s.call(`/api/sheets/${made.id}`, key);
+    expect(((await (await open(a.person.key)).json()) as any).canEdit).toBe(true);
+    expect(((await (await open("owner-code")).json()) as any).canEdit).toBe(true);
+    expect((await open(b.person.key)).status).toBe(404); // a draft on someone else's venue does not exist for them
+    expect((await open()).status).toBe(404);
+    expect((await s.call(`/api/sheets/${made.id}`, a.person.key, doc, "PUT")).status).toBe(200);
+    expect((await s.call(`/api/sheets/${made.id}`, b.person.key, doc, "PUT")).status).toBe(403);
   });
 });
 
 describe("My Sheets for the owner", () => {
-  it("includes sheets saved before creators were recorded", async () => {
+  it("includes sheets saved before creators were recorded (and before every sheet was on a venue)", async () => {
     const sheets = new MemorySheetRepository();
     await sheets.put({
       id: "old",
-      editTokenHash: "x",
       doc: { ...(doc as any), schema_version: 1 },
       hasPhoto: true,
       createdAt: "2026-11-03T00:00:00.000Z",
@@ -154,24 +158,6 @@ describe("My Sheets for the owner", () => {
     });
     const res = await app.request("/api/my/sheets", { headers: { "X-Invite-Code": "owner-code" } });
     expect(((await res.json()) as any).sheets.map((s: any) => s.id)).toEqual(["old"]);
-  });
-});
-
-describe("making an edit link later", () => {
-  it("the creator can make a new edit link; it works, older links keep working, others cannot make one", async () => {
-    const s = setup();
-    const person = await invite(s, "Jordan");
-    const other = await invite(s, "Other");
-    const made = (await (await s.call("/api/sheets", person.key, doc)).json()) as any;
-    expect((await s.call(`/api/sheets/${made.id}/edit-links`, other.key, {})).status).toBe(403);
-    expect((await s.call(`/api/sheets/${made.id}/edit-links`, undefined, {})).status).toBe(403);
-    const mk = (await (await s.call(`/api/sheets/${made.id}/edit-links`, person.key, {})).json()) as any;
-    expect(mk.editToken).toMatch(/\S{20,}/);
-    const put = (token: string) => s.call(`/api/sheets/${made.id}`, undefined, doc, "PUT", token);
-    expect((await put(mk.editToken)).status).toBe(200); // the new link edits with no personal key
-    expect((await put(made.editToken)).status).toBe(200); // the original still works
-    expect((await put("nope")).status).toBe(403);
-    expect((await s.call(`/api/sheets/${made.id}/edit-links`, "owner-code", {})).status).toBe(201); // the owner can too
   });
 });
 

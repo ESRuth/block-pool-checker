@@ -7,15 +7,17 @@ import { setAccessKey, whoAmI, type Me } from "../lib/access";
  * opens the home page with the key attached, so it also re-saves the key if the phone cleared it.
  */
 export function Join() {
-  const [state, setState] = useState<"checking" | "ok" | "bad">("checking");
+  const [state, setState] = useState<"checking" | "ok" | "bad" | "offline">("checking");
   const [me, setMe] = useState<Me | null>(null);
   useEffect(() => {
     const k = new URLSearchParams(location.hash.replace(/^#/, "")).get("c");
     if (k) setAccessKey(k);
-    whoAmI().then((m) => {
-      setMe(m);
-      setState(m ? "ok" : "bad");
-    });
+    whoAmI()
+      .then((m) => {
+        setMe(m);
+        setState(m ? "ok" : "bad");
+      })
+      .catch(() => setState("offline")); // the key is saved; only the check could not run
   }, []);
 
   return (
@@ -28,6 +30,11 @@ export function Join() {
           Checking your link…
         </p>
       )}
+      {state === "offline" && (
+        <p className="msg" role="alert">
+          Your link is saved, but the server could not be reached to check it. Check your connection and reload this page.
+        </p>
+      )}
       {state === "bad" && (
         <p className="msg" role="alert">
           This link doesn't work (it may have been turned off). Ask the person who sent it for a new one.
@@ -38,7 +45,7 @@ export function Join() {
           <h2>You're in{me.owner ? "" : `, ${me.name}`}.</h2>
           <p className="sub">This phone is signed in; you won't be asked for a code.</p>
           <a className="bigbtn" href="/">
-            Open My Sheets
+            Open my venues
           </a>
           <h2>Put it on your home screen</h2>
           <p className="sub">

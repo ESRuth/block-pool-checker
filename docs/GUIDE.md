@@ -2,7 +2,7 @@
 
 <!-- Generated from apps/web/src/lib/guide.ts: edit it there. The same text is the app's /help page. -->
 
-Block Pool Checker shows who is winning a football block pool. You photograph the paper sheet, the app reads it, and it follows the live score. Find the part that fits you: watching a pool, running a venue's pools, checking one sheet yourself, or looking after the whole app. How your data is handled is on the privacy page.
+Block Pool Checker shows who is winning a football block pool. You photograph the paper sheet, the app reads it, and it follows the live score. Find the part that fits you: watching a pool, running a venue's pools, or looking after the whole app. How your data is handled is on the privacy page.
 
 ## Watching a pool
 
@@ -48,13 +48,13 @@ Block Pool Checker shows who is winning a football block pool. You photograph th
 
 ### Two pools for one game
 
-Post a second sheet for the same game and give each its own name, for example “Team A v Team B 11/11 $10” and “… $5”. In a sheet's Share tab, under **This sheet**, change its name. Viewers pick the one they bought into.
+Post a second sheet for the same game and give each its own name, for example “Team A v Team B 11/11 $10” and “… $5”. In a sheet's Settings tab, under **This sheet**, change its name. Viewers pick the one they bought into.
 
 ### Changing things
 
-- **The PIN.** On the venue page, enter a new PIN (4 to 8 digits). Everyone has to enter the new one. One sheet can have its own PIN instead, in its Share tab, which replaces the venue's for that sheet only.
-- **The photo.** To let viewers see the photo of a sheet, turn it on in that sheet's Share tab. Remember that it can show phone numbers.
-- **Hide it again.** A published sheet can go back to a draft from its Share tab. Viewers stop seeing it until you publish it again.
+- **The PIN.** On the venue page, enter a new PIN (4 to 8 digits). Everyone has to enter the new one. One sheet can have its own PIN instead, in its Settings tab, which replaces the venue's for that sheet only.
+- **The photo.** To let viewers see the photo of a sheet, turn it on in that sheet's Settings tab. Remember that it can show phone numbers.
+- **Hide it again.** A published sheet can go back to a draft from its Settings tab. Viewers stop seeing it until you publish it again.
 - **A wrong name or a moved grid.** Fix them on the sheet at any time, even after publishing. Changes save by themselves.
 
 ### Deleting and bringing back
@@ -65,33 +65,13 @@ Delete a sheet from its Edit tab. It disappears for everyone at once, but it is 
 
 The venue page tells you when wrong PINs are being tried. If a PIN has spread to people it shouldn't have, change it.
 
-## Checking a single sheet
-
-*For someone with an invitation who wants to check one pool without a venue.*
-
-1. Open your personal link, then tap **Add a sheet from a photo**.
-2. Take or choose a photo with the whole sheet in view: the team names, every digit and every block.
-3. If the teams weren't visible, type them: first the team across the top, then the team down the side.
-4. Confirm any digit rows the app couldn't read cleanly. Each row must have 0 to 9 exactly once.
-5. Pick the game from the list. It finds the game by the teams.
-6. Check that the grid lines sit on the blocks. Drag a corner circle, or tap **Snap to the lines**. Then tap **Looks right: save**.
-
-You land on the sheet: the score, the four winners, and your photo with the winning blocks boxed and numbered (1, 2, 3 and F, so the meaning never depends on colour alone). It updates while the game is on.
-
-### Sharing it
-
-- The **Share** tab has a view link. Anyone who has it can watch the sheet, including the photo and the names, so send it only to people in the pool.
-- The same tab can make an **edit link**. Whoever has it can change or delete the sheet, so keep it to yourself or to a co-organizer.
-- Type a name in **Blocks** to outline matching blocks on the photo. Tap a block to see it close up and mark it as yours. Only you see the blocks you mark.
-- Sheets are removed 30 days after the game.
-
 ## Looking after the app
 
 *For the owner, the one person who holds the owner code.*
 
 1. Go to /owner on the app's address and enter the owner code. The code is the master key: keep it out of chat messages and screenshots.
 2. **Invite someone.** Type their name and tap **Make their link**. Send them the link; opening it signs their phone in. **Get a link** makes a fresh one later, and **Turn off** ends their access.
-3. **Make a venue.** Give it a name and a first PIN and choose its runners (a main one and backups) from the people you have invited. The venue's QR code is on its page.
+3. **Make a venue.** Give it a name and a first PIN and choose its runners (a main one and backups) from the people you have invited. The venue's QR code is on its page. A private pool (an office or a family pool) gets a venue too: it is only a name, a PIN and someone to run it.
 4. **Close** removes a venue and its sheets.
 
 ### What the owner can do
@@ -118,7 +98,7 @@ The score comes from ESPN. If the app can't reach it, it shows the last score it
 
 ### Who can see my photo?
 
-On a venue, only the runners, unless a runner turns it on. On a sheet shared by a link, anyone with the link. The privacy page has the details.
+Only the runners of the venue, unless a runner turns it on for that sheet. The privacy page has the details.
 
 ### I lost my access.
 

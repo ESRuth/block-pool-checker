@@ -35,7 +35,7 @@ test("post a sheet, add the photo, publish: viewers need the venue PIN and see n
   await viewer.getByRole("button", { name: "Open" }).click();
   await expect(viewer.getByText(sheetLabel)).toBeVisible();
   await expect(viewer.getByText("Ask at the venue to get a block")).toBeVisible();
-  await expect(viewer.getByRole("link")).toHaveCount(3); // only "My sheets", "Help" and "Privacy"
+  await expect(viewer.getByRole("link")).toHaveCount(2); // only "Help" and "Privacy": a viewer has no home page
 
   // Stage 2, once the digits are drawn: the runner opens the posted sheet and adds the photo. Game and teams are already known, so those questions are skipped.
   await page.getByRole("link", { name: sheetLabel }).click();
@@ -80,7 +80,7 @@ test("post a sheet, add the photo, publish: viewers need the venue PIN and see n
 
   // The runner sees the photo, and can let viewers see it too.
   await expect(page.getByLabel("Your sheet")).toBeVisible();
-  await page.getByRole("tab", { name: "Share" }).click();
+  await page.getByRole("tab", { name: "Settings" }).click();
   await page.getByLabel("Let viewers see the photo").click();
   await expect(page.getByText("Viewers can see the photo.")).toBeVisible();
   await viewer.reload();
@@ -95,6 +95,7 @@ test("post a sheet, add the photo, publish: viewers need the venue PIN and see n
 test("a deleted sheet stays in the list, marked, and can be restored from the sheet", async ({ page, browser }) => {
   await signIn(page, OWNER_CODE);
   const { id } = await createSheet(page);
+  await page.getByRole("button", { name: "Publish" }).click(); // so a stranger would have something to look for
 
   page.once("dialog", (d) => d.accept());
   await page.getByRole("tab", { name: "Edit" }).click();

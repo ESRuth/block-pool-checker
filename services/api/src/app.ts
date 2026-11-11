@@ -15,7 +15,7 @@ import { readingRoutes } from "./routes/reading.js";
 import { sheetRoutes } from "./routes/sheets.js";
 import { venueRoutes } from "./routes/venues.js";
 
-export { RETENTION_DAYS, VENUE_RETENTION_DAYS } from "./routes/sheets.js";
+export { RETENTION_DAYS } from "./routes/sheets.js";
 
 /** Photos are shown from blob: and data: addresses (the browser holds them); styles are set inline by the page. Nothing loads from another site. */
 const CSP = [

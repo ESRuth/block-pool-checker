@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { Home } from "./pages/Home";
 import { Join } from "./pages/Join";
 import { NewSheet } from "./pages/NewSheet";
+import { NoVenue } from "./pages/NoVenue";
 import { SheetPage } from "./pages/sheet/SheetPage";
 
 // Pages most people never open (the owner's, the venue's with its QR code, the guide and the policy) load only when asked for.
@@ -12,7 +13,11 @@ const Privacy = lazy(() => import("./pages/Privacy").then((m) => ({ default: m.P
 
 function page() {
   const path = location.pathname;
-  if (/^\/(new|check)\/?$/.test(path)) return <NewSheet />;
+  if (/^\/(new|check)\/?$/.test(path)) {
+    // A sheet is always made on a venue: from its page ("Add a sheet from a photo") or from a posted sheet ("Add the photo").
+    const q = new URLSearchParams(location.search);
+    return q.get("venue") || q.get("sheet") ? <NewSheet /> : <NoVenue />;
+  }
   if (/^\/join\/?$/.test(path)) return <Join />;
   if (/^\/owner\/?$/.test(path)) return <Owner />;
   if (/^\/help\/?$/.test(path)) return <Help />;

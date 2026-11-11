@@ -21,7 +21,7 @@ pnpm e2e         # Playwright against the built app with the stub reader (first:
 pnpm --filter @bpc/api dev     # API on :8080, in memory (no GCP_PROJECT)
 pnpm --filter @bpc/web dev     # web on :5173, proxies /api to :8080
 ```
-For free UI testing run the API with `READER=stub`: recorded reader answers and demo games between the sample sheet's teams (the recorded final, plus live in the 3rd quarter, halftime, not started, and a final in overtime). Pick one under "Which game?" on a new sheet, or on an existing one under Edit > Change the game. No model or network calls, no cost. Without `INVITE_CODE` the local API is open and every caller is the owner; set `INVITE_CODE=anything` to test access control.
+For free UI testing run the API with `READER=stub`: recorded reader answers and demo games between the sample sheet's teams (the recorded final, plus live in the 3rd quarter, halftime, not started, and a final in overtime). Every sheet is made on a venue, so first make one at `/owner` (any code works while `INVITE_CODE` is unset), then open it and choose "Add a sheet from a photo". Pick a demo game under "Which game?" on the new sheet, or on an existing one under Edit > Change the game. No model or network calls, no cost. Without `INVITE_CODE` the local API is open and every caller is the owner; set `INVITE_CODE=anything` to test access control.
 
 ## Layout
 - `packages/engine`: Zod schemas and pure logic: winning blocks, per-period results, grid geometry, the saved-sheet document. Single source of truth for web and API.

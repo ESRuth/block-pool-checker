@@ -4,18 +4,18 @@ import { myVenues, type VenueSummary } from "../../lib/venueApi";
 
 interface Props {
   id: string;
-  token: string;
   title: string;
+  /** When this sheet is removed (ISO), shown to the runner. */
+  expiresAt: string;
   settings?: Settings;
   /** Called with whatever the server says is now true. */
   onChanged: (m: { title?: string; settings: Settings; expiresAt: string }) => void;
 }
 
-/** For editors: this sheet's name, the venue it belongs to, its own PIN (overrides the venue's) and whether viewers may see the photo. */
-export function SheetSettings({ id, token, title, settings, onChanged }: Props) {
+/** For editors: this sheet's name, whether it is published, its own PIN (overrides the venue's) and whether viewers may see the photo. */
+export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Props) {
   const [name, setName] = useState(title);
   const [venues, setVenues] = useState<VenueSummary[]>([]);
-  const [pick, setPick] = useState("");
   const [pin, setPin] = useState("");
   const [note, setNote] = useState("");
 
@@ -25,9 +25,9 @@ export function SheetSettings({ id, token, title, settings, onChanged }: Props) 
       .catch(() => setVenues([]));
   }, []);
 
-  async function save(patch: Parameters<typeof patchSettings>[2], done: string) {
+  async function save(patch: Parameters<typeof patchSettings>[1], done: string) {
     try {
-      const r = await patchSettings(id, token, patch);
+      const r = await patchSettings(id, patch);
       onChanged({ title: r.title, settings: r.settings, expiresAt: r.expiresAt });
       setNote(done);
     } catch (e) {
@@ -47,52 +47,29 @@ export function SheetSettings({ id, token, title, settings, onChanged }: Props) 
         <button onClick={() => save({ title: name.trim() || null }, "Name saved.")}>Save name</button>
       </div>
 
-      <h3>Venue</h3>
-      {settings?.venueId ? (
-        <>
-          <p className="sub">
-            On {venue ? <a href={`/v/${venue.id}`}>{venue.name}</a> : "a venue"}: people open it with that venue's QR code and PIN, and it is removed 7 days
-            after the game.
-          </p>
-          <p className="sub">
-            {settings.draft
-              ? "This sheet is a draft: only the people who run the venue can see it."
-              : "This sheet is published: people with the venue's PIN can open it."}
-          </p>
-          <div className="actions">
-            {settings.draft ? (
-              <button onClick={() => save({ draft: false }, "Published.")}>Publish</button>
-            ) : (
-              <button onClick={() => save({ draft: true }, "Back to a draft: hidden from viewers.")}>Hide it again (back to a draft)</button>
-            )}
-            <button onClick={() => save({ venueId: null }, "Taken off the venue.")}>Take off the venue</button>
-          </div>
-        </>
-      ) : venues.length > 0 ? (
-        <>
-          <p className="sub">
-            Put this sheet on a venue so people find it with the venue's QR code. It starts as a draft that only runners see, until you publish it.
-          </p>
-          <label className="field">
-            Venue
-            <select value={pick} onChange={(e) => setPick(e.target.value)}>
-              <option value="">Choose…</option>
-              {venues.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="actions">
-            <button disabled={!pick} onClick={() => save({ venueId: pick }, "Put on the venue.")}>
-              Put on this venue
-            </button>
-          </div>
-        </>
-      ) : (
-        <p className="sub">Not on a venue. (Venues are set up by the owner.)</p>
-      )}
+      <h3>Who can see it</h3>
+      <p className="sub">
+        {venue ? (
+          <>
+            On <a href={`/v/${venue.id}`}>{venue.name}</a>: people open it with that venue's QR code and PIN.
+          </>
+        ) : (
+          "People open it with the venue's QR code and PIN."
+        )}{" "}
+        {expiresAt ? `This sheet is removed on ${new Date(expiresAt).toLocaleDateString()}.` : ""}
+      </p>
+      <p className="sub">
+        {settings?.draft
+          ? "This sheet is a draft: only the people who run the venue can see it."
+          : "This sheet is published: people with the venue's PIN can open it."}
+      </p>
+      <div className="actions">
+        {settings?.draft ? (
+          <button onClick={() => save({ draft: false }, "Published.")}>Publish</button>
+        ) : (
+          <button onClick={() => save({ draft: true }, "Back to a draft: hidden from viewers.")}>Hide it again (back to a draft)</button>
+        )}
+      </div>
 
       <h3>PIN for this sheet only</h3>
       <p className="sub">

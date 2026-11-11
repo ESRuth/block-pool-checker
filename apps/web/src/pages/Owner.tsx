@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { accessKey, setAccessKey } from "../lib/access";
+import { accessKey, setAccessKey, whoAmI } from "../lib/access";
 import { createVenue, deleteVenue, myVenues, patchVenue, venueLink, type VenueSummary } from "../lib/venueApi";
 
 interface User {
@@ -18,6 +18,7 @@ export function Owner() {
   const [users, setUsers] = useState<User[] | null>(null);
   const [denied, setDenied] = useState(!accessKey());
   const [code, setCode] = useState("");
+  const [codeNote, setCodeNote] = useState("");
   const [name, setName] = useState("");
   const [made, setMade] = useState<{ name: string; link: string } | null>(null);
   const [note, setNote] = useState("");
@@ -111,9 +112,14 @@ export function Owner() {
           <h1>Owner</h1>
         </header>
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            setAccessKey(code);
+            setCodeNote("");
+            // Check the code before keeping it: a mistyped code must not replace the key this browser is already signed in with.
+            const m = await whoAmI(code.trim()).catch(() => undefined);
+            if (m === undefined) return setCodeNote("Could not reach the server. Try again.");
+            if (!m?.owner) return setCodeNote("That is not the owner code. You are still signed in as before.");
+            setAccessKey(code.trim());
             load();
           }}
         >
@@ -125,6 +131,12 @@ export function Owner() {
             Open
           </button>
         </form>
+        {codeNote && (
+          <p className="warn" role="alert">
+            {codeNote}
+          </p>
+        )}
+        <p className="sub">This page is for the owner. Entering the owner code signs this browser in as the owner (replacing a personal link).</p>
       </main>
     );
   }

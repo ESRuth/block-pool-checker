@@ -8,7 +8,7 @@ import type { GameRef } from "../lib/gameApi";
 import { badRows, rowsFromRead, setsFor, type RowText } from "../lib/digits";
 import { loadPhoto, type LoadedPhoto } from "../lib/photo";
 import { ReadError, readPhoto, setInviteCode, type ReadResponse } from "../lib/readApi";
-import { createSheet, fillSheet, loadSheet, patchSettings, type Sheet } from "../lib/sheetApi";
+import { createSheet, fillSheet, loadSheet, type Sheet } from "../lib/sheetApi";
 
 const teamRef = (t: { abbr: string; name: string; nickname: string; location?: string }): TeamRef => ({ ...t, location: t.location ?? "" });
 /** Does the pair of team names on a sheet fit this game, in either order? */
@@ -38,6 +38,7 @@ export function NewSheet() {
   // photo agrees, and the photo is added to that sheet instead of making a new one. `?venue=<code>` alone makes a new sheet on that venue.
   const q = useMemo(() => new URLSearchParams(location.search), []);
   const sheetId = q.get("sheet");
+  const venueId = q.get("venue");
   const [posted, setPosted] = useState<{ teams: Sheet["teams"]; game: Sheet["game"] } | null>(null);
   useEffect(() => {
     if (sheetId)
@@ -120,11 +121,9 @@ export function NewSheet() {
         location.assign(`/s/${sheetId}`);
         return;
       }
-      const { id, editToken } = await createSheet(doc, photo.blob);
-      // Started from a venue page ("Add a sheet from a photo"): attach it there as a draft; publishing it opens it to viewers.
-      const venueId = q.get("venue");
-      if (venueId) await patchSettings(id, editToken, { venueId }).catch(() => undefined);
-      location.assign(`/s/${id}#k=${editToken}`);
+      // Started from a venue page ("Add a sheet from a photo"): it is made there as a draft; publishing it opens it to viewers.
+      const { id } = await createSheet(venueId!, doc, photo.blob);
+      location.assign(`/s/${id}`);
     } catch {
       setError({ message: "Could not save the sheet. Check your connection and try again.", needInvite: false });
       setPhase("questions");
@@ -158,8 +157,7 @@ export function NewSheet() {
             <input type="file" accept="image/*" onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
           <p className="sub">
-            The photo is shrunk and stripped of location and camera data on your phone first. It's kept privately so you can open the sheet from a link, and
-            deleted 30 days after the game (7 days when the sheet is on a venue).
+            The photo is shrunk and stripped of location and camera data on your phone first. It's kept privately and deleted 7 days after the game.
           </p>
         </section>
       )}

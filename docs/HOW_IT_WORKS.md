@@ -24,16 +24,15 @@ No sign-up. The owner holds the owner code (`INVITE_CODE`, 20+ random characters
 |---|---|---|
 | Owner | Owner code | Everything, on every venue and sheet; bypasses PINs |
 | Runner (main or backup) | Personal key | Run their venues' sheets: post, add photos, publish, rename, delete, restore, change PINs |
-| Maker | Personal key | Edit the sheets they made |
-| Editor by link | Edit link `/s/<id>#k=<token>` | Change or delete that sheet |
-| Viewer | View link, or venue QR + PIN | Watch: names and winners; the photo only if a runner allows it; never marked blocks |
+| Maker | Personal key | Edit the sheets they made (a runner, so the same sheets any runner of the venue can edit) |
+| Viewer | Venue QR + PIN (or a sheet's own PIN) | Watch: names and winners; the photo only if a runner allows it; never marked blocks |
 
-Edit tokens and keys live in the URL fragment, so they never reach the server; only their hashes are stored. A sheet outside a venue and without a PIN is open to anyone with its view link, photo included.
+Personal keys live in the URL fragment of the personal link, so they never reach the server; only their hashes are stored. Every sheet is on a venue, so every sheet is behind a PIN. A group that is not a venue (an office pool, a private pool) gets a venue from the owner: a name, a PIN and a runner list.
 
 ## Sheets
-- **Making one.** `/new`: take or choose a photo (the browser shrinks it and strips metadata), read it, then answer only what is still needed: teams, digit rows that fail the check, the game, the grid. The result is `/s/<id>`.
-- **Saving.** `POST /api/sheets` stores the document (teams, digits, corners, game, names, `mine`) in Firestore and the photo privately in Cloud Storage, served only through `GET /api/sheets/:id/photo`. Edits autosave. Reopening makes no model calls. The browser keeps only the last score (offline fallback) and the access key.
-- **The sheet page.** A scoreboard, the winners (one row per period), the photo with winners boxed, and tabs: Blocks, Names, Edit (editors), Share, Help.
+- **Making one.** A runner (or the owner) opens a venue's page and either posts a sheet (see Venues) or taps "Add a sheet from a photo" (`/new?venue=<code>`): take or choose a photo (the browser shrinks it and strips metadata), read it, then answer only what is still needed: teams, digit rows that fail the check, the game, the grid. The sheet is made as a draft at `/s/<id>`. `/new` without a venue or a posted sheet explains where to start.
+- **Saving.** `POST /api/sheets` (`{venueId, doc}`, a runner of that venue or the owner) stores the document (teams, digits, corners, game, names, `mine`) in Firestore and the photo privately in Cloud Storage, served only through `GET /api/sheets/:id/photo`. Edits autosave. Reopening makes no model calls. The browser keeps only the last score (offline fallback) and the access key.
+- **The sheet page.** A scoreboard, the winners (one row per period), the photo with winners boxed, and tabs: Blocks, Names, Edit and Settings (editors), Help. Settings holds the sheet's name, publish or hide, its own PIN, and whether viewers see the photo.
 - **Finding blocks.** Every typed word must start a word in the name; no fuzzy matching, near misses show as "Maybe also". Tapping blocks marks them as mine (private to editors); winners that are yours say "★ yours".
 - **If there's a score next.** During a live game: who leads each period now and who would lead after each kind of scoring play. When ESPN's live `situation` names the team with the ball, its scores are listed first; this only orders the list.
 - **Result view.** Winning blocks get a box with the period number (1, 2, 3, F) in a corner badge, so colour is never the only cue. Colours: orange `#d55e00`, blue `#0072b2`, teal `#00785a`, deep purple `#5b1a8c`. The report is page content, not an exported image.
@@ -59,11 +58,11 @@ A venue (lodge, bar or club) runs pools every week, sometimes two for one game. 
 
 ## Stages and retention
 Stages (posted, draft, published, deleted, gone) are defined in [GLOSSARY.md](GLOSSARY.md#places-and-stages).
-- A sheet outside a venue has no posted or draft stage. Taking a sheet off a venue clears the stage; "Hide it again" returns a published sheet to draft; a posted sheet cannot be published until its photo is in.
+- "Hide it again" returns a published sheet to draft; a posted sheet cannot be published until its photo is in. A sheet record with no venue (from before every sheet was on one) is opened only by its maker and the owner, and is removed on its normal date.
 - Pre-game, live and final come from the score feed and are not stored, because a stored status could be stale. Lists show "Open for blocks", "Draft" and "Deleted" as words, never colour alone.
 - A final sheet stays editable until it is removed.
-- **Removal date.** 30 days after kickoff, or after the day the sheet was made if later; 7 days after kickoff for a venue sheet. Editing never moves it; changing the game recomputes it. Firestore TTL on `sheets.expiresAt` removes it and reads ignore expired documents; each photo is stamped with its sheet's removal date and the bucket deletes it then; the bucket's 60-day rule is the backstop.
-- **Soft delete.** A delete hides the sheet from every list and link, but it and its photo are kept until the removal date. The owner, the maker, the venue's runners and anyone with the edit link still see it, dimmed and marked "Deleted" with the day it goes, and can restore it. Everyone else gets "not found". Only the owner can erase early.
+- **Removal date.** 7 days after kickoff, or after the day the sheet was made if later. Editing never moves it; changing the game recomputes it. Firestore TTL on `sheets.expiresAt` removes it and reads ignore expired documents; each photo is stamped with its sheet's removal date and the bucket deletes it then; the bucket's 60-day rule is the backstop.
+- **Soft delete.** A delete hides the sheet from every list and link, but it and its photo are kept until the removal date. The owner, the maker, the venue's runners still see it, dimmed and marked "Deleted" with the day it goes, and can restore it. Everyone else gets "not found". Only the owner can erase early.
 
 ## Stack and cost
 TypeScript, pnpm workspaces, Vitest. Layout is in the [README](../README.md). Firestore only through the server-side `@google-cloud/firestore`, behind repository interfaces; photos in a private bucket read and written only by the API (no signed URLs); no Firebase SDK, Auth or Hosting. The service worker caches the app shell only; every `/api/*` call goes to the network.

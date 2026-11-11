@@ -1,7 +1,4 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-
-/** Secret needed to edit/delete; only its hash is stored. */
-export const newEditToken = () => randomBytes(24).toString("base64url");
+import { createHash, timingSafeEqual } from "node:crypto";
 
 export const hashToken = (t: string) => createHash("sha256").update(t).digest("hex");
 

@@ -25,8 +25,13 @@ export interface Me {
   name: string;
   owner: boolean;
 }
-export async function whoAmI(): Promise<Me | null> {
-  const k = accessKey();
-  const res = await fetch("/api/me", { headers: k ? { "X-Invite-Code": k } : {} }).catch(() => null);
-  return res?.ok ? ((await res.json()) as Me) : null;
+/**
+ * Who a key belongs to (this phone's by default). Null means the server refused the key. Failing to reach the server (or a server error)
+ * throws instead, so a bad connection is never mistaken for "not signed in" and the saved key is left alone.
+ */
+export async function whoAmI(key: string = accessKey()): Promise<Me | null> {
+  const res = await fetch("/api/me", { headers: key ? { "X-Invite-Code": key } : {} });
+  if (res.ok) return (await res.json()) as Me;
+  if (res.status >= 500) throw new Error("server error");
+  return null;
 }

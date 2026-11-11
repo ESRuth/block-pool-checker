@@ -18,23 +18,23 @@ import { HelpTab } from "./HelpTab";
 import { NamesTab } from "./NamesTab";
 import { PhotoCard } from "./PhotoCard";
 import { Scoreboard } from "./Scoreboard";
-import { ShareTab } from "./ShareTab";
+import { SheetSettings } from "./SheetSettings";
 import { winnerBoxes } from "../../lib/boxes";
 import { rowsToDigits } from "../../lib/digits";
 import { badge } from "../../lib/fresh";
 import { fetchGameScore } from "../../lib/gameApi";
 import { gameDate, matchup, reportLines } from "../../lib/report";
-import { deleteSheet, eraseSheet, enterSheet, patchSettings, restoreSheet, tokenFromHash } from "../../lib/sheetApi";
+import { deleteSheet, eraseSheet, enterSheet, patchSettings, restoreSheet } from "../../lib/sheetApi";
 import { computeWinners } from "../../lib/winners";
 
-type Tab = "blocks" | "names" | "edit" | "share" | "help";
+type Tab = "blocks" | "names" | "edit" | "settings" | "help";
 
-/** One saved sheet: the score, the winners, the photo with the winning blocks boxed, and tabs for finding blocks, names, editing, sharing and help. */
+/** One saved sheet: the score, the winners, the photo with the winning blocks boxed, and tabs for finding blocks, names, editing, settings (runners) and help. */
 export function SheetPage({ id }: { id: string }) {
-  const token = useMemo(() => tokenFromHash(location.hash), []);
-  const { sheet, canEdit: canEditSheet, addedBy, loadError, saving, edit, update, latest, pinTitle, meta, setMeta, reload } = useSheetDoc(id, token);
+  const { sheet, canEdit: canEditSheet, addedBy, loadError, saving, edit, update, latest, pinTitle, meta, setMeta, reload } = useSheetDoc(id);
+  const back = meta.venueId ? `/v/${encodeURIComponent(meta.venueId)}` : "/"; // the venue's page lists the other sheets
   const canEdit = canEditSheet && !meta.deleted; // a deleted sheet opens read-only, with a way to restore it
-  const url = usePhotoSrc(id, token, !!sheet && meta.hasPhoto); // empty when this viewer is not shown the photo
+  const url = usePhotoSrc(id, !!sheet && meta.hasPhoto); // empty when this viewer is not shown the photo
   const img = usePhotoImage(url);
   const blocks = useBlocks(sheet, edit);
   const history = useGridHistory(update);
@@ -84,15 +84,12 @@ export function SheetPage({ id }: { id: string }) {
     return (
       <main>
         <header className="top">
-          <a href="/" className="back" aria-label="Home">
+          <a href={back} className="back" aria-label="Back">
             ‹
           </a>
           <h1>Sheet not found</h1>
         </header>
-        <p className="msg">
-          This link doesn't open a sheet. It may be incomplete, or the sheet was removed (they're deleted 30 days after the game, or 7 for a venue).{" "}
-          <a href="/new">Start a new one</a>.
-        </p>
+        <p className="msg">This link doesn't open a sheet. It may be incomplete, or the sheet was removed (they're deleted 7 days after the game).</p>
       </main>
     );
 
@@ -101,7 +98,7 @@ export function SheetPage({ id }: { id: string }) {
     return (
       <main>
         <header className="top">
-          <a href="/" className="back" aria-label="My sheets">
+          <a href={back} className="back" aria-label="Back">
             ‹
           </a>
           <h1>{meta.title || matchup(sheet.teams.top, sheet.teams.left)}</h1>
@@ -120,8 +117,8 @@ export function SheetPage({ id }: { id: string }) {
             </a>
             <button
               onClick={() => {
-                if (confirm("Take this sheet down? If it was a mistake, the owner can bring it back."))
-                  deleteSheet(id, token)
+                if (confirm("Take this sheet down? If it was a mistake, you can bring it back from the venue page."))
+                  deleteSheet(id)
                     .then(() => location.assign("/"))
                     .catch(() => alert("Could not take it down. Try again."));
               }}
@@ -141,15 +138,19 @@ export function SheetPage({ id }: { id: string }) {
   const tabs: Array<[Tab, string]> = [
     ["blocks", "Blocks"],
     ["names", "Names"],
-    ...(canEdit ? ([["edit", "Edit"]] as Array<[Tab, string]>) : []),
-    ["share", "Share"],
+    ...(canEdit
+      ? ([
+          ["edit", "Edit"],
+          ["settings", "Settings"],
+        ] as Array<[Tab, string]>)
+      : []),
     ["help", "Help"],
   ];
 
   return (
     <main className="sheetpage">
       <header className="shead">
-        <a href="/" className="back" aria-label="My sheets">
+        <a href={back} className="back" aria-label="Back">
           ‹
         </a>
         <div>
@@ -178,7 +179,7 @@ export function SheetPage({ id }: { id: string }) {
             <button
               className="primary"
               onClick={() =>
-                restoreSheet(id, token)
+                restoreSheet(id)
                   .then(reload)
                   .catch(() => alert("Could not restore it. Try again."))
               }
@@ -211,7 +212,7 @@ export function SheetPage({ id }: { id: string }) {
             <button
               className="primary"
               onClick={() =>
-                patchSettings(id, token, { draft: false })
+                patchSettings(id, { draft: false })
                   .then((r) => setMeta((m) => ({ ...m, settings: r.settings })))
                   .catch(() => alert("Could not publish it. Try again."))
               }
@@ -330,23 +331,22 @@ export function SheetPage({ id }: { id: string }) {
           />
         )}
         {tab === "names" && <NamesTab names={sheet.names} mine={blocks.mine} onOpen={blocks.setSelected} />}
-        {tab === "edit" && canEdit && <EditTab id={id} token={token} sheet={sheet} update={update} onChangeGame={() => setChangingGame(true)} />}
-        {tab === "share" && (
-          <ShareTab
+        {tab === "edit" && canEdit && <EditTab id={id} sheet={sheet} update={update} onChangeGame={() => setChangingGame(true)} />}
+        {tab === "settings" && canEdit && (
+          <SheetSettings
             id={id}
-            token={token}
-            canEdit={canEdit}
-            title={meta.title || matchup(sheet.teams.top, sheet.teams.left)}
-            meta={meta}
-            onMeta={(m) => setMeta((cur) => ({ ...cur, ...m }))}
+            title={meta.title ?? ""}
+            expiresAt={meta.expiresAt}
+            settings={meta.settings}
+            onChanged={(m) => setMeta((cur) => ({ ...cur, ...m }))}
           />
         )}
         {tab === "help" && <HelpTab canEdit={canEdit} />}
       </section>
 
       <div className="footlinks">
-        <a href="/">My sheets</a>
-        <a href="/new">Add another sheet</a>
+        {meta.venueId && <a href={`/v/${encodeURIComponent(meta.venueId)}`}>All sheets</a>}
+        {canEdit && <a href="/">Home</a>}
       </div>
 
       {blocks.selected && (

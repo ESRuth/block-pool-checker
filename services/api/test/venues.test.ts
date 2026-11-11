@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EspnNfl } from "@bpc/scores";
-import { MemorySheetPhotos, MemorySheetRepository, VENUE_RETENTION_DAYS, RETENTION_DAYS, createApp } from "../src/index.js";
+import { MemorySheetPhotos, MemorySheetRepository, RETENTION_DAYS, createApp } from "../src/index.js";
 
 const team = (abbr: string, name: string) => ({ abbr, name: `${abbr} ${name}`, nickname: name });
 const doc = () => ({
@@ -33,11 +33,11 @@ const setup = () => {
     inviteCode: OWNER,
     now: () => clock,
   });
-  const req = (path: string, o: { method?: string; body?: unknown; key?: string; cookie?: string } = {}) =>
+  const req = (path: string, o: { method?: string; body?: unknown; key?: string; cookie?: string; raw?: Uint8Array; type?: string } = {}) =>
     app.request(path, {
-      method: o.method ?? (o.body === undefined ? "GET" : "POST"),
-      body: o.body === undefined ? undefined : JSON.stringify(o.body),
-      headers: { "Content-Type": "application/json", ...(o.key ? { "X-Invite-Code": o.key } : {}), ...(o.cookie ? { Cookie: o.cookie } : {}) },
+      method: o.method ?? (o.body === undefined && !o.raw ? "GET" : "POST"),
+      body: (o.raw ?? (o.body === undefined ? undefined : JSON.stringify(o.body))) as BodyInit | undefined,
+      headers: { "Content-Type": o.type ?? "application/json", ...(o.key ? { "X-Invite-Code": o.key } : {}), ...(o.cookie ? { Cookie: o.cookie } : {}) },
     });
   return { app, req };
 };
@@ -50,19 +50,9 @@ async function venueWithSheet(s: S, over: { pin?: string; publish?: boolean } = 
   const v = (await (
     await s.req("/api/owner/venues", { body: { name: "Test Lodge", pin: over.pin ?? "4821", runnerIds: [runner.id] }, key: OWNER })
   ).json()) as any;
-  const made = (await (await s.req("/api/sheets", { body: doc(), key: runner.key })).json()) as any;
-  await s.app.request(`/api/sheets/${made.id}/photo`, {
-    method: "PUT",
-    body: new Uint8Array([1, 2, 3]),
-    headers: { "Content-Type": "image/jpeg", "X-Invite-Code": runner.key },
-  });
-  const att = await s.app.request(`/api/sheets/${made.id}/settings`, {
-    method: "PATCH",
-    body: JSON.stringify({ venueId: v.id, title: "Eagles v Chiefs 11/11 $10" }),
-    headers: { "Content-Type": "application/json", "X-Invite-Code": runner.key },
-  });
-  expect(att.status).toBe(200);
-  expect(((await att.json()) as any).settings.draft).toBe(true); // joining a venue starts as a draft
+  const made = (await (await s.req("/api/sheets", { body: { venueId: v.id, doc: doc() }, key: runner.key })).json()) as any; // a sheet made from a photo starts as a draft
+  await s.req(`/api/sheets/${made.id}/photo`, { method: "PUT", raw: new Uint8Array([1, 2, 3]), type: "image/jpeg", key: runner.key });
+  await s.req(`/api/sheets/${made.id}/settings`, { method: "PATCH", body: { title: "Eagles v Chiefs 11/11 $10" }, key: runner.key });
   if (over.publish !== false) await s.req(`/api/sheets/${made.id}/settings`, { method: "PATCH", body: { draft: false }, key: runner.key });
   return { runner, other: me, v, sheet: made };
 }
@@ -171,21 +161,18 @@ describe("venues", () => {
     await s.req(`/api/venues/${v.id}`, { method: "PATCH", body: { runnerIds: [runner.id, other.id] }, key: OWNER });
     const got = (await (await s.req(`/api/sheets/${sheet.id}`, { key: other.key })).json()) as any;
     expect(got.canEdit).toBe(true);
-    // runners cannot change who runs it, nor attach sheets to venues they don't run
+    // runners cannot change who runs it, nor make sheets on venues they don't run
     expect((await s.req(`/api/venues/${v.id}`, { method: "PATCH", body: { runnerIds: [] }, key: runner.key })).status).toBe(403);
-    const mine = (await (await s.req("/api/sheets", { body: doc(), key: other.key })).json()) as any;
     const v2 = (await (await s.req("/api/owner/venues", { body: { name: "Other place", pin: "1234" }, key: OWNER })).json()) as any;
-    expect((await s.req(`/api/sheets/${mine.id}/settings`, { method: "PATCH", body: { venueId: v2.id }, key: other.key })).status).toBe(403);
+    expect((await s.req("/api/sheets", { body: { venueId: v2.id, doc: doc() }, key: other.key })).status).toBe(403);
   });
 
-  it("venue sheets are removed after a week, others after 30 days", async () => {
+  it("sheets are removed a week after the game", async () => {
     const s = setup();
     const { sheet, runner } = await venueWithSheet(s);
-    const plain = (await (await s.req("/api/sheets", { body: doc(), key: runner.key })).json()) as any;
     const days = (iso: string) => Math.round((Date.parse(iso) - Date.parse("2026-11-11T18:00:00.000Z")) / 86_400_000);
     const a = (await (await s.req(`/api/sheets/${sheet.id}`, { key: runner.key })).json()) as any;
-    expect(days(a.expiresAt)).toBe(VENUE_RETENTION_DAYS);
-    expect(days(plain.expiresAt)).toBe(RETENTION_DAYS);
+    expect(days(a.expiresAt)).toBe(RETENTION_DAYS);
   });
 
   it("a sheet is posted first: viewers see only that it is open for blocks; the photo takes it to draft, and publishing opens it", async () => {
@@ -246,11 +233,28 @@ describe("venues", () => {
     expect((await s.req(`/api/venues/${v.id}`)).status).toBe(404);
   });
 
-  it("sheets outside a venue behave as before: the link opens them, photo included", async () => {
-    const s = setup();
-    const made = (await (await s.req("/api/sheets", { body: doc(), key: OWNER })).json()) as any;
-    const got = (await (await s.req(`/api/sheets/${made.id}`)).json()) as any;
-    expect(got.canEdit).toBe(false);
+  it("an older sheet with no venue opens only for its maker and the owner", async () => {
+    const sheets = new MemorySheetRepository(() => clock);
+    await sheets.put({
+      id: "old",
+      doc: doc() as any,
+      hasPhoto: true,
+      createdBy: "Owner",
+      createdById: "owner",
+      createdAt: "2026-11-10T00:00:00.000Z",
+      updatedAt: "2026-11-10T00:00:00.000Z",
+      expiresAt: "2026-11-20T00:00:00.000Z",
+    });
+    const app = createApp({
+      scores: { getScore: async () => Promise.reject(new Error("n/a")) },
+      games: new EspnNfl(async () => Promise.reject(new Error("n/a"))),
+      sheets,
+      sheetPhotos: new MemorySheetPhotos(),
+      inviteCode: OWNER,
+      now: () => clock,
+    });
+    expect((await app.request("/api/sheets/old")).status).toBe(404);
+    expect((await app.request("/api/sheets/old", { headers: { "X-Invite-Code": OWNER } })).status).toBe(200);
   });
 
   it("a deleted sheet is hidden from viewers and links, shown marked to the people who run it, and they can restore it", async () => {
@@ -320,21 +324,11 @@ describe("venues", () => {
     expect(((await (await s.req("/api/my/sheets", { key: runner.key })).json()) as any).sheets[0].draft).toBe(true);
     expect(((await (await s.req(`/api/sheets/${sheet.id}`, { key: OWNER })).json()) as any).settings.draft).toBe(true);
 
-    // publish makes it visible; taking it back hides it again; leaving the venue clears the stage
+    // publish makes it visible; taking it back hides it again
     await s.req(`/api/sheets/${sheet.id}/settings`, { method: "PATCH", body: { draft: false }, key: runner.key });
     expect((await s.req(`/api/sheets/${sheet.id}`, { cookie: pass })).status).toBe(200);
     await s.req(`/api/sheets/${sheet.id}/settings`, { method: "PATCH", body: { draft: true }, key: runner.key });
     expect((await s.req(`/api/sheets/${sheet.id}`, { cookie: pass })).status).toBe(404);
-    const off = (await (await s.req(`/api/sheets/${sheet.id}/settings`, { method: "PATCH", body: { venueId: null }, key: runner.key })).json()) as any;
-    expect(off.settings.draft).toBe(false);
-  });
-
-  it("a sheet outside a venue has no draft stage", async () => {
-    const s = setup();
-    const made = (await (await s.req("/api/sheets", { body: doc(), key: OWNER })).json()) as any;
-    const r = (await (await s.req(`/api/sheets/${made.id}/settings`, { method: "PATCH", body: { draft: true }, key: OWNER })).json()) as any;
-    expect(r.settings.draft).toBe(false);
-    expect((await s.req(`/api/sheets/${made.id}`)).status).toBe(200);
   });
 
   it("editing a sheet does not move the day it is removed", async () => {

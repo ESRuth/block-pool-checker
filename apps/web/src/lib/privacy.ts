@@ -18,7 +18,7 @@ export const PRIVACY: GuideSection[] = [
       {
         ul: [
           "There are no ads, no tracking and no selling of data. Nobody can sign up as a viewer.",
-          "A sheet holds the names people wrote on the paper. They are read from the photo by an AI model, kept only to show who is winning, and deleted 7 or 30 days after the game.",
+          "A sheet holds the names people wrote on the paper. They are read from the photo by an AI model, kept only to show who is winning, and deleted 7 days after the game.",
           "The photo of the sheet is private. Viewers don't see it unless a runner turns it on.",
           "The only cookie is the one that remembers a right PIN.",
         ],
@@ -76,7 +76,6 @@ export const PRIVACY: GuideSection[] = [
       {
         ul: [
           "**On a venue:** people with the venue's PIN see names and winners. The runners and the owner also see the photo and which blocks they marked. Viewers see the photo only if a runner turns it on for that sheet.",
-          "**A sheet shared by a link:** anyone who has the link can see it, photo included. The link is the secret, so share it only with people in the pool.",
           "**A draft or a deleted sheet:** only the people who could edit it.",
           "**Marked blocks** are private to editors. Viewers never receive them.",
           "**The owner** of the app can see every sheet and the list of people with a personal link.",
@@ -92,7 +91,7 @@ export const PRIVACY: GuideSection[] = [
     blocks: [
       {
         ul: [
-          "**A sheet** is removed 7 days after the game when it is on a venue, otherwise 30 days after the game (or 30 days after it was made, if that is later). Editing does not extend this. Once removed it cannot be brought back.",
+          "**A sheet** is removed 7 days after the game (or 7 days after it was made, if that is later). Editing does not extend this. Once removed it cannot be brought back.",
           "**A deleted sheet** is hidden from everyone at once but kept until that date, so a mistake can be undone. The owner can erase it sooner.",
           "**The photo** is deleted with the sheet when someone deletes it for good. When a sheet runs out of time, its photo is removed the same day, and in every case no later than 60 days after the photo was uploaded.",
           "**A personal link** lasts until the owner turns it off. Turning it off stops the key working; the record of the name and the use counts remains.",
@@ -114,7 +113,7 @@ export const PRIVACY: GuideSection[] = [
         ul: [
           "**Fix or remove your name:** ask the runner. They can retype any name on the sheet straight away.",
           "**Have a whole sheet deleted:** ask the runner, who can delete it at once. The owner can erase it for good.",
-          "**Leave a pool:** ask to be left off the next sheet. Past sheets disappear on their own within 7 to 30 days.",
+          "**Leave a pool:** ask to be left off the next sheet. Past sheets disappear on their own, 7 days after each game.",
           "**If you have a personal link** and want it ended, ask the owner to turn it off.",
         ],
       },

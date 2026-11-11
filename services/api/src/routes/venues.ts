@@ -1,10 +1,9 @@
 import type { Hono } from "hono";
 import { z } from "zod";
 import { SheetDocSchema } from "@bpc/engine";
-import { hashToken, newEditToken } from "../ids.js";
 import type { Access, HeaderSource } from "../access.js";
 import { PIN_RE, hashPin, type Pins } from "../pins.js";
-import { VENUE_RETENTION_DAYS } from "./sheets.js";
+import { RETENTION_DAYS } from "./sheets.js";
 import { newSheetId, type SheetPhotoStore, type SheetRecord, type SheetRepository } from "../sheets.js";
 import { newVenueId, type VenueRecord, type VenueRepository } from "../venues.js";
 
@@ -132,7 +131,6 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
     const kickoff = Date.parse(b.game.kickoff);
     const rec: SheetRecord = {
       id: newSheetId(),
-      editTokenHash: hashToken(newEditToken()), // never shown: runners edit with their keys, and can make an edit link from the sheet later
       // Placeholder grid, replaced when the photo is read; nothing is shown from it while the pool is posted.
       doc: SheetDocSchema.parse({
         width: 1,
@@ -158,7 +156,7 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
       posted: true,
       createdAt: t,
       updatedAt: t,
-      expiresAt: new Date(Math.max(Date.parse(t), Number.isFinite(kickoff) ? kickoff : 0) + VENUE_RETENTION_DAYS * 86_400_000).toISOString(),
+      expiresAt: new Date(Math.max(Date.parse(t), Number.isFinite(kickoff) ? kickoff : 0) + RETENTION_DAYS * 86_400_000).toISOString(),
     };
     await sheets.put(rec);
     return c.json({ id: rec.id }, 201);

@@ -6,25 +6,22 @@ import type { PinState } from "./pins.js";
 
 export interface SheetRecord extends PinState {
   id: string;
-  editTokenHash: string;
-  /** Hashes of edit links made later from the sheet page (the creator can make more at any time). */
-  extraEditTokenHashes?: string[];
   doc: SheetDoc;
   hasPhoto: boolean;
   /** Who made it / last changed it, by the name the owner gave them. Absent when no personal key was used. */
   createdBy?: string;
-  /** Id of the person who made it (owner for the owner code); that person can always edit it without the edit link. */
+  /** Id of the person who made it (owner for the owner code); that person can always edit it. */
   createdById?: string;
   updatedBy?: string;
-  /** The venue this sheet is attached to, if any. Its PIN protects the sheet unless the sheet has its own (`pinHash`). */
+  /** The venue this sheet is on. Its PIN protects the sheet unless the sheet has its own (`pinHash`). Every sheet has one; a record without it is an older standalone sheet that only its maker and the owner can open. */
   venueId?: string;
   /** A name the runner chose ("Team A v Team B 11/11 $10"); the teams are shown when absent. */
   title?: string;
-  /** Whether people with only the view link also get the photo. Photos show handwriting and phone numbers, so a sheet in a venue or with a PIN hides it by default. */
+  /** Whether people with the PIN also get the photo. Photos show handwriting and phone numbers, so viewers do not get it by default. */
   showPhoto?: boolean;
   /** Posted: the pool is on the venue's wall (game chosen, teams placed) but its photo is not in yet, so there are no names or digits. Viewers see it as "open for blocks". */
   posted?: boolean;
-  /** Draft: the photo is in and the pool is on a venue, but a runner has not published it. Only the people who run it see it. (Absent outside venues, and on pools saved before drafts existed.) */
+  /** Draft: the photo is in and the pool is on a venue, but a runner has not published it. Only the people who run it see it. */
   draft?: boolean;
   /** Set when a runner deleted it: hidden from every list and link, but kept for the owner to restore until `expiresAt` removes it for good. */
   deletedAt?: string;
@@ -107,8 +104,6 @@ export class FirestoreSheetRepository implements SheetRepository {
     const expiresAt = (d.expiresAt as Timestamp).toDate();
     return {
       id,
-      editTokenHash: d.editTokenHash,
-      extraEditTokenHashes: d.extraEditTokenHashes ?? undefined,
       doc: SheetDocSchema.parse(d.doc),
       hasPhoto: !!d.hasPhoto,
       createdBy: d.createdBy ?? undefined,
@@ -131,8 +126,6 @@ export class FirestoreSheetRepository implements SheetRepository {
   }
   async put(rec: SheetRecord) {
     await this.col.doc(rec.id).set({
-      editTokenHash: rec.editTokenHash,
-      extraEditTokenHashes: rec.extraEditTokenHashes ?? [],
       doc: JSON.parse(JSON.stringify(rec.doc)),
       hasPhoto: rec.hasPhoto,
       createdBy: rec.createdBy ?? null,

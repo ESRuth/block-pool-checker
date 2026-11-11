@@ -1,45 +1,45 @@
 import { expect, test } from "@playwright/test";
-import { createSheet, signIn, OWNER_CODE } from "./helpers";
+import { createSheet, makeVenue, SAMPLE, signIn, OWNER_CODE } from "./helpers";
 
-test("make a sheet from a photo, then open it by view link, from My Sheets, and by edit link", async ({ page, browser }) => {
+test("make a sheet from a photo on a venue: it is a draft, then published behind the PIN; Home lists it", async ({ page, browser }) => {
   await signIn(page, OWNER_CODE);
-  const { id, token } = await createSheet(page);
+  const { id } = await createSheet(page);
 
-  // The edit link: scoreboard, winners, who added it; the grid is hidden once saved.
+  // The runner sees scoreboard, winners, who added it, and the draft bar; the grid is hidden once saved.
   await expect(page.getByLabel("Winners")).toBeVisible();
   await expect(page.locator(".when")).toContainText("Added by Owner");
+  await expect(page.getByLabel("Draft")).toBeVisible();
   // Every winning box carries its period number, so colour is never the only cue.
   await expect(page.locator("[data-tag]")).toHaveText(["1", "2", "3", "F"]);
   await expect(page.locator("circle.handle")).toHaveCount(0);
 
-  // A stranger with only the view link sees the sheet but cannot edit it.
+  // A stranger finds nothing while it is a draft, and only a PIN prompt once it is published; they never get editing.
   const stranger = await (await browser.newContext()).newPage();
   await stranger.goto(`/s/${id}`);
-  await expect(stranger.getByLabel("Winners")).toBeVisible();
-  await expect(stranger.getByRole("button", { name: "Show grid" })).toHaveCount(0);
+  await expect(stranger.getByRole("heading", { name: "Sheet not found" })).toBeVisible();
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByLabel("Draft")).toHaveCount(0);
+  await stranger.goto(`/s/${id}`);
+  await expect(stranger.getByLabel("PIN")).toBeVisible();
   await expect(stranger.getByRole("tab", { name: "Edit" })).toHaveCount(0);
 
-  // My Sheets lists it, and the owner opens it editable without the edit token.
+  // Home lists it, and the owner opens it editable.
   await page.goto("/");
   const card = page.locator(`a.sheetcard[href='/s/${id}']`);
   await expect(card).toContainText("Eagles vs Commanders");
   await card.click();
   await expect(page.getByRole("tab", { name: "Edit" })).toBeVisible();
-
-  // The edit link still works in a clean browser.
-  const editor = await (await browser.newContext()).newPage();
-  await editor.goto(`/s/${id}#k=${token}`);
-  await expect(editor.getByRole("tab", { name: "Edit" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Settings" })).toBeVisible();
 });
 
 test("the wizard shows the grid; a saved sheet hides it until Show grid", async ({ page }) => {
   await signIn(page, OWNER_CODE);
-  await page.goto("/new");
-  await page.locator("input[type=file]").setInputFiles((await import("./helpers")).SAMPLE);
+  await page.goto(`/new?venue=${encodeURIComponent(await makeVenue())}`);
+  await page.locator("input[type=file]").setInputFiles(SAMPLE);
   await page.locator(".games button", { hasText: "PHI @ WSH" }).first().click();
   await expect(page.locator("circle.handle")).toHaveCount(4); // setting up: the grid is shown
   await page.getByRole("button", { name: /Looks right/ }).click();
-  await page.waitForURL(/\/s\/.+#k=/);
+  await page.waitForURL(/\/s\/[^#]+$/);
   await expect(page.getByLabel("Winners")).toBeVisible();
   await expect(page.locator("circle.handle")).toHaveCount(0); // saved: hidden by default
   await page.getByRole("button", { name: "Show grid" }).click();

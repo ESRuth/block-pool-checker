@@ -25,7 +25,7 @@ Screenshots come from the offline demo mode (`READER=stub`) with a made-up sampl
 | **Runner** | Post, photograph, check, publish, rename and delete the sheets of your venue; change its PIN. A venue has a main runner and backups, all equal. |
 | **Viewer** | Scan the venue QR code, enter the PIN once, and watch the sheets. |
 
-There is no sign-up and no viewer account. Access is a code or link, a PIN, or an edit link; [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md#access) explains each and why.
+There is no sign-up and no viewer account. Access is a personal link or the owner code for runners, and a venue PIN for viewers; [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md#access) explains each and why.
 
 ## Documentation
 **Using the app**

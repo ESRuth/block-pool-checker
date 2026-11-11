@@ -32,8 +32,8 @@ One name for each thing, used the same way in the app, the docs, the code and co
 | **Runner** | A person who runs a venue's sheets: posts them, adds photos, publishes, renames, changes the PIN, deletes and restores. Has a personal key. A venue has a main runner and backups, all equal. |
 | **Backup** | A runner who is not the main one. Same powers. |
 | **Maker** | The person who made a particular sheet ("Added by"). Can always edit it. |
-| **Viewer** | Someone who only watches: has the venue PIN (or a sheet's view link), sees names and winners, never the photo (unless a runner allows it) or marked blocks. |
-| **Editor** | Anyone who can change a particular sheet: the owner, its maker, a runner of its venue, or anyone holding its edit link. |
+| **Viewer** | Someone who only watches: has the venue PIN (or a sheet's own PIN), sees names and winners, never the photo (unless a runner allows it) or marked blocks. |
+| **Editor** | Anyone who can change a particular sheet: the owner, its maker, or a runner of its venue. |
 
 ## Places and stages
 
@@ -52,7 +52,7 @@ A sheet's **stages**, in order:
 | **Published** | A runner tapped Publish. | Also anyone with the PIN |
 | **Pre-game / live / final** | Come from the score feed; not stored as a stage. | Same as published |
 | **Deleted** | A runner deleted it. Hidden from viewers and links; kept, marked "Deleted", until the removal date, so it can be restored. | The people who could edit it |
-| **Gone** | The removal date passed (7 days after the game for a venue sheet, otherwise 30 days, or 30 days after it was made if later). Cannot be restored. | Nobody |
+| **Gone** | The removal date passed (7 days after the game, or 7 days after it was made if later). Cannot be restored. | Nobody |
 
 "Hide it again" returns a published sheet to **draft**. "Delete for good" (owner only) removes a deleted sheet before its removal date.
 
@@ -64,8 +64,6 @@ A sheet's **stages**, in order:
 | **Personal link** | The link the owner sends one person (`/join#c=<key>`). Opening it signs that phone in. "Invite someone" on the owner page makes one. | Sent to the person |
 | **Personal key** | The secret inside a personal link. Kept on the person's phone; the server keeps only a hash. Revocable. | The phone (`bpc.key`) |
 | **Access code** | What the sign-in box on Home and the photo-reading prompt ask for: the owner code or a personal key. | |
-| **View link** | `/s/<id>`: opens a sheet for watching. For a sheet on a venue or with a PIN it also needs a pass. | |
-| **Edit link** | `/s/<id>#k=<token>`: lets whoever holds it change or delete that sheet. The token is after the `#`, so it never reaches the server. | |
 | **Venue link** | `/v/<code>`: where the QR code points. | |
 | **PIN** | 4 to 8 digits that open a venue (or one sheet with its own). Told in person or in a group chat; never printed next to the QR code. | The record (hashed) |
 | **Pass** | What the phone gets after a right PIN: a signed cookie, up to 90 days; changing the PIN signs everyone out. | The phone |

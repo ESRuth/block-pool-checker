@@ -10,19 +10,26 @@ export function Home() {
   const [venues, setVenues] = useState<VenueSummary[]>([]);
   const [code, setCode] = useState("");
   const [wrong, setWrong] = useState(false);
+  const [offline, setOffline] = useState(false); // could not reach the server: the saved key is still there
 
   const start = () => {
-    whoAmI().then((m) => {
-      setMe(m);
-      if (m) {
-        mySheets()
-          .then((l) => setSheets([...l.filter((x) => !x.deletedAt), ...l.filter((x) => x.deletedAt)]))
-          .catch(() => setSheets([]));
-        myVenues()
-          .then(setVenues)
-          .catch(() => setVenues([]));
-      }
-    });
+    setOffline(false);
+    whoAmI()
+      .catch(() => {
+        setOffline(true);
+        return null;
+      })
+      .then((m) => {
+        setMe(m);
+        if (m) {
+          mySheets()
+            .then((l) => setSheets([...l.filter((x) => !x.deletedAt), ...l.filter((x) => x.deletedAt)]))
+            .catch(() => setSheets([]));
+          myVenues()
+            .then(setVenues)
+            .catch(() => setVenues([]));
+        }
+      });
   };
   useEffect(() => {
     // A home-screen icon made from a personal link opens here with the key in the #fragment: keep it, then tidy the address.
@@ -34,11 +41,24 @@ export function Home() {
     start();
   }, []);
 
+  if (offline)
+    return (
+      <main>
+        <header className="top">
+          <h1>My venues</h1>
+        </header>
+        <p className="msg" role="alert">
+          Could not reach the server. You are still signed in; check your connection and try again.
+        </p>
+        <button onClick={start}>Try again</button>
+      </main>
+    );
+
   if (me === undefined)
     return (
       <main>
         <header className="top">
-          <h1>My Sheets</h1>
+          <h1>My venues</h1>
         </header>
         <p className="msg" role="status">
           Loading…
@@ -61,16 +81,14 @@ export function Home() {
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              setAccessKey(code.trim());
               setWrong(false);
-              const m = await whoAmI();
+              const m = await whoAmI(code.trim()).catch(() => undefined);
+              if (m === undefined) return setOffline(true);
               if (m) {
+                setAccessKey(code.trim());
                 setCode("");
                 start();
-              } else {
-                clearAccessKey();
-                setWrong(true);
-              }
+              } else setWrong(true);
             }}
           >
             <input
@@ -98,14 +116,10 @@ export function Home() {
   return (
     <main>
       <header className="top">
-        <h1>My Sheets</h1>
+        <h1>My venues</h1>
       </header>
-      <a className="bigbtn" href="/new">
-        Add a sheet from a photo
-      </a>
       {venues.length > 0 && (
         <section aria-label="Your venues">
-          <h2>Venues you run</h2>
           <div className="sheetlist">
             {venues.map((v) => (
               <a key={v.id} className="card sheetcard" href={`/v/${v.id}`}>
@@ -125,7 +139,7 @@ export function Home() {
         </p>
       )}
       {sheets && sheets.length > 0 && (
-        <section aria-label="Your sheets">
+        <section aria-label="Sheets I made">
           {me.owner && <p className="sub">As the owner you see everyone's sheets.</p>}
           <div className="sheetlist">
             {sheets.map((s) => (
@@ -148,14 +162,14 @@ export function Home() {
           </div>
         </section>
       )}
-      {sheets && sheets.length === 0 && (
+      {sheets && sheets.length === 0 && venues.length === 0 && (
         <section className="sec">
-          <h2>No sheets yet</h2>
-          <p className="sub">
-            Add one from a photo of your pool sheet. The winners are found and kept up to date as the game goes. Sheets are kept 30 days after the game (7 days
-            when they are on a venue).
-          </p>
+          <h2>Nothing here yet</h2>
+          <p className="sub">Sheets are posted on a venue by its runners. Ask the owner to make you a runner, then your venue appears here.</p>
         </section>
+      )}
+      {sheets && sheets.length === 0 && venues.length > 0 && (
+        <p className="sub">No sheets yet. Open your venue to post one. Sheets are removed 7 days after the game.</p>
       )}
       <div className="footlinks">
         <span className="sub">Signed in as {me.name}</span>

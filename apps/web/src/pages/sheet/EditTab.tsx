@@ -4,18 +4,17 @@ import { deleteSheet, type Sheet } from "../../lib/sheetApi";
 
 interface Props {
   id: string;
-  token: string;
   sheet: Sheet;
   update: (patch: Partial<Sheet>) => void;
   onChangeGame: () => void;
 }
 
 /** Fix the teams, digits, game and overtime rule, or delete the sheet. Editors only. */
-export function EditTab({ id, token, sheet, update, onChangeGame }: Props) {
+export function EditTab({ id, sheet, update, onChangeGame }: Props) {
   async function remove() {
-    if (!confirm("Delete this sheet? It disappears for everyone with the link. If it was a mistake, ask the owner to bring it back.")) return;
+    if (!confirm("Delete this sheet? It disappears for everyone. If it was a mistake, you can bring it back from the venue page.")) return;
     try {
-      await deleteSheet(id, token);
+      await deleteSheet(id);
       location.assign("/");
     } catch {
       alert("Could not delete it. Try again.");
