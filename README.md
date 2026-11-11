@@ -21,7 +21,7 @@ Screenshots come from the offline demo mode (`READER=stub`) with a made-up sampl
 ## Who uses it
 | You are | You can |
 |---|---|
-| **Owner** (one person) | Do everything: make venues and personal links at `/owner`, edit any sheet, restore or erase deleted sheets. |
+| **Owner** (one person) | Do everything: make venues and personal links (the Venues and People tabs), edit any sheet, restore or erase deleted sheets. |
 | **Runner** | Post, photograph, check, publish, rename and delete the sheets of your venue; change its PIN. A venue has a main runner and backups, all equal. |
 | **Viewer** | Scan the venue QR code, enter the PIN once, and watch the sheets. |
 

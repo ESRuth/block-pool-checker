@@ -24,7 +24,7 @@ test("make a sheet from a photo on a venue: it is a draft, then published behind
   await expect(stranger.getByRole("tab", { name: "Edit" })).toHaveCount(0);
 
   // Home lists it, and the owner opens it editable.
-  await page.goto("/");
+  await page.getByRole("link", { name: "Sheets" }).click(); // the owner's Sheets tab
   const card = page.locator(`a.sheetcard[href='/s/${id}']`);
   await expect(card).toContainText("Eagles vs Commanders");
   await card.click();

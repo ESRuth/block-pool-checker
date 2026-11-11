@@ -24,6 +24,7 @@ import { rowsToDigits } from "../../lib/digits";
 import { badge } from "../../lib/fresh";
 import { fetchGameScore } from "../../lib/gameApi";
 import { gameDate, matchup, reportLines } from "../../lib/report";
+import { navigate } from "../../lib/router";
 import { deleteSheet, eraseSheet, enterSheet, patchSettings, restoreSheet } from "../../lib/sheetApi";
 import { computeWinners } from "../../lib/winners";
 
@@ -119,7 +120,7 @@ export function SheetPage({ id }: { id: string }) {
               onClick={() => {
                 if (confirm("Take this sheet down? If it was a mistake, you can bring it back from the venue page."))
                   deleteSheet(id)
-                    .then(() => location.assign("/"))
+                    .then(() => navigate(back))
                     .catch(() => alert("Could not take it down. Try again."));
               }}
             >
@@ -191,7 +192,7 @@ export function SheetPage({ id }: { id: string }) {
                 onClick={() => {
                   if (confirm("Delete this sheet and its photo for good? It cannot be restored after this."))
                     eraseSheet(id)
-                      .then(() => location.assign("/"))
+                      .then(() => navigate(back))
                       .catch(() => alert("Could not delete it. Try again."));
                 }}
               >
@@ -331,7 +332,9 @@ export function SheetPage({ id }: { id: string }) {
           />
         )}
         {tab === "names" && <NamesTab names={sheet.names} mine={blocks.mine} onOpen={blocks.setSelected} />}
-        {tab === "edit" && canEdit && <EditTab id={id} sheet={sheet} update={update} onChangeGame={() => setChangingGame(true)} />}
+        {tab === "edit" && canEdit && (
+          <EditTab id={id} sheet={sheet} onDeleted={() => navigate(back)} update={update} onChangeGame={() => setChangingGame(true)} />
+        )}
         {tab === "settings" && canEdit && (
           <SheetSettings
             id={id}
@@ -343,11 +346,6 @@ export function SheetPage({ id }: { id: string }) {
         )}
         {tab === "help" && <HelpTab canEdit={canEdit} />}
       </section>
-
-      <div className="footlinks">
-        {meta.venueId && <a href={`/v/${encodeURIComponent(meta.venueId)}`}>All sheets</a>}
-        {canEdit && <a href="/">Home</a>}
-      </div>
 
       {blocks.selected && (
         <BlockPanel

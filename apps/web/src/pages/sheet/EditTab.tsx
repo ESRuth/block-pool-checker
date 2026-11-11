@@ -7,15 +7,17 @@ interface Props {
   sheet: Sheet;
   update: (patch: Partial<Sheet>) => void;
   onChangeGame: () => void;
+  /** Called after the sheet is deleted (go back to its venue). */
+  onDeleted: () => void;
 }
 
 /** Fix the teams, digits, game and overtime rule, or delete the sheet. Editors only. */
-export function EditTab({ id, sheet, update, onChangeGame }: Props) {
+export function EditTab({ id, sheet, update, onChangeGame, onDeleted }: Props) {
   async function remove() {
     if (!confirm("Delete this sheet? It disappears for everyone. If it was a mistake, you can bring it back from the venue page.")) return;
     try {
       await deleteSheet(id);
-      location.assign("/");
+      onDeleted();
     } catch {
       alert("Could not delete it. Try again.");
     }

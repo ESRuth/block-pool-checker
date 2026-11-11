@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { navigate } from "../lib/router";
 import { teamMatches, type Quad, type ReadResult, type TeamRef } from "@bpc/engine";
 import { snapGrid } from "@bpc/vision";
 import { GamePicker } from "../components/GamePicker";
@@ -40,11 +41,14 @@ export function NewSheet() {
   const sheetId = q.get("sheet");
   const venueId = q.get("venue");
   const [posted, setPosted] = useState<{ teams: Sheet["teams"]; game: Sheet["game"] } | null>(null);
+  // The posted sheet's game has to be known before a photo is read (it decides whether "Which game?" is asked), so the photo step waits for it.
+  const [postedLoading, setPostedLoading] = useState(!!sheetId);
   useEffect(() => {
     if (sheetId)
       loadSheet(sheetId)
         .then((p) => setPosted({ teams: p.doc.teams, game: p.doc.game }))
-        .catch(() => undefined);
+        .catch(() => undefined) // without it the game is simply asked for
+        .finally(() => setPostedLoading(false));
   }, [sheetId]);
 
   async function read(p: LoadedPhoto) {
@@ -118,12 +122,12 @@ export function NewSheet() {
       if (sheetId) {
         // The pool was posted before it had a photo: add the photo to it. It becomes a draft; the runner is already signed in by their key.
         await fillSheet(sheetId, doc, photo.blob);
-        location.assign(`/s/${sheetId}`);
+        navigate(`/s/${sheetId}`);
         return;
       }
       // Started from a venue page ("Add a sheet from a photo"): it is made there as a draft; publishing it opens it to viewers.
       const { id } = await createSheet(venueId!, doc, photo.blob);
-      location.assign(`/s/${id}`);
+      navigate(`/s/${id}`);
     } catch {
       setError({ message: "Could not save the sheet. Check your connection and try again.", needInvite: false });
       setPhase("questions");
@@ -148,7 +152,12 @@ export function NewSheet() {
         ))}
       </div>
 
-      {phase === "pick" && (
+      {phase === "pick" && postedLoading && (
+        <p className="msg" role="status">
+          Loading the sheet…
+        </p>
+      )}
+      {phase === "pick" && !postedLoading && (
         <section>
           <h2>Start with a photo</h2>
           <p className="sub">Get the whole sheet in view: the team names, every digit and every block.</p>

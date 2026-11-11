@@ -1290,3 +1290,76 @@ details.allnames > summary {
   border-radius: 999px;
   text-decoration: none;
 }
+
+/* The bar at the top of every page: where you are and who you are. Plain text tabs with an underline, unlike the pill tabs inside a sheet. */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 8px 16px;
+  background: var(--bg, #fff);
+  border-bottom: 1px solid var(--line);
+}
+.appbar .brand {
+  font-weight: 700;
+  text-decoration: none;
+  color: inherit;
+}
+.appbar nav {
+  display: flex;
+  gap: 4px;
+  order: 3; /* the owner's tabs sit on their own row under the name and the menu */
+  flex-basis: 100%;
+}
+.appbar nav a {
+  padding: 6px 10px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 3px solid transparent;
+}
+.appbar nav a[aria-current="page"] {
+  border-bottom-color: currentColor;
+  font-weight: 700;
+}
+.appbar .who {
+  order: 2;
+  margin-left: auto;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.appbar .menu {
+  position: relative;
+}
+.appbar .menu summary {
+  cursor: pointer;
+  padding: 6px 4px;
+  list-style: none;
+}
+.appbar .menu summary::after {
+  content: " ▾";
+}
+.appbar .menu .menupanel {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  min-width: 14rem;
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  background: var(--bg, #fff);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.appbar .menu .menupanel a,
+.appbar .menu .menupanel button {
+  padding: 8px 10px;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+}

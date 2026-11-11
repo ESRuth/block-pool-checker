@@ -60,7 +60,7 @@ A sheet's **stages**, in order:
 
 | Term | Means | Where it lives |
 |---|---|---|
-| **Owner code** | The master secret, 20+ random characters. Opens `/owner`. | Cloud Run env var `INVITE_CODE`; the owner's `.env` as `INVITE_CODE_PROD`; sent as the `X-Invite-Code` header |
+| **Owner code** | The master secret, 20+ random characters. Signs a browser in as the owner. | Cloud Run env var `INVITE_CODE`; the owner's `.env` as `INVITE_CODE_PROD`; sent as the `X-Invite-Code` header |
 | **Personal link** | The link the owner sends one person (`/join#c=<key>`). Opening it signs that phone in. "Invite someone" on the owner page makes one. | Sent to the person |
 | **Personal key** | The secret inside a personal link. Kept on the person's phone; the server keeps only a hash. Revocable. | The phone (`bpc.key`) |
 | **Access code** | What the sign-in box on Home and the photo-reading prompt ask for: the owner code or a personal key. | |

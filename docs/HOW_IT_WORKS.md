@@ -18,7 +18,7 @@ Not in scope: payouts and paid/unpaid tracking, a GPT/MCP front end, viewer acco
 - A name may be unreadable: it stays blank or "?" (unconfirmed), never guessed. One name can match several blocks ("Pat + Sam").
 
 ## Access
-No sign-up. The owner holds the owner code (`INVITE_CODE`, 20+ random characters, 128+ bits) and at `/owner` makes a personal link per person (`/join#c=<key>`). The key is kept on the phone (`bpc.key`) and baked into the manifest `start_url`, so a home-screen icon opens signed in (iPhone home-screen apps do not share browser storage). Keys are stored hashed in Firestore `users`, can be revoked, and their use is counted. A daily cap (`READ_CAP_PER_DAY`, default 40 model reads per UTC day, owner exempt) answers 429.
+No sign-up. The owner holds the owner code (`INVITE_CODE`, 20+ random characters, 128+ bits) and in the People tab makes a personal link per person (`/join#c=<key>`). Opening the link keeps the key, signs the phone in and goes straight to its home page (replacing the address, so the key is not left in the history). The key is kept on the phone (`bpc.key`) and baked into the manifest `start_url`, so a home-screen icon opens signed in (iPhone home-screen apps do not share browser storage). Keys are stored hashed in Firestore `users`, can be revoked, and their use is counted. A daily cap (`READ_CAP_PER_DAY`, default 40 model reads per UTC day, owner exempt) answers 429.
 
 | Who | Gets in with | Can |
 |---|---|---|
@@ -28,6 +28,13 @@ No sign-up. The owner holds the owner code (`INVITE_CODE`, 20+ random characters
 | Viewer | Venue QR + PIN (or a sheet's own PIN) | Watch: names and winners; the photo only if a runner allows it; never marked blocks |
 
 Personal keys live in the URL fragment of the personal link, so they never reach the server; only their hashes are stored. Every sheet is on a venue, so every sheet is behind a PIN. A group that is not a venue (an office pool, a private pool) gets a venue from the owner: a name, a PIN and a runner list.
+
+## Navigation
+The app is a single page: links to its own addresses swap the screen in place (`lib/router.ts`: the browser's history, one click handler for same-origin links, back and forward). A provider (`lib/auth.tsx`) holds who is signed in (checking, signed in, signed out, or offline) and is the only thing that asks the server `/api/me`; the key is the only thing kept in the browser. A bar at the top of every page (`components/AppBar.tsx`) shows where you are and who you are:
+- **Owner:** Venues (home), Sheets (everyone's, deleted ones marked) and People (personal links), and a menu under their name (Help, Privacy, Use a different code, Sign out).
+- **Runner:** no tabs. Home lists the venues they run, or goes straight into the only one.
+- **Viewer** (venue PIN only): the app's name, Help and Privacy.
+An unreachable server never looks like being signed out. A code is checked before it replaces the saved key.
 
 ## Sheets
 - **Making one.** A runner (or the owner) opens a venue's page and either posts a sheet (see Venues) or taps "Add a sheet from a photo" (`/new?venue=<code>`): take or choose a photo (the browser shrinks it and strips metadata), read it, then answer only what is still needed: teams, digit rows that fail the check, the game, the grid. The sheet is made as a draft at `/s/<id>`. `/new` without a venue or a posted sheet explains where to start.
@@ -48,7 +55,7 @@ Personal keys live in the URL fragment of the personal link, so they never reach
 ## Venues
 A venue (lodge, bar or club) runs pools every week, sometimes two for one game. A link that is the only secret leaks when a QR code is photographed, so a PIN guards the venue.
 
-- **Record.** `venues` collection: name, code (the QR, 128 bits), PIN hash (scrypt) and version, runner ids. The owner makes venues at `/owner`; runners and the owner manage them at `/v/<code>`, which also draws the printable QR in the browser.
+- **Record.** `venues` collection: name, code (the QR, 128 bits), PIN hash (scrypt) and version, runner ids. The owner makes venues in the Venues tab; runners and the owner manage them at `/v/<code>`, which also draws the printable QR in the browser.
 - **Sheet fields.** `venueId`, `title` (editable; `game.label` is the provider's and untouched), `showPhoto`, its own PIN fields, and the stage (`posted`, `draft`, `deletedAt`). The effective PIN is the sheet's own, else the venue's.
 - **Entry.** `POST /api/venues/:id/enter` or `/api/sheets/:id/enter`. A right PIN sets a signed pass: HttpOnly, SameSite=Strict, path `/api`, 90 days, bound to the PIN version, signed with a key derived from `INVITE_CODE`. After 5 wrong tries in a row the PIN locks for 1, 2, 4 … 60 minutes; the runner sees the count.
 - **What viewers get.** Before the PIN: the venue name only. After it: names and winners, no `mine`, no photo unless `showPhoto`. Editors and the owner are never asked for a PIN. Anyone can send a photo to a runner, so there is no public upload.

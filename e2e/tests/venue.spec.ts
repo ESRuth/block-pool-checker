@@ -100,18 +100,20 @@ test("a deleted sheet stays in the list, marked, and can be restored from the sh
   page.once("dialog", (d) => d.accept());
   await page.getByRole("tab", { name: "Edit" }).click();
   await page.getByRole("button", { name: "Delete this sheet" }).click();
-  await page.waitForURL((u) => u.pathname === "/");
+  await page.waitForURL((u) => u.pathname.startsWith("/v/")); // deleting takes you back to the venue
 
   // Anyone else just finds nothing there.
   const stranger = await (await browser.newContext()).newPage();
   await stranger.goto(`/s/${id}`);
   await expect(stranger.getByRole("heading", { name: "Sheet not found" })).toBeVisible();
 
-  // The owner still sees it in the normal list, labelled in words, and opens it read-only.
+  // The venue's list still shows it to the people who run it, labelled in words; the owner's Sheets tab says when it goes for good.
+  await expect(page.locator(`a.sheetcard[href='/s/${id}']`)).toContainText("Deleted");
+  await page.getByRole("link", { name: "Sheets" }).click();
   const card = page.locator(`a.sheetcard[href='/s/${id}']`);
   await expect(card).toContainText("Deleted");
   await expect(card).toContainText("Gone for good");
-  await card.click();
+  await card.click(); // and it opens read-only
   await expect(page.getByLabel("Deleted sheet")).toContainText("This sheet is deleted");
   await expect(page.getByRole("tab", { name: "Edit" })).toHaveCount(0);
 
@@ -119,7 +121,7 @@ test("a deleted sheet stays in the list, marked, and can be restored from the sh
   await page.getByRole("button", { name: "Restore this sheet" }).click();
   await expect(page.getByLabel("Deleted sheet")).toHaveCount(0);
   await expect(page.getByRole("tab", { name: "Edit" })).toBeVisible();
-  await page.goto("/");
+  await page.getByRole("link", { name: "Sheets" }).click();
   await expect(page.locator(`a.sheetcard[href='/s/${id}']`)).not.toContainText("Deleted");
 });
 
