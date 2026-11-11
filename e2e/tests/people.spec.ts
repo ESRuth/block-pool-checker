@@ -65,3 +65,44 @@ test("moving between pages does not reload the app, so nobody is asked to sign i
   expect(await page.evaluate(() => (window as unknown as { marker?: string }).marker)).toBe("still here");
   await expect(page.getByText("Owner")).toBeVisible();
 });
+
+test("the owner can rename a person, and the new name shows for them", async ({ page, browser }) => {
+  const made = (await (await api("/api/owner/users", { method: "POST", body: JSON.stringify({ name: "Speak" }) })).json()) as { id: string; key: string };
+  const them = await (await browser.newContext()).newPage();
+  await signIn(them, made.key);
+  await them.goto("/");
+  await expect(them.locator(".appbar summary")).toHaveText("Speak");
+
+  await signIn(page, OWNER_CODE);
+  await page.goto("/people");
+  const row = page.locator(".person", { hasText: "Speak" });
+  await row.getByRole("button", { name: "Rename" }).click();
+  await page.getByLabel("New name for Speak").fill("Sam Rivera");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.locator(".person", { hasText: "Sam Rivera" })).toBeVisible();
+  await expect(page.locator(".person", { hasText: "Speak" })).toHaveCount(0);
+
+  await them.reload();
+  await expect(them.locator(".appbar summary")).toHaveText("Sam Rivera");
+});
+
+test("a person's link shows in their own card, and Replace link stops the old one working", async ({ page }) => {
+  await signIn(page, OWNER_CODE);
+  await page.goto("/people");
+  await page.getByLabel("Their name").fill("Pat");
+  await page.getByRole("button", { name: "Make their link" }).click();
+  const card = page.locator(".person", { hasText: "Pat" });
+  const first = await card.getByLabel("Pat's link").inputValue();
+  await expect(card.getByText("Hasn't opened their link yet")).toBeVisible();
+  await expect(card.getByText("Not a runner yet")).toBeVisible();
+  const keyOf = (link: string) => link.split("#c=")[1]!;
+  expect((await api("/api/me", { key: keyOf(first) })).status).toBe(200);
+
+  page.once("dialog", (d) => d.accept());
+  await card.getByRole("button", { name: "Replace link" }).click();
+  await expect(card.getByText("Their older links no longer work.")).toBeVisible();
+  const second = await card.getByLabel("Pat's link").inputValue();
+  expect(second).not.toBe(first);
+  expect((await api("/api/me", { key: keyOf(second) })).status).toBe(200);
+  expect((await api("/api/me", { key: keyOf(first) })).status).toBe(403);
+});

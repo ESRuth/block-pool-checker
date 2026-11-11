@@ -18,16 +18,22 @@ export async function listPeople(): Promise<Person[]> {
   return ((await res.json()) as { users: Person[] }).users;
 }
 /** Make someone a personal link. The key is shown once, inside the link. */
-export async function invitePerson(name: string): Promise<{ name: string; link: string }> {
+export async function invitePerson(name: string): Promise<{ id: string; name: string; link: string }> {
   const res = await fetch("/api/owner/users", { method: "POST", headers: headers(), body: JSON.stringify({ name }) });
   if (!res.ok) throw new Error("Could not make the link.");
   const u = (await res.json()) as Person & { key: string };
-  return { name: u.name, link: `${location.origin}/join#c=${u.key}` };
+  return { id: u.id, name: u.name, link: `${location.origin}/join#c=${u.key}` };
 }
-export async function newPersonLink(p: Person): Promise<{ name: string; link: string }> {
-  const res = await fetch(`/api/owner/users/${p.id}/links`, { method: "POST", headers: headers(), body: "{}" });
+/** Another link for someone. With `replace`, every older link stops working. */
+export async function newPersonLink(p: Person, replace = false): Promise<{ link: string }> {
+  const res = await fetch(`/api/owner/users/${p.id}/links`, { method: "POST", headers: headers(), body: JSON.stringify({ replace }) });
   if (!res.ok) throw new Error("Could not make a link.");
-  return { name: p.name, link: `${location.origin}/join#c=${((await res.json()) as { key: string }).key}` };
+  return { link: `${location.origin}/join#c=${((await res.json()) as { key: string }).key}` };
+}
+/** Change the name shown for someone (in the bar, and as "Added by" on their sheets). */
+export async function renamePerson(p: Person, name: string): Promise<void> {
+  const res = await fetch(`/api/owner/users/${p.id}`, { method: "PATCH", headers: headers(), body: JSON.stringify({ name }) });
+  if (!res.ok) throw new Error("Could not rename them.");
 }
 export async function revokePerson(p: Person): Promise<void> {
   await fetch(`/api/owner/users/${p.id}/revoke`, { method: "POST", headers: headers(), body: "{}" });

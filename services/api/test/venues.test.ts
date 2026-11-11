@@ -408,3 +408,51 @@ describe("showing a PIN to the people who run it", () => {
     expect(v.id).toBeTruthy();
   });
 });
+
+describe("moving a sheet to a venue", () => {
+  it("only the owner moves a sheet; it lands as a draft with a fresh week and the new venue's PIN; an older sheet with no venue can be adopted", async () => {
+    const s = setup();
+    const { runner, other, sheet } = await venueWithSheet(s);
+    const v2 = (await (await s.req("/api/owner/venues", { body: { name: "Other place", pin: "1234", runnerIds: [other.id] }, key: OWNER })).json()) as any;
+    const move = (key: string, venueId = v2.id) => s.req(`/api/sheets/${sheet.id}/settings`, { method: "PATCH", body: { venueId }, key });
+    expect((await move(runner.key)).status).toBe(403); // a runner cannot move it, even their own sheet
+    expect((await move(OWNER, "nope")).status).toBe(404);
+    clock = new Date("2026-11-14T12:00:00.000Z");
+    const r = (await (await move(OWNER)).json()) as any;
+    expect(r.settings.venueId).toBe(v2.id);
+    expect(r.settings.draft).toBe(true);
+    expect(Date.parse(r.expiresAt)).toBe(clock.getTime() + RETENTION_DAYS * 86_400_000); // a week from the move
+    // The old venue's runner no longer runs it; the new venue's runner does.
+    expect((await s.req(`/api/sheets/${sheet.id}`, { key: runner.key })).status).toBe(200); // still their own sheet (they made it)
+    expect(((await (await s.req(`/api/sheets/${sheet.id}`, { key: other.key })).json()) as any).canEdit).toBe(true);
+    clock = new Date("2026-11-11T12:00:00.000Z");
+
+    // An older sheet with no venue is adopted the same way.
+    const sheets = new MemorySheetRepository(() => clock);
+    await sheets.put({
+      id: "old",
+      doc: doc() as any,
+      hasPhoto: false,
+      createdBy: "Owner",
+      createdById: "owner",
+      createdAt: "2026-11-10T00:00:00.000Z",
+      updatedAt: "2026-11-10T00:00:00.000Z",
+      expiresAt: "2026-11-20T00:00:00.000Z",
+    });
+    const app = createApp({
+      scores: { getScore: async () => Promise.reject(new Error("n/a")) },
+      games: new EspnNfl(async () => Promise.reject(new Error("n/a"))),
+      sheets,
+      sheetPhotos: new MemorySheetPhotos(),
+      inviteCode: OWNER,
+      now: () => clock,
+    });
+    const owner = { "X-Invite-Code": OWNER, "Content-Type": "application/json" };
+    const venue = (await (
+      await app.request("/api/owner/venues", { method: "POST", headers: owner, body: JSON.stringify({ name: "Test Lodge", pin: "4821" }) })
+    ).json()) as any;
+    const adopted = await app.request("/api/sheets/old/settings", { method: "PATCH", headers: owner, body: JSON.stringify({ venueId: venue.id }) });
+    expect(adopted.status).toBe(200);
+    expect(((await adopted.json()) as any).settings).toMatchObject({ venueId: venue.id, draft: true });
+  });
+});

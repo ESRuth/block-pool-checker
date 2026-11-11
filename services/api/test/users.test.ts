@@ -196,3 +196,40 @@ describe("daily read cap", () => {
     expect((await names(u.key)).status).toBe(200);
   });
 });
+
+describe("renaming a person", () => {
+  it("only the owner can; the new name shows for them and as 'Added by' on their sheets; bad names are refused", async () => {
+    const s = setup();
+    const { person, make } = await runnerWithSheet(s, "Speak");
+    const made = await make();
+    expect((await s.call(`/api/owner/users/${person.id}`, person.key, { name: "Sam" }, "PATCH")).status).toBe(403);
+    expect((await s.call(`/api/owner/users/${person.id}`, undefined, { name: "Sam" }, "PATCH")).status).toBe(403);
+    expect((await s.call(`/api/owner/users/${person.id}`, "owner-code", { name: "  " }, "PATCH")).status).toBe(400);
+    expect((await s.call(`/api/owner/users/${person.id}`, "owner-code", { name: "x".repeat(41) }, "PATCH")).status).toBe(400);
+    expect((await s.call(`/api/owner/users/nope`, "owner-code", { name: "Sam" }, "PATCH")).status).toBe(404);
+    const r = await s.call(`/api/owner/users/${person.id}`, "owner-code", { name: "  Sam Rivera " }, "PATCH");
+    expect(r.status).toBe(200);
+    expect(await (await s.call("/api/me", person.key)).json()).toEqual({ name: "Sam Rivera", owner: false });
+    const sheet = (await (await s.call(`/api/sheets/${made.id}`, "owner-code")).json()) as any;
+    expect(sheet.createdBy).toBe("Sam Rivera");
+    expect(sheet.updatedBy).toBe("Sam Rivera");
+    const list = (await (await s.call("/api/owner/users", "owner-code")).json()) as any;
+    expect(list.users.map((u: any) => u.name)).toEqual(["Sam Rivera"]);
+    expect(JSON.stringify(list)).not.toContain("Speak");
+  });
+});
+
+describe("replacing a link", () => {
+  it("a replacement link is the only one that works; an extra link leaves the old ones working", async () => {
+    const s = setup();
+    const u = await invite(s, "Jordan");
+    const extra = (await (await s.call(`/api/owner/users/${u.id}/links`, "owner-code", {})).json()) as any;
+    expect((await s.call("/api/me", u.key)).status).toBe(200);
+    expect((await s.call("/api/me", extra.key)).status).toBe(200);
+    const fresh = (await (await s.call(`/api/owner/users/${u.id}/links`, "owner-code", { replace: true })).json()) as any;
+    expect((await s.call("/api/me", fresh.key)).status).toBe(200);
+    expect((await s.call("/api/me", u.key)).status).toBe(403); // the first link is dead
+    expect((await s.call("/api/me", extra.key)).status).toBe(403); // so is the extra one
+    expect((await s.call(`/api/owner/users/${u.id}/links`, u.key, { replace: true })).status).toBe(403); // owner only
+  });
+});

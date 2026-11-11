@@ -70,13 +70,14 @@ The venue page tells you when wrong PINs are being tried. If a PIN has spread to
 *For the owner, the one person who holds the owner code.*
 
 1. Open the app and enter the owner code (the code box asks for it when you are not signed in). The code is the master key: keep it out of chat messages and screenshots. The bar at the top has three places: **Venues**, **Sheets** and **People**. To switch between the owner and a personal link on one browser, use **Use a different code** in the menu under your name.
-2. **Invite someone** (People). Type their name and tap **Make their link**. Send them the link; opening it signs their phone in. **Get a link** makes a fresh one later, and **Turn off** ends their access.
+2. **Invite someone** (People). Type their name and tap **Make their link**. Send them the link; opening it signs their phone in. Each card shows their link, which venues they run, and when they last used it. **Rename** fixes a name (it also updates "Added by" on their sheets). **Another link** makes an extra link and leaves the old ones working. **Replace link** makes a new link and stops every older one, for a lost phone or a link sent to the wrong person. **Turn off** ends their access for good.
 3. **Make a venue** (Venues). Give it a name and a first PIN and choose its runners (a main one and backups) from the people you have invited. The venue's QR code is on its page. A private pool (an office or a family pool) gets a venue too: it is only a name, a PIN and someone to run it.
 4. **Close** removes a venue and its sheets.
 
 ### What the owner can do
 
 - Everything a runner can, on every venue and sheet, without a PIN.
+- **Move a sheet to a venue** from its Settings tab: it lands there as a draft with a fresh week, and that venue's PIN applies. This also adopts a sheet made before every sheet had to be on a venue.
 - See every sheet in the Sheets tab, including deleted ones, marked **Deleted** with the day each goes for good.
 - **Delete for good** a deleted sheet before its removal date. Runners can restore a deleted sheet; only the owner can erase one early.
 

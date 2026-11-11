@@ -156,3 +156,18 @@ test("a runner can show the PIN, and a viewer has no way to", async ({ page, bro
   await expect(viewer.getByRole("button", { name: "Show PIN" })).toHaveCount(0);
   expect((await api(`/api/venues/${venue}/pin`, { key: "" })).status).toBe(403);
 });
+
+test("the owner can move a sheet to another venue, where it lands as a draft", async ({ page }) => {
+  const from = await makeVenue([], "First place");
+  const to = await makeVenue([], "Second place");
+  await signIn(page, OWNER_CODE);
+  const { id } = await createSheet(page, from);
+  await page.getByRole("tab", { name: "Settings" }).click();
+  page.once("dialog", (d) => d.accept());
+  await page.locator(".settings select").selectOption({ label: "Second place" });
+  await page.getByRole("button", { name: "Move" }).click();
+  await expect(page.getByText("Moved to Second place.")).toBeVisible();
+  await page.getByRole("link", { name: "Back" }).click(); // the back arrow now goes to the new venue
+  await expect(page).toHaveURL(new RegExp(`/v/${to}`));
+  await expect(page.locator(`a.sheetcard[href='/s/${id}']`)).toContainText("Draft");
+});

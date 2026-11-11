@@ -65,7 +65,7 @@ A venue (lodge, bar or club) runs pools every week, sometimes two for one game. 
 
 ## Stages and retention
 Stages (posted, draft, published, deleted, gone) are defined in [GLOSSARY.md](GLOSSARY.md#places-and-stages).
-- "Hide it again" returns a published sheet to draft; a posted sheet cannot be published until its photo is in. A sheet record with no venue (from before every sheet was on one) is opened only by its maker and the owner, and is removed on its normal date.
+- "Hide it again" returns a published sheet to draft; a posted sheet cannot be published until its photo is in. A sheet record with no venue (from before every sheet was on one) is opened only by its maker and the owner, and is removed on its normal date; the owner can move it to a venue (Settings tab), and can move any sheet to another venue: it lands as a draft with a fresh week and the new venue's PIN.
 - Pre-game, live and final come from the score feed and are not stored, because a stored status could be stale. Lists show "Open for blocks", "Draft" and "Deleted" as words, never colour alone.
 - A final sheet stays editable until it is removed.
 - **Removal date.** 7 days after kickoff, or after the day the sheet was made if later. Editing never moves it; changing the game recomputes it. Firestore TTL on `sheets.expiresAt` removes it and reads ignore expired documents; each photo is stamped with its sheet's removal date and the bucket deletes it then; the bucket's 60-day rule is the backstop.

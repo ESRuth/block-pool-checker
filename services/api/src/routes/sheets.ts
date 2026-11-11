@@ -182,6 +182,8 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
         showPhoto: z.boolean().optional(),
         pin: z.string().regex(PIN_RE, "A PIN is 4 to 8 digits.").nullable().optional(),
         draft: z.boolean().optional(),
+        /** Move the sheet to another venue (owner only). */
+        venueId: z.string().max(40).optional(),
       })
       .parse(await c.req.json());
     const next: SheetRecord = { ...rec, updatedAt: now().toISOString() };
@@ -194,9 +196,25 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
       next.pinFails = undefined;
       next.pinLockedUntil = undefined;
     }
+    // Moving a sheet to a venue is the owner's job (it also adopts a sheet from before every sheet was on a venue). It lands there as a draft, with a
+    // fresh week from now, so whoever runs that venue checks it before publishing it.
+    if (b.venueId && b.venueId !== rec.venueId) {
+      if (!(await ownerOnly(c))) return c.json({ error: "only the owner moves a sheet to another venue" }, 403);
+      const v = await venues.get(b.venueId);
+      if (!v) return c.json({ error: "not found" }, 404);
+      next.venueId = v.id;
+      if (!next.posted) next.draft = true;
+      next.expiresAt = sheetExpiry(rec.doc, next.updatedAt);
+      next.pinHash = undefined; // its own PIN belonged to the old place; the new venue's PIN applies
+      next.pinSealed = undefined;
+      next.pinFails = undefined;
+      next.pinLockedUntil = undefined;
+      next.pinVersion = (rec.pinVersion ?? 0) + 1;
+    }
     // Publish (draft: false) or take back to a draft (draft: true). A sheet still waiting for its photo cannot be published.
-    if (b.draft !== undefined && !next.posted) next.draft = b.draft || undefined;
+    if (b.draft !== undefined && !next.posted && !(b.venueId && b.venueId !== rec.venueId)) next.draft = b.draft || undefined;
     await sheets.put(next);
+    if (next.expiresAt !== rec.expiresAt) await photos.setExpiry(next.id, next.expiresAt).catch(() => undefined); // the 60-day bucket rule still covers a miss
     return c.json({
       ...sheetView(next),
       settings: { venueId: next.venueId, showPhoto: !!next.showPhoto, hasPin: !!next.pinHash, draft: !!next.draft, posted: !!next.posted },

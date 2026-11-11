@@ -95,6 +95,8 @@ export interface SheetSettingsPatch {
   title?: string | null;
   showPhoto?: boolean;
   pin?: string | null;
+  /** Move the sheet to this venue (owner only). */
+  venueId?: string;
   /** false = publish to the venue's viewers; true = take it back to a draft. */
   draft?: boolean;
 }

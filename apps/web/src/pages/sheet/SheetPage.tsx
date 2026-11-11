@@ -341,7 +341,7 @@ export function SheetPage({ id }: { id: string }) {
             title={meta.title ?? ""}
             expiresAt={meta.expiresAt}
             settings={meta.settings}
-            onChanged={(m) => setMeta((cur) => ({ ...cur, ...m }))}
+            onChanged={(m) => setMeta((cur) => ({ ...cur, ...m, venueId: m.settings?.venueId ?? cur.venueId }))}
           />
         )}
         {tab === "help" && <HelpTab canEdit={canEdit} />}

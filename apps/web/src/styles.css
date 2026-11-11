@@ -1373,3 +1373,25 @@ details.allnames > summary {
   letter-spacing: 0.15em;
   font-variant-numeric: tabular-nums;
 }
+
+.person-card {
+  align-items: flex-start;
+}
+.person-card .grow {
+  flex: 1;
+  min-width: 0;
+}
+.linkbox {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.linkbox input {
+  width: 100%;
+  font-size: 0.85rem;
+}
+.danger-btn {
+  border-color: #b3261e;
+  color: #b3261e;
+}

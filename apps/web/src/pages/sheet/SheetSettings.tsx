@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { PinReveal } from "../../components/PinReveal";
+import { useAuth } from "../../lib/auth";
 import { getSheetPin, patchSettings, type SheetSettings as Settings } from "../../lib/sheetApi";
 import { myVenues, type VenueSummary } from "../../lib/venueApi";
 
@@ -19,6 +20,8 @@ export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Pro
   const [venues, setVenues] = useState<VenueSummary[]>([]);
   const [pin, setPin] = useState("");
   const [pinTick, setPinTick] = useState(0);
+  const [pick, setPick] = useState("");
+  const isOwner = useAuth().me?.owner === true;
   const [note, setNote] = useState("");
 
   useEffect(() => {
@@ -72,6 +75,42 @@ export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Pro
           <button onClick={() => save({ draft: true }, "Back to a draft: hidden from viewers.")}>Hide it again (back to a draft)</button>
         )}
       </div>
+
+      {isOwner && (
+        <>
+          <h3>Move to a venue</h3>
+          <p className="sub">
+            Owner only. {venue ? `It is on ${venue.name}.` : "It is not on a venue."} Moving it makes it a draft there, gives it a fresh week, and that venue's
+            PIN applies (a PIN of its own is removed).
+          </p>
+          <label className="field">
+            Venue
+            <select value={pick} onChange={(e) => setPick(e.target.value)}>
+              <option value="">Choose…</option>
+              {venues
+                .filter((v) => v.id !== settings?.venueId)
+                .map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <div className="actions">
+            <button
+              disabled={!pick}
+              onClick={() => {
+                const to = venues.find((v) => v.id === pick)?.name ?? "that venue";
+                if (!confirm(`Move this sheet to ${to}? It becomes a draft there until it is published.`)) return;
+                void save({ venueId: pick }, `Moved to ${to}. It is a draft: publish it when it is ready.`);
+                setPick("");
+              }}
+            >
+              Move
+            </button>
+          </div>
+        </>
+      )}
 
       <h3>PIN for this sheet only</h3>
       <p className="sub">
