@@ -1,8 +1,8 @@
-import { cellQuad, type Period, type Quad } from "@bpc/engine";
+import { blockQuad, type Period, type Quad } from "@bpc/engine";
 import type { PeriodRow } from "./winners";
 
 /**
- * Orange, blue, teal and deep purple: chosen to stay apart for people with red-green colour blindness (the original red and green did not).
+ * Orange, blue, teal and deep purple: chosen to stay clearly apart from each other.
  * Colour is never the only cue: every box also carries its period number (see `label`).
  */
 export const PERIOD_COLOR: Record<Period, string> = { Q1: "#d55e00", Half: "#0072b2", Q3: "#00785a", Final: "#5b1a8c" };
@@ -14,7 +14,7 @@ export interface Box {
   period: Period;
   /** 1, 2, 3 or F: drawn on the box so the period never depends on telling colours apart. */
   label: string;
-  /** 0 for the first period to win this square, 1 for the next, and so on (tags are spaced out by this). */
+  /** 0 for the first period to win this block, 1 for the next, and so on (tags are spaced out by this). */
   nest: number;
   quad: Quad;
   color: string;
@@ -29,15 +29,15 @@ const shrink = (q: Quad, k: number): Quad => {
 };
 
 /**
- * One coloured outline per winning period. If one square wins several periods the outlines nest,
- * each a little smaller, so every colour stays visible. Squares outside the photo get no box.
+ * One coloured outline per winning period. If one block wins several periods the outlines nest,
+ * each a little smaller, so every colour stays visible. Blocks outside the photo get no box.
  */
 export function winnerBoxes(rows: PeriodRow[], corners: Quad, outside: Set<string>): Box[] {
   const seen = new Map<string, number>();
   const boxes: Box[] = [];
   for (const r of rows) {
-    if (!r.cell) continue;
-    const key = `${r.cell.row},${r.cell.col}`;
+    if (!r.block) continue;
+    const key = `${r.block.row},${r.block.col}`;
     if (outside.has(key)) continue;
     const k = seen.get(key) ?? 0;
     seen.set(key, k + 1);
@@ -45,7 +45,7 @@ export function winnerBoxes(rows: PeriodRow[], corners: Quad, outside: Set<strin
       period: r.period,
       label: PERIOD_LABEL[r.period],
       nest: k,
-      quad: shrink(cellQuad(corners, r.cell.row, r.cell.col), 0.14 * k),
+      quad: shrink(blockQuad(corners, r.block.row, r.block.col), 0.14 * k),
       color: PERIOD_COLOR[r.period],
       dashed: r.state === "in_progress",
     });

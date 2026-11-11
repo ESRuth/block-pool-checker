@@ -20,13 +20,13 @@ interface Props {
 export function NextScores({ rows, digits, names, teams, mine, ball, downDistance, live }: Props) {
   const o = outlook(rows, digits, ball);
   if (!o) return null;
-  const who = (cell: string) => {
-    const n = names[cell];
+  const who = (block: string) => {
+    const n = names[block];
     const text = n?.text.trim();
     return (
       <>
         <b>{text ? `${text}${n?.confirmed ? "" : " (unverified)"}` : "no name yet"}</b>
-        {mine.has(cell) && <b className="yours"> ★ yours</b>}
+        {mine.has(block) && <b className="yours"> ★ yours</b>}
       </>
     );
   };
@@ -53,7 +53,7 @@ export function NextScores({ rows, digits, names, teams, mine, ball, downDistanc
               .filter((s) => s.team === team && s.common)
               .map((s) => (
                 <li key={s.play}>
-                  {s.play} ({s.score.top}-{s.score.left}): {who(s.cell)}
+                  {s.play} ({s.score.top}-{s.score.left}): {who(s.block)}
                 </li>
               ))}
           </ul>
@@ -64,7 +64,7 @@ export function NextScores({ rows, digits, names, teams, mine, ball, downDistanc
                 .filter((s) => s.team === team && !s.common)
                 .map((s) => (
                   <li key={s.play}>
-                    {s.play} ({s.score.top}-{s.score.left}): {who(s.cell)}
+                    {s.play} ({s.score.top}-{s.score.left}): {who(s.block)}
                   </li>
                 ))}
             </ul>

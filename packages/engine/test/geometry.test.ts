@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { apply, cellQuad, gridExtent, gridTransform, homography, invert, pointToCell, type Quad } from "../src/index.js";
+import { apply, blockQuad, gridExtent, gridTransform, homography, invert, pointToBlock, type Quad } from "../src/index.js";
 
-const square: Quad = [
+const plain: Quad = [
   [100, 100],
   [1100, 100],
   [1100, 1100],
@@ -64,44 +64,44 @@ describe("homography", () => {
   });
 });
 
-describe("cells", () => {
-  it("axis-aligned grid: squares are 100px", () => {
-    const q = cellQuad(square, 1, 1);
+describe("blocks", () => {
+  it("axis-aligned grid: blocks are 100px", () => {
+    const q = blockQuad(plain, 1, 1);
     close(q[0], [100, 100]);
     close(q[2], [200, 200]);
-    close(cellQuad(square, 10, 10)[2], [1100, 1100]);
-    close(cellQuad(square, 3, 5)[0], [500, 300]); // row 3 col 5: x = 100 + 4*100, y = 100 + 2*100
+    close(blockQuad(plain, 10, 10)[2], [1100, 1100]);
+    close(blockQuad(plain, 3, 5)[0], [500, 300]); // row 3 col 5: x = 100 + 4*100, y = 100 + 2*100
   });
-  it("neighbouring cells share edges, also under perspective", () => {
-    for (const g of [square, skew]) {
-      close(cellQuad(g, 4, 6)[1], cellQuad(g, 4, 7)[0], 1e-6);
-      close(cellQuad(g, 4, 6)[3], cellQuad(g, 5, 6)[0], 1e-6);
-      close(cellQuad(g, 1, 1)[0], g[0], 1e-6);
-      close(cellQuad(g, 10, 10)[2], g[2], 1e-6);
+  it("neighbouring blocks share edges, also under perspective", () => {
+    for (const g of [plain, skew]) {
+      close(blockQuad(g, 4, 6)[1], blockQuad(g, 4, 7)[0], 1e-6);
+      close(blockQuad(g, 4, 6)[3], blockQuad(g, 5, 6)[0], 1e-6);
+      close(blockQuad(g, 1, 1)[0], g[0], 1e-6);
+      close(blockQuad(g, 10, 10)[2], g[2], 1e-6);
     }
   });
-  it("pointToCell round-trips cell centres and returns null outside", () => {
-    for (const g of [square, skew]) {
+  it("pointToBlock round-trips block centres and returns null outside", () => {
+    for (const g of [plain, skew]) {
       for (const [r, c] of [
         [1, 1],
         [10, 10],
         [7, 3],
         [2, 9],
       ] as const) {
-        const q = cellQuad(g, r, c);
+        const q = blockQuad(g, r, c);
         const centre: [number, number] = [(q[0][0] + q[2][0]) / 2, (q[0][1] + q[2][1]) / 2];
-        expect(pointToCell(g, centre)).toEqual({ row: r, col: c });
+        expect(pointToBlock(g, centre)).toEqual({ row: r, col: c });
       }
-      expect(pointToCell(g, [5, 5])).toBeNull();
+      expect(pointToBlock(g, [5, 5])).toBeNull();
     }
   });
   it("rejects out-of-range rows and columns", () => {
-    expect(() => cellQuad(square, 0, 1)).toThrow();
-    expect(() => cellQuad(square, 1, 11)).toThrow();
+    expect(() => blockQuad(plain, 0, 1)).toThrow();
+    expect(() => blockQuad(plain, 1, 11)).toThrow();
   });
-  it("perspective: far-side squares are smaller", () => {
-    const near = cellQuad(skew, 5, 1),
-      far = cellQuad(skew, 5, 10);
+  it("perspective: far-side blocks are smaller", () => {
+    const near = blockQuad(skew, 5, 1),
+      far = blockQuad(skew, 5, 10);
     expect(Math.hypot(near[1][0] - near[0][0], near[1][1] - near[0][1])).toBeGreaterThan(Math.hypot(far[1][0] - far[0][0], far[1][1] - far[0][1]));
     expect(gridTransform(skew).toGrid).toBeDefined();
   });
@@ -109,23 +109,23 @@ describe("cells", () => {
 
 describe("gridExtent", () => {
   it("a grid inside the photo is complete", () => {
-    expect(gridExtent(square, 1200, 1200)).toEqual({ incomplete: false, sides: [], cellsOutside: [] });
+    expect(gridExtent(plain, 1200, 1200)).toEqual({ incomplete: false, sides: [], blocksOutside: [] });
   });
-  it("detects a grid cut off on the right, and which squares are affected", () => {
+  it("detects a grid cut off on the right, and which blocks are affected", () => {
     const cut: Quad = [
       [100, 100],
       [1300, 100],
       [1300, 1100],
       [100, 1100],
-    ]; // 120px squares, right edge at 1300 but photo is 1000 wide
+    ]; // 120px blocks, right edge at 1300 but photo is 1000 wide
     const e = gridExtent(cut, 1000, 1200);
     expect(e.incomplete).toBe(true);
     expect(e.sides).toEqual(["right"]);
-    expect(e.cellsOutside.every((c) => c.col >= 8)).toBe(true);
-    expect(e.cellsOutside.some((c) => c.col === 10)).toBe(true);
+    expect(e.blocksOutside.every((c) => c.col >= 8)).toBe(true);
+    expect(e.blocksOutside.some((c) => c.col === 10)).toBe(true);
   });
-  it("tolerates a small overhang (< 0.15 square)", () => {
-    expect(gridExtent(square, 1105, 1105).incomplete).toBe(false);
-    expect(gridExtent(square, 1050, 1200).incomplete).toBe(true);
+  it("tolerates a small overhang (< 0.15 plain)", () => {
+    expect(gridExtent(plain, 1105, 1105).incomplete).toBe(false);
+    expect(gridExtent(plain, 1050, 1200).incomplete).toBe(true);
   });
 });

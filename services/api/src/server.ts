@@ -5,6 +5,7 @@ import { EspnNfl } from "@bpc/scores";
 import { createApp } from "./app.js";
 import { assertStrongOwnerCode } from "./access.js";
 import { FirestoreUserRepository } from "./users.js";
+import { FirestoreVenueRepository } from "./venues.js";
 import { FirestoreSheetRepository, GcsSheetPhotos, MemorySheetPhotos, MemorySheetRepository } from "./sheets.js";
 import { GeminiReader, StubReader } from "./reader.js";
 import { CachedScores } from "./score-cache.js";
@@ -32,6 +33,7 @@ const app = createApp({
   inviteCode: process.env.INVITE_CODE,
   dailyReadCap: process.env.READ_CAP_PER_DAY ? Number(process.env.READ_CAP_PER_DAY) : undefined,
   users: useGcp ? new FirestoreUserRepository() : undefined,
+  venues: useGcp ? new FirestoreVenueRepository() : undefined,
   sheets: useGcp ? new FirestoreSheetRepository() : new MemorySheetRepository(),
   sheetPhotos: useGcp ? new GcsSheetPhotos(process.env.PHOTO_BUCKET!) : new MemorySheetPhotos(),
 });

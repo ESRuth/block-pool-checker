@@ -98,6 +98,9 @@ const byKickoffDesc = (a: GameRef, b: GameRef) => Date.parse(b.kickoff) - Date.p
 
 // --- adapter -----------------------------------------------------------------
 
+/** How far ahead a pool can be posted for a game that has not started. */
+const UPCOMING_DAYS = 60;
+
 export class EspnNfl implements ScoreProvider, GameDirectory {
   private teams?: Promise<TeamRef[]>;
 
@@ -172,6 +175,29 @@ export class EspnNfl implements ScoreProvider, GameDirectory {
       .filter((g) => this.eligible(g))
       .sort(byKickoffDesc)
       .slice(0, limit);
+  }
+
+  async upcoming(query?: string, limit = 8): Promise<GameRef[]> {
+    const now = this.now().getTime();
+    const horizon = now + UPCOMING_DAYS * 86_400_000;
+    const soon = (g: GameRef) => g.status === "scheduled" && Date.parse(g.kickoff) > now && Date.parse(g.kickoff) < horizon;
+    const byKickoff = (a: GameRef, b: GameRef) => Date.parse(a.kickoff) - Date.parse(b.kickoff);
+    const games = new Map<string, GameRef>();
+    if (query?.trim()) {
+      const teams = [...new Map((await this.findTeams(query)).map((t) => [t.abbr, t])).values()];
+      for (const g of (await Promise.all(teams.map((t) => this.scheduleOf(t)))).flat()) if (soon(g)) games.set(g.gameId, g);
+      // Games with every named team first ("eagles chiefs" finds their meeting before either team's other games).
+      const hits = (g: GameRef) => teams.filter((t) => t.abbr === g.home.abbr || t.abbr === g.away.abbr).length;
+      return [...games.values()].sort((a, b) => hits(b) - hits(a) || byKickoff(a, b)).slice(0, limit);
+    }
+    const current = Scoreboard.parse(await this.get(`${BASE}/scoreboard`));
+    for (const e of current.events.map(toGameRef)) if (soon(e)) games.set(e.gameId, e);
+    // Walk forward through the coming weeks until there are enough.
+    for (let wk = (current.week?.number ?? 0) + 1; current.week?.number && wk <= 18 && games.size < limit; wk++) {
+      const sb = Scoreboard.parse(await this.get(`${BASE}/scoreboard?seasontype=2&week=${wk}`));
+      for (const e of sb.events.map(toGameRef)) if (soon(e)) games.set(e.gameId, e);
+    }
+    return [...games.values()].sort(byKickoff).slice(0, limit);
   }
 
   /** Started/finished games, plus ones kicking off within a day and a half (pools get made before the game). */

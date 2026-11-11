@@ -79,8 +79,8 @@ describe("cornerShift", () => {
     [1100, 100],
     [1100, 900],
     [100, 900],
-  ]; // a square is 100 px wide
-  it("is zero for the same grid and counts the biggest corner move in square widths", () => {
+  ]; // a block is 100 px wide
+  it("is zero for the same grid and counts the biggest corner move in block widths", () => {
     expect(cornerShift(q, q)).toBe(0);
     expect(
       cornerShift(q, [

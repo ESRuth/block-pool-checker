@@ -32,9 +32,9 @@ It takes a few minutes. Check it with `gcloud run services describe block-pool-c
 
 `INVITE_CODE` is currently a plain environment variable on the service, not a Secret Manager secret.
 
-## One-time GCP setup (done)
+## One-time GCP setup
 1. APIs: Firestore (Native), Cloud Storage, Cloud Run, Artifact Registry, Vertex AI.
-2. Firestore TTL policy on collection group `sheets`, field `expiresAt` (active). `get` also ignores expired docs; TTL deletion can lag. Collections: `sheets`, `users`.
-3. Private bucket `block-pool-checker-photos`: uniform access, public access prevention enforced, lifecycle rule "delete after 60 days". Deleting a sheet deletes its photo; Firestore TTL alone does not, so the lifecycle rule is the backstop. Photos are read and written only by the API; there are no signed URLs and no bucket CORS.
+2. Firestore TTL policy on collection group `sheets`, field `expiresAt` (active). `get` also ignores expired docs; TTL deletion can lag. Collections: `sheets` (a runner's delete sets `deletedAt` and leaves the document and photo until `expiresAt`; a sheet on a venue also carries `posted` or `draft` until published; `expiresAt` is fixed when the sheet is made or its game changes, not on every edit), `users`, `venues` (venue sheets expire 7 days after the game, other sheets after 30; passes are signed with a key derived from `INVITE_CODE`, so changing the owner code signs every viewer out, and no new env var or index is needed).
+3. Private bucket `block-pool-checker-photos`: uniform access, public access prevention enforced, two lifecycle rules: delete once the object's custom time has passed, and delete after 60 days. The API stamps each photo's custom time with its sheet's removal date (and moves it if that date changes), so a photo goes the day its sheet does; the 60-day rule is the backstop. Deleting a sheet by hand deletes its photo at once; Firestore TTL alone does not. Set the rules with `gcloud storage buckets update gs://block-pool-checker-photos --project block-pool-checker --lifecycle-file=lifecycle.json`, where the file holds `{"rule":[{"action":{"type":"Delete"},"condition":{"daysSinceCustomTime":0}},{"action":{"type":"Delete"},"condition":{"age":60}}]}`. Photos are read and written only by the API; there are no signed URLs and no bucket CORS.
 4. Service account `bpc-api`: Firestore user, Storage object admin on the bucket, Vertex AI user.
 5. Budget alert: $10 a month. Cloud Run `--max-instances 3`.

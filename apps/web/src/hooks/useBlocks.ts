@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { cellQuad, pointToCell, type Quad } from "@bpc/engine";
-import { findCells } from "../lib/find";
-import { similarCells } from "../lib/similar";
+import { blockQuad, pointToBlock, type Quad } from "@bpc/engine";
+import { findBlocks } from "../lib/find";
+import { similarBlocks } from "../lib/similar";
 import type { Sheet } from "../lib/sheetApi";
 import type { SheetEdit } from "./useSheetDoc";
 
@@ -10,21 +10,21 @@ export interface Highlight {
   kind: "mine" | "match" | "maybe" | "sel";
 }
 
-/** The person's squares: the name search, marked ("mine") squares, the square open in the close-up panel, and what to outline on the photo. */
-export function useSquares(sheet: Sheet | null | undefined, edit: SheetEdit) {
+/** The person's blocks: the name search, marked ("mine") blocks, the block open in the close-up panel, and what to outline on the photo. */
+export function useBlocks(sheet: Sheet | null | undefined, edit: SheetEdit) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
 
   const names = sheet?.names;
   const corners = sheet?.corners;
   const mine = useMemo(() => new Set(sheet?.mine ?? []), [sheet?.mine]);
-  const matches = useMemo(() => (names ? findCells(names, query) : []), [names, query]);
-  const maybes = useMemo(() => (names ? similarCells(names, query, matches) : []), [names, query, matches]);
+  const matches = useMemo(() => (names ? findBlocks(names, query) : []), [names, query]);
+  const maybes = useMemo(() => (names ? similarBlocks(names, query, matches) : []), [names, query, matches]);
   const highlights = useMemo<Highlight[]>(() => {
     if (!corners) return [];
     const quad = (k: string) => {
       const [r, c] = k.split(",").map(Number) as [number, number];
-      return cellQuad(corners, r, c);
+      return blockQuad(corners, r, c);
     };
     const out: Highlight[] = [...mine].map((k) => ({ quad: quad(k), kind: "mine" as const }));
     for (const k of matches) if (!mine.has(k)) out.push({ quad: quad(k), kind: "match" });
@@ -42,7 +42,7 @@ export function useSquares(sheet: Sheet | null | undefined, edit: SheetEdit) {
     edit((s) => ({ ...s, names: { ...s.names, ...Object.fromEntries(ks.map((k) => [k, { text, confirmed: true }])) } }));
   const tapPhoto = (p: [number, number]) => {
     if (!sheet) return;
-    const c = pointToCell(sheet.corners, p);
+    const c = pointToBlock(sheet.corners, p);
     if (c) setSelected(`${c.row},${c.col}`);
   };
 

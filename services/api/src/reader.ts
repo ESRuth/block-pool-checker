@@ -2,6 +2,7 @@ import { GoogleAuth } from "google-auth-library";
 import { z } from "zod";
 import { ReadResultSchema, type ReadResult } from "@bpc/engine";
 
+// The wording of these prompts is exactly what was measured (docs/READER_RESULTS.md). Change it only together with a new measurement.
 export const READ_PROMPT = `You are reading a photo of a handwritten football "squares" pool sheet. It has a 10x10 grid of squares with people's names (and sometimes phone numbers) written in them. IGNORE all names and phone numbers: never transcribe them.
 
 Digit labels surround the grid:
@@ -44,7 +45,7 @@ export interface Reader {
   readGrid(image: Uint8Array, mimeType: ImageType): Promise<{ names: Array<Array<string | null>>; model: string }>;
 }
 
-/** The 10 names of one row; empty squares come back as "" and unreadable ones as null. */
+/** The 10 names of one row; empty blocks come back as "" and unreadable ones as null. */
 export function parseGrid(text: string): Array<Array<string | null>> {
   const parsed = z.object({ rows: z.array(z.array(z.string().nullable())) }).safeParse(parseModelJson(text));
   if (!parsed.success) throw new ReaderError("model answer did not match the expected shape");

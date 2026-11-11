@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm test)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm format:check)",
+      "Bash(pnpm format:check *)",
+      "Bash(pnpm e2e)",
+      "Bash(pnpm e2e *)",
+      "Bash(pnpm audit *)",
+      "Bash(gcloud run services describe *)",
+      "Bash(gcloud run revisions list *)",
+      "Bash(gh run list *)",
+      "Bash(gh run watch *)"
+    ]
+  }
+}

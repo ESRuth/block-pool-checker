@@ -13,19 +13,19 @@ const userView = (u: { id: string; name: string; createdAt: string; lastUsedAt?:
 });
 
 /** Who am I, and the owner's people list: invite someone, get them a fresh link, turn them off. */
-export function adminRoutes(app: Hono, a: Access) {
+export function ownerRoutes(app: Hono, a: Access) {
   const { users, now, ownerOnly } = a;
 
   app.get("/api/me", async (c) => {
     const who = await a.access(c, false);
-    return who ? c.json({ name: who.name, owner: who.owner }) : c.json({ error: "invite code required" }, 403);
+    return who ? c.json({ name: who.name, owner: who.owner }) : c.json({ error: "access code required" }, 403);
   });
 
-  app.get("/api/admin/users", async (c) =>
+  app.get("/api/owner/users", async (c) =>
     !(await ownerOnly(c)) ? c.json({ error: "owner only" }, 403) : c.json({ users: (await users.list()).map(userView) }),
   );
 
-  app.post("/api/admin/users", async (c) => {
+  app.post("/api/owner/users", async (c) => {
     if (!(await ownerOnly(c))) return c.json({ error: "owner only" }, 403);
     const { name } = z.object({ name: z.string().trim().min(1).max(40) }).parse(await c.req.json());
     const key = newUserKey();
@@ -35,7 +35,7 @@ export function adminRoutes(app: Hono, a: Access) {
   });
 
   /** A fresh personal link for someone already invited (the original key is never stored, so it cannot be shown again). Their older links keep working. */
-  app.post("/api/admin/users/:id/links", async (c) => {
+  app.post("/api/owner/users/:id/links", async (c) => {
     if (!(await ownerOnly(c))) return c.json({ error: "owner only" }, 403);
     const u = await users.get(c.req.param("id"));
     if (!u) return c.json({ error: "not found" }, 404);
@@ -45,7 +45,7 @@ export function adminRoutes(app: Hono, a: Access) {
     return c.json({ ...userView(u), key }, 201);
   });
 
-  app.post("/api/admin/users/:id/revoke", async (c) => {
+  app.post("/api/owner/users/:id/revoke", async (c) => {
     if (!(await ownerOnly(c))) return c.json({ error: "owner only" }, 403);
     const u = await users.get(c.req.param("id"));
     if (!u) return c.json({ error: "not found" }, 404);

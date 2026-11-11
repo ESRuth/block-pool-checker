@@ -2,8 +2,9 @@ import { randomBytes } from "node:crypto";
 import { Firestore, Timestamp } from "@google-cloud/firestore";
 import { Storage } from "@google-cloud/storage";
 import { SheetDocSchema, type SheetDoc } from "@bpc/engine";
+import type { PinState } from "./pins.js";
 
-export interface SheetRecord {
+export interface SheetRecord extends PinState {
   id: string;
   editTokenHash: string;
   /** Hashes of edit links made later from the sheet page (the creator can make more at any time). */
@@ -15,6 +16,18 @@ export interface SheetRecord {
   /** Id of the person who made it (owner for the owner code); that person can always edit it without the edit link. */
   createdById?: string;
   updatedBy?: string;
+  /** The venue this sheet is attached to, if any. Its PIN protects the sheet unless the sheet has its own (`pinHash`). */
+  venueId?: string;
+  /** A name the runner chose ("Team A v Team B 11/11 $10"); the teams are shown when absent. */
+  title?: string;
+  /** Whether people with only the view link also get the photo. Photos show handwriting and phone numbers, so a sheet in a venue or with a PIN hides it by default. */
+  showPhoto?: boolean;
+  /** Posted: the pool is on the venue's wall (game chosen, teams placed) but its photo is not in yet, so there are no names or digits. Viewers see it as "open for blocks". */
+  posted?: boolean;
+  /** Draft: the photo is in and the pool is on a venue, but a runner has not published it. Only the people who run it see it. (Absent outside venues, and on pools saved before drafts existed.) */
+  draft?: boolean;
+  /** Set when a runner deleted it: hidden from every list and link, but kept for the owner to restore until `expiresAt` removes it for good. */
+  deletedAt?: string;
   createdAt: string;
   updatedAt: string;
   /** Sheet and photo are deleted after this. */
@@ -34,6 +47,8 @@ export interface SheetRepository {
   listByCreator(createdById: string): Promise<SheetRecord[]>;
   /** Every live sheet, newest first (the owner's view). */
   listAll(): Promise<SheetRecord[]>;
+  /** Live sheets attached to a venue, soonest game first. */
+  listByVenue(venueId: string): Promise<SheetRecord[]>;
 }
 
 export class MemorySheetRepository implements SheetRepository {
@@ -60,6 +75,9 @@ export class MemorySheetRepository implements SheetRepository {
       .filter((r) => Date.parse(r.expiresAt) > t)
       .map((r) => structuredClone(r))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+  async listByVenue(venueId: string) {
+    return (await this.listAll()).filter((r) => r.venueId === venueId).sort((a, b) => a.doc.game.kickoff.localeCompare(b.doc.game.kickoff));
   }
   async listByCreator(createdById: string) {
     const t = this.now().getTime();
@@ -96,6 +114,16 @@ export class FirestoreSheetRepository implements SheetRepository {
       createdBy: d.createdBy ?? undefined,
       createdById: d.createdById ?? undefined,
       updatedBy: d.updatedBy ?? undefined,
+      venueId: d.venueId ?? undefined,
+      title: d.title ?? undefined,
+      showPhoto: d.showPhoto ?? undefined,
+      deletedAt: d.deletedAt ?? undefined,
+      draft: d.draft ?? undefined,
+      posted: d.posted ?? undefined,
+      pinHash: d.pinHash ?? undefined,
+      pinVersion: d.pinVersion ?? undefined,
+      pinFails: d.pinFails ?? undefined,
+      pinLockedUntil: d.pinLockedUntil ?? undefined,
       createdAt: d.createdAt,
       updatedAt: d.updatedAt,
       expiresAt: expiresAt.toISOString(),
@@ -110,6 +138,16 @@ export class FirestoreSheetRepository implements SheetRepository {
       createdBy: rec.createdBy ?? null,
       createdById: rec.createdById ?? null,
       updatedBy: rec.updatedBy ?? null,
+      venueId: rec.venueId ?? null,
+      title: rec.title ?? null,
+      showPhoto: rec.showPhoto ?? null,
+      deletedAt: rec.deletedAt ?? null,
+      draft: rec.draft ?? null,
+      posted: rec.posted ?? null,
+      pinHash: rec.pinHash ?? null,
+      pinVersion: rec.pinVersion ?? null,
+      pinFails: rec.pinFails ?? null,
+      pinLockedUntil: rec.pinLockedUntil ?? null,
       createdAt: rec.createdAt,
       updatedAt: rec.updatedAt,
       expiresAt: Timestamp.fromDate(new Date(rec.expiresAt)),
@@ -125,6 +163,13 @@ export class FirestoreSheetRepository implements SheetRepository {
       .filter((r) => Date.parse(r.expiresAt) > t)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
+  async listByVenue(venueId: string) {
+    const t = this.now().getTime();
+    return (await this.col.where("venueId", "==", venueId).get()).docs
+      .map((d) => this.fromData(d.id, d.data()))
+      .filter((r) => Date.parse(r.expiresAt) > t)
+      .sort((a, b) => a.doc.game.kickoff.localeCompare(b.doc.game.kickoff));
+  }
   async listByCreator(createdById: string) {
     // The owner also gets sheets made before sheets recorded who made them, which a field query cannot find: scan (the collection is small and short-lived).
     const q = createdById === OWNER_ID ? await this.col.get() : await this.col.where("createdById", "==", createdById).get();
@@ -138,21 +183,31 @@ export class FirestoreSheetRepository implements SheetRepository {
 
 /** Photo bytes, private. They show handwritten names and phone numbers: only ever served by the API, never logged, never public. */
 export interface SheetPhotoStore {
-  put(id: string, bytes: Uint8Array): Promise<void>;
+  /** `expiresAt` is the sheet's removal date: the store stamps the photo with it so the photo goes when the sheet does. */
+  put(id: string, bytes: Uint8Array, expiresAt?: string): Promise<void>;
+  /** Move a photo's removal date (the sheet's date changed). A sheet with no photo yet is not an error. */
+  setExpiry(id: string, expiresAt: string): Promise<void>;
   get(id: string): Promise<Uint8Array | null>;
   delete(id: string): Promise<void>;
 }
 
 export class MemorySheetPhotos implements SheetPhotoStore {
   private readonly m = new Map<string, Uint8Array>();
-  async put(id: string, bytes: Uint8Array) {
+  /** Removal date stamped on each photo (read by tests). */
+  readonly expiry = new Map<string, string>();
+  async put(id: string, bytes: Uint8Array, expiresAt?: string) {
     this.m.set(id, bytes);
+    if (expiresAt) this.expiry.set(id, expiresAt);
+  }
+  async setExpiry(id: string, expiresAt: string) {
+    if (this.m.has(id)) this.expiry.set(id, expiresAt);
   }
   async get(id: string) {
     return this.m.get(id) ?? null;
   }
   async delete(id: string) {
     this.m.delete(id);
+    this.expiry.delete(id);
   }
 }
 
@@ -164,8 +219,19 @@ export class GcsSheetPhotos implements SheetPhotoStore {
   private file(id: string) {
     return this.bucket.file(`sheets/${id}.jpg`);
   }
-  async put(id: string, bytes: Uint8Array) {
-    await this.file(id).save(Buffer.from(bytes), { contentType: "image/jpeg", resumable: false });
+  /** The bucket's lifecycle rule deletes an object once its custom time (here: the sheet's removal date) has passed; the 60-day age rule is the backstop. */
+  async put(id: string, bytes: Uint8Array, expiresAt?: string) {
+    await this.file(id).save(Buffer.from(bytes), {
+      resumable: false,
+      metadata: { contentType: "image/jpeg", ...(expiresAt ? { customTime: new Date(expiresAt).toISOString() } : {}) },
+    });
+  }
+  async setExpiry(id: string, expiresAt: string) {
+    try {
+      await this.file(id).setMetadata({ customTime: new Date(expiresAt).toISOString() });
+    } catch (e) {
+      if ((e as { code?: number }).code !== 404) throw e;
+    }
   }
   async get(id: string) {
     try {

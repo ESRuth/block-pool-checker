@@ -17,15 +17,15 @@ export const PERIOD_NAME: Record<Period, string> = { Q1: "the 1st quarter", Half
 
 const axisFor = (digits: Digits, period: Period) => ("shared" in digits ? digits.shared : digits[period]);
 
-/** The square ("row,col") that wins a period at this cumulative score. */
-export function cellAt(digits: Digits, period: Period, top: number, left: number): string {
+/** The block ("row,col") that wins a period at this cumulative score. */
+export function blockAt(digits: Digits, period: Period, top: number, left: number): string {
   const a = axisFor(digits, period);
   return `${a.left.indexOf(left % 10) + 1},${a.top.indexOf(top % 10) + 1}`;
 }
 
-/** Score endings a square needs to win a period: top team's last digit and left team's last digit. */
-export function endingsFor(digits: Digits, period: Period, cell: string): { top: number; left: number } {
-  const [row, col] = cell.split(",").map(Number) as [number, number];
+/** Score endings a block needs to win a period: top team's last digit and left team's last digit. */
+export function endingsFor(digits: Digits, period: Period, block: string): { top: number; left: number } {
+  const [row, col] = block.split(",").map(Number) as [number, number];
   const a = axisFor(digits, period);
   return { top: a.top[col - 1]!, left: a.left[row - 1]! };
 }
@@ -33,16 +33,16 @@ export function endingsFor(digits: Digits, period: Period, cell: string): { top:
 export interface Win {
   period: Period;
   score: { top: number; left: number };
-  cell: string;
+  block: string;
   official: boolean;
 }
 
-/** Periods whose winning square is one of yours: official wins, plus the period being played if you lead it right now. */
+/** Periods whose winning block is one of yours: official wins, plus the period being played if you lead it right now. */
 export function myWins(rows: PeriodRow[], mine: Set<string>): Win[] {
   return rows.flatMap((r) => {
-    if (!r.cell || !r.score || r.state === "not_started") return [];
-    const cell = `${r.cell.row},${r.cell.col}`;
-    return mine.has(cell) ? [{ period: r.period, score: r.score, cell, official: r.state === "official" }] : [];
+    if (!r.block || !r.score || r.state === "not_started") return [];
+    const block = `${r.block.row},${r.block.col}`;
+    return mine.has(block) ? [{ period: r.period, score: r.score, block, official: r.state === "official" }] : [];
   });
 }
 
@@ -51,8 +51,8 @@ export interface Scenario {
   play: string;
   /** The score after this one play. */
   score: { top: number; left: number };
-  /** The square that would lead the period after it. */
-  cell: string;
+  /** The block that would lead the period after it. */
+  block: string;
   /** Common plays are shown up front; the rest sit behind "other scores". */
   common: boolean;
 }
@@ -60,7 +60,7 @@ export interface Outlook {
   period: Period;
   /** Current score for the period being played. */
   now: { top: number; left: number };
-  /** The square leading now: it wins if nothing else is scored. */
+  /** The block leading now: it wins if nothing else is scored. */
   leader: string;
   /** Which team has the ball, when the score source says. Teams with the ball come first. */
   ball?: Side;
@@ -78,8 +78,8 @@ export function outlook(rows: PeriodRow[], digits: Digits, ball?: Side): Outlook
   const scenarios: Scenario[] = order.flatMap((team) =>
     PLAYS.map((p) => {
       const score = { ...cur.score!, [team]: cur.score![team] + p.pts };
-      return { team, play: p.label, score, cell: cellAt(digits, cur.period, score.top, score.left), common: COMMON_PLAYS.has(p.pts) };
+      return { team, play: p.label, score, block: blockAt(digits, cur.period, score.top, score.left), common: COMMON_PLAYS.has(p.pts) };
     }),
   );
-  return { period: cur.period, now: cur.score, leader: cellAt(digits, cur.period, cur.score.top, cur.score.left), ball, scenarios };
+  return { period: cur.period, now: cur.score, leader: blockAt(digits, cur.period, cur.score.top, cur.score.left), ball, scenarios };
 }

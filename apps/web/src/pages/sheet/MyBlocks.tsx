@@ -16,19 +16,19 @@ interface Props {
   finished: boolean;
 }
 
-/** What your marked squares have won and what each needs to win. Only ever built from the real score. */
-export function MySquares({ mine, names, rows, digits, teams, finished }: Props) {
-  const label = (cell: string) => names[cell]?.text.trim() || "a square with no name";
+/** What your marked blocks have won and what each needs to win. Only ever built from the real score. */
+export function MyBlocks({ mine, names, rows, digits, teams, finished }: Props) {
+  const label = (block: string) => names[block]?.text.trim() || "a block with no name";
   const wins = myWins(rows, mine);
   const periods: Period[] = "shared" in digits ? ["Q1"] : ["Q1", "Half", "Q3", "Final"];
-  const cells = [...mine].sort((a, b) => {
+  const blocks = [...mine].sort((a, b) => {
     const [ar, ac] = a.split(",").map(Number) as [number, number],
       [br, bc] = b.split(",").map(Number) as [number, number];
     return ar - br || ac - bc;
   });
 
   return (
-    <div className="mysq" aria-label="Your squares">
+    <div className="mysq" aria-label="Your blocks">
       <h3>Your results</h3>
 
       {wins.length > 0 && (
@@ -38,16 +38,16 @@ export function MySquares({ mine, names, rows, digits, teams, finished }: Props)
               <span className="mbadge">{BADGE[w.period]}</span>
               <span>
                 {w.official ? `You won ${PERIOD_NAME[w.period]}` : `You're winning ${PERIOD_NAME[w.period]} right now`} ({w.score.top}-{w.score.left}) with{" "}
-                {label(w.cell)}.
+                {label(w.block)}.
               </span>
             </li>
           ))}
         </ul>
       )}
-      {finished && wins.length === 0 && <p className="sub">None of your squares won this game.</p>}
+      {finished && wins.length === 0 && <p className="sub">None of your blocks won this game.</p>}
 
       <details className="needs">
-        <summary>What each of your squares needs to win</summary>
+        <summary>What each of your blocks needs to win</summary>
         <p className="sub">
           Each pair is the last digit of the {pretty(teams.top)} score, then the {pretty(teams.left)} score. For example 7-4 wins when the {pretty(teams.top)}{" "}
           score ends in 7 and the {pretty(teams.left)} score ends in 4.
@@ -55,14 +55,14 @@ export function MySquares({ mine, names, rows, digits, teams, finished }: Props)
         <table>
           <thead>
             <tr>
-              <th>Square</th>
+              <th>Block</th>
               {periods.map((p) => (
                 <th key={p}>{"shared" in digits ? "Any period" : BADGE[p]}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {cells.map((c) => (
+            {blocks.map((c) => (
               <tr key={c}>
                 <td>{names[c]?.text.trim() || "No name"}</td>
                 {periods.map((p) => {

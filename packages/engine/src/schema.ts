@@ -1,6 +1,4 @@
 import { z } from "zod";
-import { PoolSettingsSchema } from "./settings.js";
-
 import { PeriodSchema } from "./periods.js";
 export { PERIODS, PeriodSchema, type Period } from "./periods.js";
 
@@ -38,18 +36,6 @@ export const PoolSchema = z
     owners: z.record(z.string().regex(/^(10|[1-9]),(10|[1-9])$/, "row,col must be 1-10"), z.string()).default({}),
     cumulative_scores: z.record(PeriodSchema, ScoreSchema).optional(),
     notes: z.string().optional(),
-    settings: PoolSettingsSchema.prefault({}),
   })
   .refine((p) => p.top_team.toLowerCase() !== p.left_team.toLowerCase(), "teams must differ");
 export type Pool = z.infer<typeof PoolSchema>;
-
-export const PayoutRulesSchema = z.union([
-  z.object({
-    kind: z.literal("shares"),
-    pricePerSquare: z.number().nonnegative(),
-    soldSquares: z.number().int().min(0).max(100),
-    shares: z.record(PeriodSchema, z.number().nonnegative()),
-  }),
-  z.object({ kind: z.literal("fixed"), amounts: z.record(PeriodSchema, z.number().nonnegative()) }),
-]);
-export type PayoutRules = z.infer<typeof PayoutRulesSchema>;

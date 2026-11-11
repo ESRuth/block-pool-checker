@@ -1,6 +1,23 @@
 {
   "name": "block-pool-checker",
   "private": true,
+  "description": "Check a football block pool from your phone: photograph the sheet, see the winning blocks.",
+  "license": "MIT",
+  "author": "Eric Ruth",
+  "homepage": "https://github.com/ESRuth/block-pool-checker#readme",
+  "bugs": "https://github.com/ESRuth/block-pool-checker/issues",
+  "keywords": [
+    "football",
+    "squares",
+    "block-pool",
+    "pwa",
+    "hono",
+    "react"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ESRuth/block-pool-checker.git"
+  },
   "packageManager": "pnpm@11.25.0",
   "engines": {
     "node": ">=24"

@@ -24,11 +24,11 @@ export function distance(a: string, b: string): number {
 const wordDistance = (q: string, w: string) => Math.min(distance(q, w), q.length >= 3 ? distance(q, w.slice(0, q.length)) : 99);
 
 /**
- * Squares whose name is CLOSE to the search but not a match, such as "Emol" for "emil". Only offered as suggestions
- * (never mixed into real matches): loose matching on its own added far more wrong squares than right ones.
+ * Blocks whose name is CLOSE to the search but not a match, such as "Emol" for "emil". Only offered as suggestions
+ * (never mixed into real matches): loose matching on its own added far more wrong blocks than right ones.
  * One slip is allowed for short words, two for longer ones.
  */
-export function similarCells(names: Record<string, NameEntry>, query: string, exact: string[], limit = 12): string[] {
+export function similarBlocks(names: Record<string, NameEntry>, query: string, exact: string[], limit = 12): string[] {
   const q = words(query).filter((w) => w.length >= 3);
   if (q.length === 0) return [];
   const skip = new Set(exact);

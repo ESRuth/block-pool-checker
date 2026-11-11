@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { gridExtent } from "@bpc/engine";
 import { GamePicker } from "../../components/GamePicker";
+import { PinGate } from "../../components/PinGate";
 import { NextScores } from "./NextScores";
 import { Results } from "./Results";
-import { SquarePanel } from "./SquarePanel";
+import { BlockPanel } from "./BlockPanel";
 import { useGridHistory } from "../../hooks/useGridHistory";
 import { useNameReading } from "../../hooks/useNameReading";
-import { useGrayPhoto, usePhotoImage } from "../../hooks/usePhoto";
+import { useGrayPhoto, usePhotoImage, usePhotoSrc } from "../../hooks/usePhoto";
 import { useScore } from "../../hooks/useScore";
 import { useSheetDoc } from "../../hooks/useSheetDoc";
-import { useSquares } from "../../hooks/useSquares";
+import { useBlocks } from "../../hooks/useBlocks";
 import { EditTab } from "./EditTab";
 import { FindTab } from "./FindTab";
 import { GridBanners } from "./GridBanners";
@@ -23,24 +24,25 @@ import { rowsToDigits } from "../../lib/digits";
 import { badge } from "../../lib/fresh";
 import { fetchGameScore } from "../../lib/gameApi";
 import { gameDate, matchup, reportLines } from "../../lib/report";
-import { photoUrl, tokenFromHash } from "../../lib/sheetApi";
+import { deleteSheet, eraseSheet, enterSheet, patchSettings, restoreSheet, tokenFromHash } from "../../lib/sheetApi";
 import { computeWinners } from "../../lib/winners";
 
-type Tab = "squares" | "names" | "edit" | "share" | "help";
+type Tab = "blocks" | "names" | "edit" | "share" | "help";
 
-/** One saved sheet: the score, the winners, the photo with the winning squares boxed, and tabs for finding squares, names, editing, sharing and help. */
+/** One saved sheet: the score, the winners, the photo with the winning blocks boxed, and tabs for finding blocks, names, editing, sharing and help. */
 export function SheetPage({ id }: { id: string }) {
   const token = useMemo(() => tokenFromHash(location.hash), []);
-  const url = photoUrl(id);
-  const { sheet, canEdit, addedBy, loadError, saving, edit, update, latest } = useSheetDoc(id, token);
+  const { sheet, canEdit: canEditSheet, addedBy, loadError, saving, edit, update, latest, pinTitle, meta, setMeta, reload } = useSheetDoc(id, token);
+  const canEdit = canEditSheet && !meta.deleted; // a deleted sheet opens read-only, with a way to restore it
+  const url = usePhotoSrc(id, token, !!sheet && meta.hasPhoto); // empty when this viewer is not shown the photo
   const img = usePhotoImage(url);
-  const squares = useSquares(sheet, edit);
+  const blocks = useBlocks(sheet, edit);
   const history = useGridHistory(update);
   const names = useNameReading({ sheet, latest, canEdit, img, edit });
   const [adjust, setAdjust] = useState(false); // the grid is shown while setting up (NewSheet); a saved sheet opens with it hidden
   const gray = useGrayPhoto(url, canEdit && !!sheet && adjust);
   const [changingGame, setChangingGame] = useState(false);
-  const [tab, setTab] = useState<Tab>("squares");
+  const [tab, setTab] = useState<Tab>("blocks");
 
   // Live score; keeps polling until the game is final, and falls back to the last stored copy offline.
   const feed = useScore(`game.${sheet?.game.gameId ?? "none"}`, () => fetchGameScore(sheet!.game.gameId), !!sheet);
@@ -56,10 +58,11 @@ export function SheetPage({ id }: { id: string }) {
     [sheet, digits, feed.score],
   );
   const extent = useMemo(() => (sheet ? gridExtent(sheet.corners, sheet.width, sheet.height) : null), [sheet]);
-  const outside = useMemo(() => new Set((extent?.cellsOutside ?? []).map((c) => `${c.row},${c.col}`)), [extent]);
+  const outside = useMemo(() => new Set((extent?.blocksOutside ?? []).map((c) => `${c.row},${c.col}`)), [extent]);
   const boxes = useMemo(() => (outcome?.ok && sheet ? winnerBoxes(outcome.rows, sheet.corners, outside) : []), [outcome, sheet, outside]);
   const lines = useMemo(() => (outcome?.ok ? reportLines(outcome.rows, outside) : []), [outcome, outside]);
 
+  if (pinTitle !== null) return <PinGate heading={pinTitle || "This sheet has a PIN"} onEnter={async (pin) => (await enterSheet(id, pin), reload())} />;
   if (loadError)
     return (
       <main>
@@ -87,9 +90,46 @@ export function SheetPage({ id }: { id: string }) {
           <h1>Sheet not found</h1>
         </header>
         <p className="msg">
-          This link doesn't open a sheet. It may be incomplete, or the sheet was removed (they're deleted 30 days after the game).{" "}
+          This link doesn't open a sheet. It may be incomplete, or the sheet was removed (they're deleted 30 days after the game, or 7 for a venue).{" "}
           <a href="/new">Start a new one</a>.
         </p>
+      </main>
+    );
+
+  // Posted but no photo yet: the pool is on the venue's wall and has no grid, names or digits to show. The only next step is the photo.
+  if (meta.settings?.posted)
+    return (
+      <main>
+        <header className="top">
+          <a href="/" className="back" aria-label="My sheets">
+            ‹
+          </a>
+          <h1>{meta.title || matchup(sheet.teams.top, sheet.teams.left)}</h1>
+        </header>
+        <section className="sec" aria-label="Posted sheet">
+          <p>
+            <b>Posted.</b> People with the venue's PIN can see that this sheet is open for blocks. When the blocks are filled and the digits are drawn, add the
+            photo of the sheet.
+          </p>
+          <p className="sub">
+            {matchup(sheet.teams.top, sheet.teams.left)} · {gameDate(sheet.game.kickoff)}
+          </p>
+          <div className="actions">
+            <a className="bigbtn" href={`/new?sheet=${encodeURIComponent(id)}`}>
+              Add the photo (digits drawn)
+            </a>
+            <button
+              onClick={() => {
+                if (confirm("Take this sheet down? If it was a mistake, the owner can bring it back."))
+                  deleteSheet(id, token)
+                    .then(() => location.assign("/"))
+                    .catch(() => alert("Could not take it down. Try again."));
+              }}
+            >
+              Take it down
+            </button>
+          </div>
+        </section>
       </main>
     );
 
@@ -97,9 +137,9 @@ export function SheetPage({ id }: { id: string }) {
   const status = feed.score ? badge(feed.score.snapshot, feed.serverNow, feed.offline) : null;
   const headline =
     snap && outcome?.ok && snap.status !== "scheduled" ? { top: snap.total[outcome.orientation.top], left: snap.total[outcome.orientation.left] } : null;
-  const readingCells = new Set(names.reading || names.missing ? lines.flatMap((l) => (l.cell ? [l.cell] : [])) : []);
+  const readingBlocks = new Set(names.reading || names.missing ? lines.flatMap((l) => (l.block ? [l.block] : [])) : []);
   const tabs: Array<[Tab, string]> = [
-    ["squares", "Squares"],
+    ["blocks", "Blocks"],
     ["names", "Names"],
     ...(canEdit ? ([["edit", "Edit"]] as Array<[Tab, string]>) : []),
     ["share", "Share"],
@@ -113,8 +153,9 @@ export function SheetPage({ id }: { id: string }) {
           ‹
         </a>
         <div>
-          <h1>{matchup(sheet.teams.top, sheet.teams.left)}</h1>
+          <h1>{meta.title || matchup(sheet.teams.top, sheet.teams.left)}</h1>
           <p className="when">
+            {meta.title ? `${matchup(sheet.teams.top, sheet.teams.left)} · ` : ""}
             {gameDate(sheet.game.kickoff)}
             {addedBy ? ` · Added by ${addedBy}` : ""}
           </p>
@@ -126,6 +167,59 @@ export function SheetPage({ id }: { id: string }) {
         <span className="savebadge badge" role="status">
           {saving === "saving" ? "Saving…" : "Not saved: check your connection"}
         </span>
+      )}
+
+      {meta.deleted && (
+        <section className="sec deletedbar" role="status" aria-label="Deleted sheet">
+          <p>
+            <b>This sheet is deleted.</b> Only you can see it. It is gone for good on {new Date(meta.deleted.goneOn).toLocaleDateString()}.
+          </p>
+          <div className="actions">
+            <button
+              className="primary"
+              onClick={() =>
+                restoreSheet(id, token)
+                  .then(reload)
+                  .catch(() => alert("Could not restore it. Try again."))
+              }
+            >
+              Restore this sheet
+            </button>
+            {meta.deleted.canErase && (
+              <button
+                onClick={() => {
+                  if (confirm("Delete this sheet and its photo for good? It cannot be restored after this."))
+                    eraseSheet(id)
+                      .then(() => location.assign("/"))
+                      .catch(() => alert("Could not delete it. Try again."));
+                }}
+              >
+                Delete for good
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
+      {canEdit && meta.settings?.draft && (
+        <section className="sec draftbar" role="status" aria-label="Draft">
+          <p>
+            <b>Draft.</b> Only you and the other runners can see this sheet. Check the grid and the names, then publish it so people with the venue's PIN can
+            open it.
+          </p>
+          <div className="actions">
+            <button
+              className="primary"
+              onClick={() =>
+                patchSettings(id, token, { draft: false })
+                  .then((r) => setMeta((m) => ({ ...m, settings: r.settings })))
+                  .catch(() => alert("Could not publish it. Try again."))
+              }
+            >
+              Publish
+            </button>
+          </div>
+        </section>
       )}
 
       <Scoreboard teams={sheet.teams} snap={snap} status={status} headline={headline} waiting={!feed.score} />
@@ -163,11 +257,11 @@ export function SheetPage({ id }: { id: string }) {
               <Results
                 lines={lines}
                 names={sheet.names}
-                reading={readingCells}
+                reading={readingBlocks}
                 readOnly={!canEdit}
-                mine={squares.mine}
-                onName={(cell, text) => edit((c) => ({ ...c, names: { ...c.names, [cell]: { text, confirmed: text.trim() !== "" } } }))}
-                onConfirm={(cell) => edit((c) => ({ ...c, names: { ...c.names, [cell]: { ...c.names[cell]!, confirmed: true } } }))}
+                mine={blocks.mine}
+                onName={(block, text) => edit((c) => ({ ...c, names: { ...c.names, [block]: { text, confirmed: text.trim() !== "" } } }))}
+                onConfirm={(block) => edit((c) => ({ ...c, names: { ...c.names, [block]: { ...c.names[block]!, confirmed: true } } }))}
               />
             </section>
           )}
@@ -177,28 +271,30 @@ export function SheetPage({ id }: { id: string }) {
               digits={digits}
               names={sheet.names}
               teams={sheet.teams}
-              mine={squares.mine}
+              mine={blocks.mine}
               ball={outcome.ball}
               downDistance={outcome.downDistance}
               live={status?.tone === "live"}
             />
           )}
-          <PhotoCard
-            url={url}
-            width={sheet.width}
-            height={sheet.height}
-            corners={sheet.corners}
-            canEdit={canEdit}
-            adjust={adjust}
-            onToggleGrid={() => setAdjust(!adjust)}
-            gray={gray}
-            history={history}
-            onCorners={(c) => update({ corners: c })}
-            boxes={boxes}
-            highlights={squares.highlights}
-            onTap={squares.tapPhoto}
-            incomplete={!!extent?.incomplete}
-          />
+          {url && (
+            <PhotoCard
+              url={url}
+              width={sheet.width}
+              height={sheet.height}
+              corners={sheet.corners}
+              canEdit={canEdit}
+              adjust={adjust}
+              onToggleGrid={() => setAdjust(!adjust)}
+              gray={gray}
+              history={history}
+              onCorners={(c) => update({ corners: c })}
+              boxes={boxes}
+              highlights={blocks.highlights}
+              onTap={blocks.tapPhoto}
+              incomplete={!!extent?.incomplete}
+            />
+          )}
         </>
       )}
 
@@ -224,18 +320,27 @@ export function SheetPage({ id }: { id: string }) {
       </nav>
 
       <section className="sec tabpanel" role="tabpanel">
-        {tab === "squares" && (
+        {tab === "blocks" && (
           <FindTab
             sheet={sheet}
             canEdit={canEdit}
-            squares={squares}
+            blocks={blocks}
             results={outcome?.ok && digits ? { rows: outcome.rows, digits } : null}
             finished={snap?.status === "final"}
           />
         )}
-        {tab === "names" && <NamesTab names={sheet.names} mine={squares.mine} onOpen={squares.setSelected} />}
+        {tab === "names" && <NamesTab names={sheet.names} mine={blocks.mine} onOpen={blocks.setSelected} />}
         {tab === "edit" && canEdit && <EditTab id={id} token={token} sheet={sheet} update={update} onChangeGame={() => setChangingGame(true)} />}
-        {tab === "share" && <ShareTab id={id} token={token} canEdit={canEdit} title={matchup(sheet.teams.top, sheet.teams.left)} />}
+        {tab === "share" && (
+          <ShareTab
+            id={id}
+            token={token}
+            canEdit={canEdit}
+            title={meta.title || matchup(sheet.teams.top, sheet.teams.left)}
+            meta={meta}
+            onMeta={(m) => setMeta((cur) => ({ ...cur, ...m }))}
+          />
+        )}
         {tab === "help" && <HelpTab canEdit={canEdit} />}
       </section>
 
@@ -244,13 +349,13 @@ export function SheetPage({ id }: { id: string }) {
         <a href="/new">Add another sheet</a>
       </div>
 
-      {squares.selected && (
-        <SquarePanel
-          cell={squares.selected}
+      {blocks.selected && (
+        <BlockPanel
+          block={blocks.selected}
           img={img}
           corners={sheet.corners}
-          entry={sheet.names[squares.selected]}
-          mine={squares.mine.has(squares.selected)}
+          entry={sheet.names[blocks.selected]}
+          mine={blocks.mine.has(blocks.selected)}
           canEdit={canEdit}
           rereading={names.rereading}
           findSame={(t) =>
@@ -258,11 +363,11 @@ export function SheetPage({ id }: { id: string }) {
               .filter(([, n]) => n.text.trim().toLowerCase() === t.trim().toLowerCase())
               .map(([k]) => k)
           }
-          onName={(t) => squares.setName(squares.selected!, t)}
-          onNameMany={squares.setNames}
-          onToggleMine={() => squares.toggleMine(squares.selected!)}
-          onReread={() => names.rereadSquare(squares.selected!)}
-          onClose={() => squares.setSelected(null)}
+          onName={(t) => blocks.setName(blocks.selected!, t)}
+          onNameMany={blocks.setNames}
+          onToggleMine={() => blocks.toggleMine(blocks.selected!)}
+          onReread={() => names.rereadBlock(blocks.selected!)}
+          onClose={() => blocks.setSelected(null)}
         />
       )}
     </main>

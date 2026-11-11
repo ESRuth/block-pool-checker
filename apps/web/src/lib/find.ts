@@ -9,10 +9,10 @@ const words = (s: string) =>
     .filter(Boolean);
 
 /**
- * Squares whose name matches the search: every typed word must start a word in the name ("emil" finds "Emil Rowe" and "Ben + Emil")
- * or appear inside it. Exact words only, no guessing at misspellings: a missed square is fixed by tapping it on the photo.
+ * Blocks whose name matches the search: every typed word must start a word in the name ("sam" finds "Sam Lee" and "Pat + Sam")
+ * or appear inside it. Exact words only, no guessing at misspellings: a missed block is fixed by tapping it on the photo.
  */
-export function findCells(names: Record<string, NameEntry>, query: string): string[] {
+export function findBlocks(names: Record<string, NameEntry>, query: string): string[] {
   const q = words(query);
   if (q.length === 0) return [];
   return Object.entries(names)

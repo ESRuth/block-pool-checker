@@ -18,24 +18,24 @@ const load = (file: string) => {
   const raw = jpeg.decode(readFileSync(new URL(`../../../samples/${file}`, import.meta.url)), { useTArray: true, formatAsRGBA: true });
   return rgbaToGray(raw.data, raw.width, raw.height);
 };
-const cellOf = (q: number[][]) => (Math.hypot(q[1]![0]! - q[0]![0]!, q[1]![1]! - q[0]![1]!) + Math.hypot(q[2]![0]! - q[3]![0]!, q[2]![1]! - q[3]![1]!)) / 20;
+const blockOf = (q: number[][]) => (Math.hypot(q[1]![0]! - q[0]![0]!, q[1]![1]! - q[0]![1]!) + Math.hypot(q[2]![0]! - q[3]![0]!, q[2]![1]! - q[3]![1]!)) / 20;
 const meanDist = (a: number[][], b: readonly (readonly number[])[]) => a.reduce((s, p, i) => s + Math.hypot(p[0]! - b[i]![0]!, p[1]! - b[i]![1]!), 0) / 4;
 
 describe("snapGrid vs the known grid corners of each sample photo", () => {
   for (const [name, ref] of Object.entries(refs)) {
-    it(`${name}: lands within 0.15 square of the true corners`, () => {
+    it(`${name}: lands within 0.15 block of the true corners`, () => {
       const img = load(ref.photo);
       expect([img.width, img.height]).toEqual([ref.width, ref.height]);
       const t0 = performance.now();
       const r = snapGrid(img, ref.start as unknown as Quad);
       const ms = performance.now() - t0;
-      const d = meanDist(r.corners as unknown as number[][], ref.truth) / cellOf(ref.truth);
+      const d = meanDist(r.corners as unknown as number[][], ref.truth) / blockOf(ref.truth);
       console.log(
-        `${name}: ${d.toFixed(3)} sq from reference, moved ${r.movedCells.toFixed(2)} sq, evidence ${r.evidence.toFixed(1)} (measured when the photo was made: ${ref.evidence.toFixed(1)}), ${ms.toFixed(0)} ms`,
+        `${name}: ${d.toFixed(3)} sq from reference, moved ${r.movedBlocks.toFixed(2)} sq, evidence ${r.evidence.toFixed(1)} (measured when the photo was made: ${ref.evidence.toFixed(1)}), ${ms.toFixed(0)} ms`,
       );
       expect(d).toBeLessThan(0.15);
       expect(r.evidence).toBeGreaterThan(ref.evidence * 0.7);
-      expect(r.movedCells).toBeLessThan(1);
+      expect(r.movedBlocks).toBeLessThan(1);
     }, 60_000);
   }
 });
@@ -54,13 +54,13 @@ describe("incomplete-grid detection on real photos", () => {
 describe("what snapping can and cannot fix (synthetic displacements of the reference guess)", () => {
   const photos = ["eagles_chargers", "eagles_chiefs", "eagles_commanders"] as const;
   const shift = (dx: number, dy: number) => (c: number) => (p: number[]) => [p[0]! + dx * c, p[1]! + dy * c];
-  it("recovers sideways shifts and size errors up to ~0.4 square in nearly every case", () => {
+  it("recovers sideways shifts and size errors up to ~0.4 block in nearly every case", () => {
     let ok = 0,
       total = 0;
     for (const name of photos) {
       const ref = refs[name]!,
         img = load(ref.photo),
-        c = cellOf(ref.truth);
+        c = blockOf(ref.truth);
       const cx = ref.start.reduce((s, p) => s + p[0]!, 0) / 4,
         cy = ref.start.reduce((s, p) => s + p[1]!, 0) / 4;
       const scale = (k: number) => () => (p: number[]) => [cx + (p[0]! - cx) * k, cy + (p[1]! - cy) * k];
@@ -80,10 +80,10 @@ describe("what snapping can and cannot fix (synthetic displacements of the refer
   // KNOWN LIMITATION: the fit has only translation + spacing per axis, so a guess whose corners are each off in a different
   // direction (shear/perspective error) is not corrected. `it.fails` flips to a failure if this ever starts working.
   it.fails(
-    "does NOT correct per-corner errors of ~0.3 square",
+    "does NOT correct per-corner errors of ~0.3 block",
     () => {
       const ref = refs["eagles_chargers"]!,
-        c = cellOf(ref.truth);
+        c = blockOf(ref.truth);
       const off: Array<[number, number]> = [
         [0.3, 0.2],
         [-0.25, 0.3],

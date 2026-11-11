@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import type { Quad, ReadResult } from "@bpc/engine";
+import { useEffect, useMemo, useState } from "react";
+import { teamMatches, type Quad, type ReadResult, type TeamRef } from "@bpc/engine";
 import { snapGrid } from "@bpc/vision";
 import { GamePicker } from "../components/GamePicker";
 import { GridOverlay } from "../components/GridOverlay";
@@ -8,7 +8,12 @@ import type { GameRef } from "../lib/gameApi";
 import { badRows, rowsFromRead, setsFor, type RowText } from "../lib/digits";
 import { loadPhoto, type LoadedPhoto } from "../lib/photo";
 import { ReadError, readPhoto, setInviteCode, type ReadResponse } from "../lib/readApi";
-import { createSheet } from "../lib/sheetApi";
+import { createSheet, fillSheet, loadSheet, patchSettings, type Sheet } from "../lib/sheetApi";
+
+const teamRef = (t: { abbr: string; name: string; nickname: string; location?: string }): TeamRef => ({ ...t, location: t.location ?? "" });
+/** Does the pair of team names on a sheet fit this game, in either order? */
+const fitsGame = (top: string, left: string, g: Sheet["game"]) =>
+  (teamMatches(top, teamRef(g.home)) && teamMatches(left, teamRef(g.away))) || (teamMatches(top, teamRef(g.away)) && teamMatches(left, teamRef(g.home)));
 
 const toPx = (read: ReadResult, w: number, h: number) => read.grid_corners.map(([x, y]) => [(x * w) / 1000, (y * h) / 1000]) as unknown as Quad;
 
@@ -29,6 +34,17 @@ export function NewSheet() {
   const [digitsDone, setDigitsDone] = useState(false);
   const [game, setGame] = useState<GameRef | null>(null);
   const [zoom, setZoom] = useState(false);
+  // Started from a sheet already posted on a venue's wall (`?sheet=<id>`): its game and teams are known, so those questions are skipped when the
+  // photo agrees, and the photo is added to that sheet instead of making a new one. `?venue=<code>` alone makes a new sheet on that venue.
+  const q = useMemo(() => new URLSearchParams(location.search), []);
+  const sheetId = q.get("sheet");
+  const [posted, setPosted] = useState<{ teams: Sheet["teams"]; game: Sheet["game"] } | null>(null);
+  useEffect(() => {
+    if (sheetId)
+      loadSheet(sheetId)
+        .then((p) => setPosted({ teams: p.doc.teams, game: p.doc.game }))
+        .catch(() => undefined);
+  }, [sheetId]);
 
   async function read(p: LoadedPhoto) {
     setPhase("reading");
@@ -47,11 +63,22 @@ export function NewSheet() {
       setTeams({ top: r.read.top_team ?? "", left: r.read.left_team ?? "" });
       setRows(initial);
       setBadAtStart(badRows(initial).map((b) => b.key));
-      setTeamsDone(!!(r.read.top_team && r.read.left_team));
+      const readTop = r.read.top_team ?? "";
+      const readLeft = r.read.left_team ?? "";
+      if (posted && !readTop && !readLeft) {
+        // Nothing written on the sheet: use the teams it was posted with.
+        setTeams(posted.teams);
+        setTeamsDone(true);
+        setGame(posted.game);
+      } else {
+        setTeamsDone(!!(r.read.top_team && r.read.left_team));
+        // The photo agrees with the posted game: no need to ask which game it is.
+        if (posted && readTop && readLeft && fitsGame(readTop, readLeft, posted.game)) setGame(posted.game);
+      }
       setDigitsDone(badRows(initial).length === 0 && Object.keys(initial).length === setsFor(r.read.digit_sets).length * 2);
       setPhase("questions");
     } catch (e) {
-      if (e instanceof ReadError) setError({ message: e.status === 403 ? "This needs an invite code." : e.message, needInvite: e.status === 403 });
+      if (e instanceof ReadError) setError({ message: e.status === 403 ? "This needs an access code." : e.message, needInvite: e.status === 403 });
       else setError({ message: "Could not reach the server. Check your connection and try again.", needInvite: false });
       setPhase("error");
     }
@@ -74,22 +101,29 @@ export function NewSheet() {
     if (!photo || !corners || !resp || !game) return;
     setPhase("saving");
     try {
-      const { id, editToken } = await createSheet(
-        {
-          schema_version: 1,
-          width: photo.width,
-          height: photo.height,
-          corners,
-          teams: { top: teams.top.trim(), left: teams.left.trim() },
-          mode: resp.read.digit_sets,
-          rows,
-          game,
-          finalIncludesOvertime: true,
-          names: {},
-          mine: [],
-        },
-        photo.blob,
-      );
+      const doc: Sheet = {
+        schema_version: 1,
+        width: photo.width,
+        height: photo.height,
+        corners,
+        teams: { top: teams.top.trim(), left: teams.left.trim() },
+        mode: resp.read.digit_sets,
+        rows,
+        game,
+        finalIncludesOvertime: true,
+        names: {},
+        mine: [],
+      };
+      if (sheetId) {
+        // The pool was posted before it had a photo: add the photo to it. It becomes a draft; the runner is already signed in by their key.
+        await fillSheet(sheetId, doc, photo.blob);
+        location.assign(`/s/${sheetId}`);
+        return;
+      }
+      const { id, editToken } = await createSheet(doc, photo.blob);
+      // Started from a venue page ("Add a sheet from a photo"): attach it there as a draft; publishing it opens it to viewers.
+      const venueId = q.get("venue");
+      if (venueId) await patchSettings(id, editToken, { venueId }).catch(() => undefined);
       location.assign(`/s/${id}#k=${editToken}`);
     } catch {
       setError({ message: "Could not save the sheet. Check your connection and try again.", needInvite: false });
@@ -118,14 +152,14 @@ export function NewSheet() {
       {phase === "pick" && (
         <section>
           <h2>Start with a photo</h2>
-          <p className="sub">Get the whole sheet in view: the team names, every digit and every square.</p>
+          <p className="sub">Get the whole sheet in view: the team names, every digit and every block.</p>
           <label className="bigbtn">
             Take or choose a photo
             <input type="file" accept="image/*" onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
           <p className="sub">
             The photo is shrunk and stripped of location and camera data on your phone first. It's kept privately so you can open the sheet from a link, and
-            deleted 30 days after the game.
+            deleted 30 days after the game (7 days when the sheet is on a venue).
           </p>
         </section>
       )}
@@ -161,7 +195,7 @@ export function NewSheet() {
                 if (photo) read(photo);
               }}
             >
-              <input value={invite} onChange={(e) => setInvite(e.target.value)} placeholder="Invite code" autoComplete="off" />
+              <input value={invite} onChange={(e) => setInvite(e.target.value)} placeholder="Access code" autoComplete="off" />
               <button disabled={!invite}>Try again</button>
             </form>
           )}
@@ -217,9 +251,9 @@ export function NewSheet() {
 
       {phase === "questions" && resp && photo && corners && game && (
         <section>
-          <h2>Do the lines sit on the squares?</h2>
+          <h2>Do the lines sit on the blocks?</h2>
           <p className="sub">
-            The winning squares and every name are found from this grid, so get it right now. Drag a corner circle, or tap “Snap to the lines”.
+            The winning blocks and every name are found from this grid, so get it right now. Drag a corner circle, or tap “Snap to the lines”.
           </p>
           <div className={zoom ? "zoomwrap on" : "zoomwrap"}>
             <GridOverlay url={photo.url} width={photo.width} height={photo.height} corners={corners} onChange={setCorners} />

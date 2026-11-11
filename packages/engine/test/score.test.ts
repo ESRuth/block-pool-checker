@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SETTINGS, PoolSettingsSchema, freshness, orientation, periodResults, toPoolScore, type ScoreSnapshot } from "../src/index.js";
+import { freshness, orientation, periodResults, toPoolScore, type ScoreSnapshot } from "../src/index.js";
 
 const IND = { abbr: "IND", name: "Indianapolis Colts", nickname: "Colts", location: "Indianapolis" };
 const ATL = { abbr: "ATL", name: "Atlanta Falcons", nickname: "Falcons", location: "Atlanta" };
@@ -18,19 +18,11 @@ const ot: ScoreSnapshot = {
   total: { home: 31, away: 25 },
 };
 
-describe("settings", () => {
-  it("defaults: OT counts, payouts sum to 100", () => {
-    expect(DEFAULT_SETTINGS.finalIncludesOvertime).toBe(true);
-    expect(Object.values(DEFAULT_SETTINGS.payoutPercentages).reduce((a, b) => a + b, 0)).toBe(100);
-  });
-  it("rejects payouts over 100%", () => {
-    expect(() => PoolSettingsSchema.parse({ payoutPercentages: { Q1: 50, Half: 50, Q3: 50, Final: 50 } })).toThrow();
-  });
-});
+const OT_COUNTS = { finalIncludesOvertime: true };
 
 describe("periodResults", () => {
   it("final OT game: Final includes OT by default", () => {
-    const r = periodResults(ot, DEFAULT_SETTINGS);
+    const r = periodResults(ot, OT_COUNTS);
     expect(r.map((x) => x.state)).toEqual(["official", "official", "official", "official"]);
     expect(r[0]!.score).toEqual({ home: 13, away: 7 });
     expect(r[1]!.score).toEqual({ home: 13, away: 14 });
@@ -43,23 +35,23 @@ describe("periodResults", () => {
   });
   it("in progress during Q3 (synthetic): Q1/Half official, Q3 provisional, Final not started", () => {
     const live: ScoreSnapshot = { ...ot, status: "in_progress", periods: { home: [13, 0, 0], away: [7, 7, 3] }, total: { home: 13, away: 17 } };
-    expect(periodResults(live, DEFAULT_SETTINGS).map((x) => x.state)).toEqual(["official", "official", "in_progress", "not_started"]);
+    expect(periodResults(live, OT_COUNTS).map((x) => x.state)).toEqual(["official", "official", "in_progress", "not_started"]);
   });
   it("halftime: Half is official", () => {
     const ht: ScoreSnapshot = { ...ot, status: "halftime", periods: { home: [13, 0], away: [7, 7] }, total: { home: 13, away: 14 } };
-    expect(periodResults(ht, DEFAULT_SETTINGS).map((x) => x.state)).toEqual(["official", "official", "not_started", "not_started"]);
+    expect(periodResults(ht, OT_COUNTS).map((x) => x.state)).toEqual(["official", "official", "not_started", "not_started"]);
   });
   it("Q4 in progress: Final provisional; in OT with regulation setting it is already official", () => {
     const q4: ScoreSnapshot = { ...ot, status: "in_progress", periods: { home: [13, 0, 0, 12], away: [7, 7, 3, 8] }, total: { home: 25, away: 25 } };
-    expect(periodResults(q4, DEFAULT_SETTINGS)[3]!.state).toBe("in_progress");
+    expect(periodResults(q4, OT_COUNTS)[3]!.state).toBe("in_progress");
     expect(periodResults(q4, { finalIncludesOvertime: false })[3]!.state).toBe("in_progress");
     const inOt: ScoreSnapshot = { ...ot, status: "in_progress" };
     expect(periodResults(inOt, { finalIncludesOvertime: false })[3]).toMatchObject({ state: "official", score: { home: 25, away: 25 } });
-    expect(periodResults(inOt, DEFAULT_SETTINGS)[3]!.state).toBe("in_progress");
+    expect(periodResults(inOt, OT_COUNTS)[3]!.state).toBe("in_progress");
   });
   it("scheduled game has nothing", () => {
     const pre: ScoreSnapshot = { ...ot, status: "scheduled", periods: { home: [], away: [] }, total: { home: 0, away: 0 } };
-    expect(periodResults(pre, DEFAULT_SETTINGS).every((x) => x.state === "not_started")).toBe(true);
+    expect(periodResults(pre, OT_COUNTS).every((x) => x.state === "not_started")).toBe(true);
   });
 });
 

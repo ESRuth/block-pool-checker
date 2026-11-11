@@ -14,7 +14,7 @@ export default defineConfig({
       manifest: {
         name: "Block Pool Checker",
         short_name: "Pool Checker",
-        description: "Check your football squares pool during the game.",
+        description: "Check your football block pool during the game.",
         theme_color: "#14532d",
         background_color: "#14532d",
         display: "standalone",

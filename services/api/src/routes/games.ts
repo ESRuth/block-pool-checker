@@ -28,6 +28,12 @@ export function gameRoutes(app: Hono, scores: ScoreProvider, games: GameDirector
     return r instanceof Response ? r : c.json({ games: r });
   });
 
+  /** Games that have not started (soonest first): what a sheet is posted for before its game. Optional `q` narrows to a team's schedule. */
+  app.get("/api/games/upcoming", async (c) => {
+    const r = await upstream(c, () => games.upcoming(c.req.query("q")?.trim() || undefined, limit(c.req.query("limit"), 8)));
+    return r instanceof Response ? r : c.json({ games: r });
+  });
+
   /** Known teams -> their games (head-to-head first); otherwise callers should use /recent or /search. */
   app.get("/api/games/suggest", async (c) => {
     const top = c.req.query("top")?.trim();

@@ -61,7 +61,7 @@ describe("POST /api/read", () => {
     expect(j.digits).toBeNull();
     expect(j.problems.map((p: any) => `${p.set}.${p.axis}:${p.kind}`).sort()).toEqual(["Half.top:unreadable_digit", "Q3.left:duplicate_digit"]);
   });
-  it("disabled without a reader; invite code enforced when configured", async () => {
+  it("disabled without a reader; access code enforced when configured", async () => {
     expect((await post(app())).status).toBe(503);
     const guarded = app(fakeReader(read("eagles_commanders")), "pw");
     expect((await post(guarded)).status).toBe(403);
@@ -132,7 +132,7 @@ describe("POST /api/read-names", () => {
     expect(j.names).toHaveLength(10);
     expect(j.names[3].slice(0, 4)).toEqual(["Ted Q", null, "", "Ben + Emil"]);
   });
-  it("guards: no reader 503, invite code 403, bad body 400, upstream failure 502 without detail", async () => {
+  it("guards: no reader 503, access code 403, bad body 400, upstream failure 502 without detail", async () => {
     const body = { image: b64 };
     expect((await send(app(), body)).status).toBe(503);
     expect((await send(app(fakeReader(read("eagles_commanders")), "pw"), body)).status).toBe(403);

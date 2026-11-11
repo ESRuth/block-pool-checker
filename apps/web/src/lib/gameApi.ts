@@ -23,6 +23,9 @@ export const fetchGameScore = (gameId: string) => getJson<GameScore>(`/api/games
 export const fetchGameSuggestions = (top: string, left: string) =>
   getJson<{ games: GameRef[] }>(`/api/games/suggest?top=${encodeURIComponent(top)}&left=${encodeURIComponent(left)}&limit=6`).then((r) => r.games);
 export const searchGames = (q: string) => getJson<{ games: GameRef[] }>(`/api/games/search?q=${encodeURIComponent(q)}&limit=8`).then((r) => r.games);
+/** Games that have not started yet, soonest first (up to about two months ahead); `q` narrows to one team's schedule. */
+export const upcomingGames = (q?: string) =>
+  getJson<{ games: GameRef[] }>(`/api/games/upcoming?limit=8${q ? `&q=${encodeURIComponent(q)}` : ""}`).then((r) => r.games);
 export const recentGames = () => getJson<{ games: GameRef[] }>("/api/games/recent?limit=8").then((r) => r.games);
 
 // --- local storage ---------------------------------------------------------------

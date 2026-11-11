@@ -68,9 +68,9 @@ function fitLines(profile: Float32Array, nominalStart: number, nominalStep: numb
 }
 
 /**
- * One pass. `margin` is how much surrounding photo to keep for context; `reach` is how far (in squares) the lines may move.
- * Reach must stay below half a square: the grid repeats every square and the digit-label bands share its spacing,
- * so a wider search can lock onto the neighbouring alignment (observed: a whole square off).
+ * One pass. `margin` is how much surrounding photo to keep for context; `reach` is how far (in blocks) the lines may move.
+ * Reach must stay below half a block: the grid repeats every block and the digit-label bands share its spacing,
+ * so a wider search can lock onto the neighbouring alignment (it can land a whole block off).
  */
 function snapOnce(img: Gray, quad: Quad, margin: number, reach: number, stepFrac: number): { quad: Quad; evidence: number } {
   const dist = (a: Pt, b: Pt) => Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -98,13 +98,13 @@ export interface SnapResult {
   corners: Quad;
   /** How strongly the fitted lines stand out from the rest of the photo (about 5-10 on good fits). */
   evidence: number;
-  /** How far the corners moved from the starting guess, in squares. Large moves mean the guess was poor. */
-  movedCells: number;
+  /** How far the corners moved from the starting guess, in blocks. Large moves mean the guess was poor. */
+  movedBlocks: number;
 }
 
 /**
  * Snap a rough guess of the grid's four outer corners (photo pixels, TL TR BR BL) onto the printed grid lines.
- * Works when the guess is within about a square; it cannot rescue a guess that includes the digit-label bands.
+ * Works when the guess is within about a block; it cannot rescue a guess that includes the digit-label bands.
  */
 export function snapGrid(img: Gray, start: Quad): SnapResult {
   let quad = start;
@@ -115,7 +115,7 @@ export function snapGrid(img: Gray, start: Quad): SnapResult {
     [0.03, 0.05, 0.02],
   ] as const)
     ({ quad, evidence } = snapOnce(img, quad, margin, reach, stepFrac));
-  const cell = (Math.hypot(start[1][0] - start[0][0], start[1][1] - start[0][1]) + Math.hypot(start[2][0] - start[3][0], start[2][1] - start[3][1])) / 20;
-  const moved = quad.reduce((s, p, i) => s + Math.hypot(p[0] - start[i]![0], p[1] - start[i]![1]), 0) / 4 / cell;
-  return { corners: quad, evidence, movedCells: moved };
+  const block = (Math.hypot(start[1][0] - start[0][0], start[1][1] - start[0][1]) + Math.hypot(start[2][0] - start[3][0], start[2][1] - start[3][1])) / 20;
+  const moved = quad.reduce((s, p, i) => s + Math.hypot(p[0] - start[i]![0], p[1] - start[i]![1]), 0) / 4 / block;
+  return { corners: quad, evidence, movedBlocks: moved };
 }

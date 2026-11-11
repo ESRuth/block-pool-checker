@@ -3,15 +3,15 @@ import type { NameEntry } from "../../lib/sheetApi";
 
 interface Props {
   lines: ReportLine[];
-  /** Names cached per winning square. */
+  /** Names cached per winning block. */
   names: Record<string, NameEntry>;
-  /** Squares whose name is being read right now. */
+  /** Blocks whose name is being read right now. */
   reading: Set<string>;
-  onName: (cell: string, text: string) => void;
-  onConfirm: (cell: string) => void;
+  onName: (block: string, text: string) => void;
+  onConfirm: (block: string) => void;
   /** A view-only link: names can be seen but not changed. */
   readOnly?: boolean;
-  /** Squares the person marked as theirs. */
+  /** Blocks the person marked as theirs. */
   mine?: Set<string>;
 }
 
@@ -20,26 +20,26 @@ export function Results({ lines, names, reading, onName, onConfirm, readOnly, mi
   return (
     <ol className="lines">
       {lines.map((l) => {
-        const n = l.cell ? names[l.cell] : undefined;
-        const yours = !!l.cell && !!mine?.has(l.cell);
+        const n = l.block ? names[l.block] : undefined;
+        const yours = !!l.block && !!mine?.has(l.block);
         return (
           <li key={l.period} style={{ color: l.color, ...({ "--c": l.color } as object) }} className={l.dim ? "dim" : ""}>
             <span className="plabel" aria-label={`Period ${l.label}`}>
               {l.label}
             </span>
             <span className="pscore">{l.score}</span>
-            {l.wantsName && l.cell ? (
+            {l.wantsName && l.block ? (
               <span className="pname">
                 <input
                   value={n?.text ?? ""}
                   autoComplete="off"
                   aria-label={`Winner's name for period ${l.label}`}
                   readOnly={readOnly}
-                  placeholder={reading.has(l.cell) || !n ? "reading name…" : readOnly ? "no name yet" : "type the name"}
-                  onChange={(e) => onName(l.cell!, e.target.value)}
+                  placeholder={reading.has(l.block) || !n ? "reading name…" : readOnly ? "no name yet" : "type the name"}
+                  onChange={(e) => onName(l.block!, e.target.value)}
                 />
                 {!readOnly && n && !n.confirmed && n.text.trim() && (
-                  <button className="qm" title="Read by the app. Tap if it's right." aria-label="Mark this name as right" onClick={() => onConfirm(l.cell!)}>
+                  <button className="qm" title="Read by the app. Tap if it's right." aria-label="Mark this name as right" onClick={() => onConfirm(l.block!)}>
                     ?
                   </button>
                 )}

@@ -3,7 +3,7 @@ import type { Quad } from "@bpc/engine";
 import { snapGrid, type Gray } from "@bpc/vision";
 import { GridOverlay } from "../../components/GridOverlay";
 import type { Box } from "../../lib/boxes";
-import type { Highlight } from "../../hooks/useSquares";
+import type { Highlight } from "../../hooks/useBlocks";
 import type { useGridHistory } from "../../hooks/useGridHistory";
 
 interface Props {

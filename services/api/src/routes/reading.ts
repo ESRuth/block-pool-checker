@@ -15,7 +15,7 @@ export function readingRoutes(app: Hono, a: Access, reader: Reader | undefined) 
   app.post("/api/read", bodyLimit({ maxSize: 8 * 1024 * 1024, onError: (c) => c.json({ error: "image too large" }, 413) }), async (c) => {
     if (!reader) return c.json({ error: "photo reading is not enabled" }, 503);
     const who = await a.access(c);
-    if (!who) return c.json({ error: "invite code required" }, 403);
+    if (!who) return c.json({ error: "access code required" }, 403);
     if (!(await a.underReadCap(who))) return c.json(capReply, 429);
     const type = (c.req.header("Content-Type") ?? "").split(";")[0]!.trim() as ImageType;
     if (!IMAGE_TYPES.includes(type)) return c.json({ error: "send the image as the request body with Content-Type image/jpeg, image/png or image/webp" }, 415);
@@ -36,7 +36,7 @@ export function readingRoutes(app: Hono, a: Access, reader: Reader | undefined) 
   app.post("/api/read-names", bodyLimit({ maxSize: 4 * 1024 * 1024, onError: (c) => c.json({ error: "too large" }, 413) }), async (c) => {
     if (!reader) return c.json({ error: "photo reading is not enabled" }, 503);
     const who = await a.access(c);
-    if (!who) return c.json({ error: "invite code required" }, 403);
+    if (!who) return c.json({ error: "access code required" }, 403);
     if (!(await a.underReadCap(who))) return c.json(capReply, 429);
     const { image } = NamesBody.parse(await c.req.json());
     try {

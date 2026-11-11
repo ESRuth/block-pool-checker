@@ -15,7 +15,7 @@ interface Props {
   showGrid?: boolean;
   /** Draggable corner circles; hide them once the grid is right. */
   handles?: boolean;
-  /** Squares to light up: `mine` ones strongly, the rest as search matches. */
+  /** Blocks to light up: `mine` ones strongly, the rest as search matches. */
   highlights?: Array<{ quad: Quad; kind: "mine" | "match" | "maybe" | "sel" }>;
   /** Called when a corner drag begins, so the caller can remember where the grid was (for undo). */
   onDragStart?: () => void;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 /**
- * Where a winner's box and its period number are drawn, in photo pixels. The number is a small rounded square sitting entirely inside the box,
+ * Where a winner's box and its period number are drawn, in photo pixels. The number is a small rounded badge sitting entirely inside the box,
  * in its bottom-right corner (just clear of the outline), following the grid's perspective.
  */
 function markerShape(m: Box) {
@@ -38,7 +38,7 @@ function markerShape(m: Box) {
   const up = unit(p2, p1); // along the right edge, upwards
   const side = cw * 0.28;
   const inset = cw / 40 + cw / 60; // half the outline's width plus a hair, so the badge sits inside it
-  const from = side * 1.12 * m.nest + inset; // boxes sharing a square: badges side by side, leftwards
+  const from = side * 1.12 * m.nest + inset; // boxes sharing a block: badges side by side, leftwards
   const at = (l: number, u: number) => [p2[0] + left[0] * l + up[0] * u, p2[1] + left[1] * l + up[1] * u] as const;
   const corners = [at(from, inset), at(from + side, inset), at(from + side, inset + side), at(from, inset + side)];
   const mid = at(from + side / 2, inset + side / 2);
@@ -137,7 +137,7 @@ export function GridOverlay({
         {highlights.map((h, i) => (
           <polygon key={i} points={h.quad.map((p) => p.join(",")).join(" ")} className={`hl ${h.kind}`} strokeWidth={width / 500} strokeLinejoin="round" />
         ))}
-        {/* Outlines only: the names inside the squares must stay readable. A white halo under each colour line keeps it visible on any paper. */}
+        {/* Outlines only: the names inside the blocks must stay readable. A white halo under each colour line keeps it visible on any paper. */}
         {markers.map((m) => {
           const g = markerShape(m);
           return (
@@ -155,8 +155,8 @@ export function GridOverlay({
             </g>
           );
         })}
-        {/* The period number is a small square inside each box's bottom-right corner, drawn after every box so no neighbour's outline covers it.
-            Colour alone is never the cue (colour blindness); boxes sharing a square have their numbers side by side. */}
+        {/* The period number is a small block inside each box's bottom-right corner, drawn after every box so no neighbour's outline covers it.
+            Colour alone is never the cue; boxes sharing a block have their numbers side by side. */}
         {markers.map((m) => {
           const g = markerShape(m);
           return (

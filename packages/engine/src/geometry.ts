@@ -55,7 +55,7 @@ export function apply(m: Matrix3, [x, y]: Pt): Pt {
   return [(m[0] * x + m[1] * y + m[2]) / w, (m[3] * x + m[4] * y + m[5]) / w];
 }
 
-/** Grid of 10x10 squares as a mapping between unit-square grid coordinates (0..10 each way) and photo pixels. */
+/** Grid of 10x10 blocks as a mapping between unit-block grid coordinates (0..10 each way) and photo pixels. */
 export function gridTransform(corners: Quad) {
   const toPhoto = homography(
     [
@@ -70,8 +70,8 @@ export function gridTransform(corners: Quad) {
   return { toPhoto, toGrid };
 }
 
-/** The four photo-pixel corners of a square. Rows and columns are 1-based. */
-export function cellQuad(corners: Quad, row: number, col: number): Quad {
+/** The four photo-pixel corners of a block. Rows and columns are 1-based. */
+export function blockQuad(corners: Quad, row: number, col: number): Quad {
   if (!Number.isInteger(row) || !Number.isInteger(col) || row < 1 || row > 10 || col < 1 || col > 10) throw new RangeError("row/col must be 1-10");
   const { toPhoto } = gridTransform(corners);
   const c = col - 1,
@@ -79,20 +79,20 @@ export function cellQuad(corners: Quad, row: number, col: number): Quad {
   return [apply(toPhoto, [c, r]), apply(toPhoto, [c + 1, r]), apply(toPhoto, [c + 1, r + 1]), apply(toPhoto, [c, r + 1])];
 }
 
-/** Which square (1-based) a photo pixel falls in, or null if outside the grid. */
-export function pointToCell(corners: Quad, p: Pt): { row: number; col: number } | null {
+/** Which block (1-based) a photo pixel falls in, or null if outside the grid. */
+export function pointToBlock(corners: Quad, p: Pt): { row: number; col: number } | null {
   const [gx, gy] = apply(gridTransform(corners).toGrid, p);
   if (gx < 0 || gy < 0 || gx >= 10 || gy >= 10) return null;
   return { row: Math.floor(gy) + 1, col: Math.floor(gx) + 1 };
 }
 
 export interface GridExtent {
-  /** True when any part of the grid lies outside the photo (beyond `tolerance` squares): winners there cannot be marked. */
+  /** True when any part of the grid lies outside the photo (beyond `tolerance` blocks): winners there cannot be marked. */
   incomplete: boolean;
   /** Which edges the grid crosses. */
   sides: Array<"left" | "right" | "top" | "bottom">;
-  /** Squares (1-based) that lie fully or partly outside the photo. */
-  cellsOutside: Array<{ row: number; col: number }>;
+  /** Blocks (1-based) that lie fully or partly outside the photo. */
+  blocksOutside: Array<{ row: number; col: number }>;
 }
 
 /** Check a grid against the photo bounds. Deliberately geometric: a vision model's own "grid_complete" flag proved unreliable. */
@@ -102,11 +102,11 @@ export function gridExtent(corners: Quad, width: number, height: number, toleran
   const cw = Math.hypot(corners[1][0] - corners[0][0], corners[1][1] - corners[0][1]) / 10;
   const ch = Math.hypot(corners[3][0] - corners[0][0], corners[3][1] - corners[0][1]) / 10;
   const sides = new Set<"left" | "right" | "top" | "bottom">();
-  const cellsOutside: Array<{ row: number; col: number }> = [];
+  const blocksOutside: Array<{ row: number; col: number }> = [];
   for (let row = 1; row <= 10; row++) {
     for (let col = 1; col <= 10; col++) {
       let any = false;
-      for (const pt of cellQuad(corners, row, col)) {
+      for (const pt of blockQuad(corners, row, col)) {
         const o = outside(pt, cw, ch);
         if (o.l) {
           sides.add("left");
@@ -125,8 +125,8 @@ export function gridExtent(corners: Quad, width: number, height: number, toleran
           any = true;
         }
       }
-      if (any) cellsOutside.push({ row, col });
+      if (any) blocksOutside.push({ row, col });
     }
   }
-  return { incomplete: cellsOutside.length > 0, sides: [...sides], cellsOutside };
+  return { incomplete: blocksOutside.length > 0, sides: [...sides], blocksOutside };
 }

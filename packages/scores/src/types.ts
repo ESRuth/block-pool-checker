@@ -21,6 +21,12 @@ export interface GameDirectory {
   recent(limit?: number): Promise<GameRef[]>;
   /** Games between/involving the named teams, most recent first. Games involving both teams rank first. */
   forTeams(topTeam: string, leftTeam?: string, limit?: number): Promise<GameRef[]>;
+  /**
+   * Games that have not started, soonest first, up to about two months ahead: what a pool is posted for before its game.
+   * With a team name or two ("eagles", "eagles chiefs"), that team's schedule (playoffs included);
+   * without, the next few weeks league-wide.
+   */
+  upcoming(query?: string, limit?: number): Promise<GameRef[]>;
   /** Free-text search ("eagles commanders", "new york"). */
   search(query: string, limit?: number): Promise<GameRef[]>;
 }

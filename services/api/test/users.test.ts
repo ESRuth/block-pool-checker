@@ -51,38 +51,38 @@ const setup = (dailyReadCap?: number) => {
     });
   return { call, users };
 };
-const invite = async (s: ReturnType<typeof setup>, name: string) => (await (await s.call("/api/admin/users", "owner-code", { name })).json()) as any;
+const invite = async (s: ReturnType<typeof setup>, name: string) => (await (await s.call("/api/owner/users", "owner-code", { name })).json()) as any;
 
 describe("personal invite keys", () => {
   it("the owner makes a key for a person; the key is shown once and only its hash is stored", async () => {
     const s = setup();
-    const u = await invite(s, "Skyes");
+    const u = await invite(s, "Jordan");
     expect(u.key).toMatch(/\S{15,}/);
     expect(JSON.stringify(await s.users.list())).not.toContain(u.key);
-    const list = (await (await s.call("/api/admin/users", "owner-code")).json()) as any;
+    const list = (await (await s.call("/api/owner/users", "owner-code")).json()) as any;
     expect(list.users).toHaveLength(1);
     expect(JSON.stringify(list)).not.toContain(u.key);
     expect(JSON.stringify(list)).not.toContain("keyHash");
   });
 
-  it("a personal key identifies the person, but cannot use the admin pages", async () => {
+  it("a personal key identifies the person, but cannot use the owner pages", async () => {
     const s = setup();
-    const u = await invite(s, "Skyes");
-    expect(await (await s.call("/api/me", u.key)).json()).toEqual({ name: "Skyes", owner: false });
+    const u = await invite(s, "Jordan");
+    expect(await (await s.call("/api/me", u.key)).json()).toEqual({ name: "Jordan", owner: false });
     expect(await (await s.call("/api/me", "owner-code")).json()).toEqual({ name: "Owner", owner: true });
     expect((await s.call("/api/me")).status).toBe(403);
     expect((await s.call("/api/me", "wrong")).status).toBe(403);
-    expect((await s.call("/api/admin/users", u.key)).status).toBe(403);
-    expect((await s.call("/api/admin/users", u.key, { name: "x" })).status).toBe(403);
+    expect((await s.call("/api/owner/users", u.key)).status).toBe(403);
+    expect((await s.call("/api/owner/users", u.key, { name: "x" })).status).toBe(403);
   });
 
   it("sheets record who created and last changed them", async () => {
     const s = setup();
-    const speaks = await invite(s, "Skyes");
-    const made = (await (await s.call("/api/sheets", speaks.key, doc)).json()) as any;
-    expect(made.createdBy).toBe("Skyes");
+    const person = await invite(s, "Jordan");
+    const made = (await (await s.call("/api/sheets", person.key, doc)).json()) as any;
+    expect(made.createdBy).toBe("Jordan");
     const view = (await (await s.call(`/api/sheets/${made.id}`)).json()) as any;
-    expect(view.createdBy).toBe("Skyes");
+    expect(view.createdBy).toBe("Jordan");
     const edit = (key?: string) => s.call(`/api/sheets/${made.id}`, key, doc, "PUT", made.editToken);
     expect((await edit("owner-code")).status).toBe(200);
     expect(((await (await s.call(`/api/sheets/${made.id}`)).json()) as any).updatedBy).toBe("Owner");
@@ -92,11 +92,11 @@ describe("personal invite keys", () => {
 
   it("uses are counted, and a revoked key stops working at once", async () => {
     const s = setup();
-    const u = await invite(s, "Skyes");
+    const u = await invite(s, "Jordan");
     await s.call("/api/read-names", u.key, { image: "AAAA" });
     await s.call("/api/read-names", u.key, { image: "AAAA" });
-    expect(((await (await s.call("/api/admin/users", "owner-code")).json()) as any).users[0].uses).toBe(2);
-    expect((await s.call(`/api/admin/users/${u.id}/revoke`, "owner-code", {})).status).toBe(200);
+    expect(((await (await s.call("/api/owner/users", "owner-code")).json()) as any).users[0].uses).toBe(2);
+    expect((await s.call(`/api/owner/users/${u.id}/revoke`, "owner-code", {})).status).toBe(200);
     expect((await s.call("/api/me", u.key)).status).toBe(403);
     expect((await s.call("/api/sheets", u.key, doc)).status).toBe(403);
   });
@@ -105,23 +105,23 @@ describe("personal invite keys", () => {
 describe("My Sheets", () => {
   it("lists a person's own sheets and lets them edit without the edit link; others cannot", async () => {
     const s = setup();
-    const speaks = await invite(s, "Skyes");
+    const person = await invite(s, "Jordan");
     const other = await invite(s, "Other");
-    const made = (await (await s.call("/api/sheets", speaks.key, doc)).json()) as any;
+    const made = (await (await s.call("/api/sheets", person.key, doc)).json()) as any;
     await s.call("/api/sheets", other.key, doc);
-    const mine = (await (await s.call("/api/my/sheets", speaks.key)).json()) as any;
+    const mine = (await (await s.call("/api/my/sheets", person.key)).json()) as any;
     expect(mine.sheets).toHaveLength(1);
     expect(mine.sheets[0]).toMatchObject({ id: made.id, teams: { top: "Eagles", left: "Commanders" } });
     expect(JSON.stringify(mine)).not.toContain("editToken");
     expect((await s.call("/api/my/sheets")).status).toBe(403);
     const all = (await (await s.call("/api/my/sheets", "owner-code")).json()) as any;
-    expect(all.sheets.map((x: any) => x.createdBy).sort()).toEqual(["Other", "Skyes"]); // the owner sees everyone's
+    expect(all.sheets.map((x: any) => x.createdBy).sort()).toEqual(["Jordan", "Other"]); // the owner sees everyone's
     const canEdit = async (key?: string) => ((await (await s.call(`/api/sheets/${made.id}`, key)).json()) as any).canEdit;
-    expect(await canEdit(speaks.key)).toBe(true);
+    expect(await canEdit(person.key)).toBe(true);
     expect(await canEdit("owner-code")).toBe(true);
     expect(await canEdit(other.key)).toBe(false);
     expect(await canEdit()).toBe(false);
-    expect((await s.call(`/api/sheets/${made.id}`, speaks.key, doc, "PUT")).status).toBe(200);
+    expect((await s.call(`/api/sheets/${made.id}`, person.key, doc, "PUT")).status).toBe(200);
     expect((await s.call(`/api/sheets/${made.id}`, other.key, doc, "PUT")).status).toBe(403);
   });
 });
@@ -160,12 +160,12 @@ describe("My Sheets for the owner", () => {
 describe("making an edit link later", () => {
   it("the creator can make a new edit link; it works, older links keep working, others cannot make one", async () => {
     const s = setup();
-    const speaks = await invite(s, "Skyes");
+    const person = await invite(s, "Jordan");
     const other = await invite(s, "Other");
-    const made = (await (await s.call("/api/sheets", speaks.key, doc)).json()) as any;
+    const made = (await (await s.call("/api/sheets", person.key, doc)).json()) as any;
     expect((await s.call(`/api/sheets/${made.id}/edit-links`, other.key, {})).status).toBe(403);
     expect((await s.call(`/api/sheets/${made.id}/edit-links`, undefined, {})).status).toBe(403);
-    const mk = (await (await s.call(`/api/sheets/${made.id}/edit-links`, speaks.key, {})).json()) as any;
+    const mk = (await (await s.call(`/api/sheets/${made.id}/edit-links`, person.key, {})).json()) as any;
     expect(mk.editToken).toMatch(/\S{20,}/);
     const put = (token: string) => s.call(`/api/sheets/${made.id}`, undefined, doc, "PUT", token);
     expect((await put(mk.editToken)).status).toBe(200); // the new link edits with no personal key
@@ -178,26 +178,26 @@ describe("making an edit link later", () => {
 describe("getting a link again", () => {
   it("the owner can make another link for a person; both links work; revoking turns all of them off; others cannot", async () => {
     const s = setup();
-    const u = await invite(s, "Skyes");
-    const again = (await (await s.call(`/api/admin/users/${u.id}/links`, "owner-code", {})).json()) as any;
+    const u = await invite(s, "Jordan");
+    const again = (await (await s.call(`/api/owner/users/${u.id}/links`, "owner-code", {})).json()) as any;
     expect(again.key).toMatch(/\S{15,}/);
     expect(again.key).not.toBe(u.key);
-    expect(await (await s.call("/api/me", again.key)).json()).toEqual({ name: "Skyes", owner: false });
+    expect(await (await s.call("/api/me", again.key)).json()).toEqual({ name: "Jordan", owner: false });
     expect((await s.call("/api/me", u.key)).status).toBe(200); // the first link still works
     expect(JSON.stringify(await s.users.list())).not.toContain(again.key);
-    expect((await s.call(`/api/admin/users/${u.id}/links`, u.key, {})).status).toBe(403);
-    expect((await s.call(`/api/admin/users/nope/links`, "owner-code", {})).status).toBe(404);
-    await s.call(`/api/admin/users/${u.id}/revoke`, "owner-code", {});
+    expect((await s.call(`/api/owner/users/${u.id}/links`, u.key, {})).status).toBe(403);
+    expect((await s.call(`/api/owner/users/nope/links`, "owner-code", {})).status).toBe(404);
+    await s.call(`/api/owner/users/${u.id}/revoke`, "owner-code", {});
     expect((await s.call("/api/me", again.key)).status).toBe(403);
     expect((await s.call("/api/me", u.key)).status).toBe(403);
-    expect((await s.call(`/api/admin/users/${u.id}/links`, "owner-code", {})).status).toBe(409);
+    expect((await s.call(`/api/owner/users/${u.id}/links`, "owner-code", {})).status).toBe(409);
   });
 });
 
 describe("daily read cap", () => {
   it("an invited person is stopped after the cap, the owner is not, and the next day starts fresh", async () => {
     const s = setup(2);
-    const u = await invite(s, "Skyes");
+    const u = await invite(s, "Jordan");
     const names = (k: string) => s.call("/api/read-names", k, { image: "AQID" });
     expect((await names(u.key)).status).toBe(200);
     expect((await names(u.key)).status).toBe(200);

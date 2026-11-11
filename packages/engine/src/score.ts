@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { PERIODS, type Period } from "./periods.js";
-import type { PoolSettings } from "./settings.js";
 
 export const SCORE_STATUSES = ["scheduled", "in_progress", "halftime", "final"] as const;
 export const ScoreStatusSchema = z.enum(SCORE_STATUSES);
@@ -139,7 +138,7 @@ export function completedQuarters(s: ScoreSnapshot): number {
  * Official vs provisional state of each payout period. Only "official" scores may be treated as winners;
  * "in_progress" is a provisional "currently winning".
  */
-export function periodResults(s: ScoreSnapshot, settings: Pick<PoolSettings, "finalIncludesOvertime">): PeriodResult[] {
+export function periodResults(s: ScoreSnapshot, settings: { finalIncludesOvertime: boolean }): PeriodResult[] {
   const done = completedQuarters(s);
   const cum = (n: number) => ({ home: sum(s.periods.home, n), away: sum(s.periods.away, n) });
   return PERIODS.map((period, i): PeriodResult => {

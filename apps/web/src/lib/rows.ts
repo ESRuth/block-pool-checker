@@ -91,8 +91,8 @@ export async function gridImage(img: CanvasImageSource, corners: Quad): Promise<
   return btoa(bin);
 }
 
-/** A close-up of one square (1-based row/col), straightened, with a little of its neighbours around it. */
-export function cellCanvas(img: CanvasImageSource, corners: Quad, row: number, col: number, w = 560, h = 380, pad = 0.12): HTMLCanvasElement {
+/** A close-up of one block (1-based row/col), straightened, with a little of its neighbours around it. */
+export function blockCanvas(img: CanvasImageSource, corners: Quad, row: number, col: number, w = 560, h = 380, pad = 0.12): HTMLCanvasElement {
   const { toPhoto } = gridTransform(corners);
   const canvas = document.createElement("canvas");
   canvas.width = w;

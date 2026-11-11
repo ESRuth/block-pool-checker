@@ -8,10 +8,10 @@ export interface ReportLine {
   label: string;
   /** Cumulative score as top-left, e.g. "10-3"; empty before the period starts. */
   score: string;
-  /** True when a name belongs after the text (the square is inside the photo and the period has a winner). */
+  /** True when a name belongs after the text (the block is inside the photo and the period has a winner). */
   wantsName: boolean;
-  /** Key of the winning square ("row,col") that the name is cached under; row and column are never shown. */
-  cell: string | null;
+  /** Key of the winning block ("row,col") that the name is cached under; row and column are never shown. */
+  block: string | null;
   /** Short note after the name: "winning now, can change", "not started yet", "outside the photo". Empty when there is nothing to say. */
   note: string;
   color: string;
@@ -27,7 +27,7 @@ export function pretty(team: string): string {
   return t === t.toUpperCase() ? t.toLowerCase().replace(/(^|[\s-])([a-z])/g, (_, a, b) => a + b.toUpperCase()) : t;
 }
 
-/** "Eagles vs Commanders". */
+/** "Team A vs Team B". */
 export const matchup = (topTeam: string, leftTeam: string) => `${pretty(topTeam)} vs ${pretty(leftTeam)}`;
 
 /** "Sunday, Nov 1, 2026" in the viewer's time zone. */
@@ -39,20 +39,21 @@ export function reportTitle(topTeam: string, leftTeam: string, kickoffIso: strin
   return `${pretty(topTeam)} vs ${pretty(leftTeam)}, ${d}`;
 }
 
-/** One line per period: label, score, the winning square's name, and a short note. */
+/** One line per period: label, score, the winning block's name, and a short note. */
 export function reportLines(rows: PeriodRow[], outside: Set<string>): ReportLine[] {
   return rows.map((r): ReportLine => {
     const label = LABEL[r.period];
-    if (!r.cell || !r.score) return { period: r.period, label, score: "", wantsName: false, cell: null, note: "not started yet", color: "#777777", dim: true };
-    const key = `${r.cell.row},${r.cell.col}`;
+    if (!r.block || !r.score)
+      return { period: r.period, label, score: "", wantsName: false, block: null, note: "not started yet", color: "#777777", dim: true };
+    const key = `${r.block.row},${r.block.col}`;
     const isOutside = outside.has(key);
-    const note = isOutside ? "square is outside the photo" : r.state === "in_progress" ? "winning now, can change" : "";
+    const note = isOutside ? "block is outside the photo" : r.state === "in_progress" ? "winning now, can change" : "";
     return {
       period: r.period,
       label,
       score: `${r.score.top}-${r.score.left}`,
       wantsName: !isOutside,
-      cell: isOutside ? null : key,
+      block: isOutside ? null : key,
       note,
       color: PERIOD_COLOR[r.period],
       dim: false,

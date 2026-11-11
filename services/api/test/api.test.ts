@@ -33,6 +33,10 @@ function setup(opts: { snap?: () => Promise<ScoreSnapshot>; now?: () => Date } =
       calls.push(`forTeams:${t}:${l}`);
       return [g];
     },
+    upcoming: async (q) => {
+      calls.push(`upcoming:${q ?? ""}`);
+      return [g];
+    },
     search: async (q) => {
       calls.push(`search:${q}`);
       return [g];
@@ -50,13 +54,35 @@ describe("health", () => {
   });
 });
 
+describe("response headers", () => {
+  it("asks search engines to skip every response and sends no Referer", async () => {
+    const app = setup().app;
+    for (const path of ["/api/health", "/api/sheets/nope", "/anything"]) {
+      const r = await app.request(path);
+      expect(r.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
+      expect(r.headers.get("Referrer-Policy")).toBe("no-referrer");
+    }
+  });
+  it("sends the standard browser protections: no framing, no sniffing, HTTPS only, nothing loaded from other sites", async () => {
+    const r = await setup().app.request("/api/health");
+    expect(r.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(r.headers.get("Strict-Transport-Security")).toContain("max-age=");
+    const csp = r.headers.get("Content-Security-Policy") ?? "";
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).not.toMatch(/https?:\/\//);
+  });
+});
+
 describe("games", () => {
   it("routes to the directory", async () => {
     const s = setup();
     expect(((await (await s.app.request("/api/games/recent")).json()) as any).games).toHaveLength(1);
     await s.app.request("/api/games/suggest?top=Eagles&left=Commanders");
     await s.app.request("/api/games/search?q=giants");
-    expect(s.calls).toEqual(["recent", "forTeams:Eagles:Commanders", "search:giants"]);
+    await s.app.request("/api/games/upcoming");
+    await s.app.request("/api/games/upcoming?q=eagles");
+    expect(s.calls).toEqual(["recent", "forTeams:Eagles:Commanders", "search:giants", "upcoming:", "upcoming:eagles"]);
     expect((await s.app.request("/api/games/suggest")).status).toBe(400);
     expect((await s.app.request("/api/games/search")).status).toBe(400);
   });

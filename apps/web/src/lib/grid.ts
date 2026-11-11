@@ -39,8 +39,8 @@ export function repairCorners(corners: Quad, width: number, height: number): Qua
   ] as unknown as Quad;
 }
 
-/** Largest corner movement between two grids, in square widths. */
+/** Largest corner movement between two grids, in block widths. */
 export function cornerShift(a: Quad, b: Quad): number {
-  const cell = Math.hypot(a[1][0] - a[0][0], a[1][1] - a[0][1]) / 10 || 1;
-  return Math.max(...a.map((p, i) => Math.hypot(p[0] - b[i]![0], p[1] - b[i]![1]))) / cell;
+  const block = Math.hypot(a[1][0] - a[0][0], a[1][1] - a[0][1]) / 10 || 1;
+  return Math.max(...a.map((p, i) => Math.hypot(p[0] - b[i]![0], p[1] - b[i]![1]))) / block;
 }

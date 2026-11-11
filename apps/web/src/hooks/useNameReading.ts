@@ -26,7 +26,7 @@ export function useNameReading(opts: {
   const tries = useRef(0);
 
   /** `replaceUnconfirmed` (after the grid moved) swaps every name nobody has confirmed; otherwise only empty slots are filled. */
-  async function readAll(replaceUnconfirmed: boolean, onlyCell?: string) {
+  async function readAll(replaceUnconfirmed: boolean, onlyBlock?: string) {
     const s = latest.current;
     if (!s || !img || inFlight.current) return false;
     inFlight.current = true;
@@ -38,12 +38,12 @@ export function useNameReading(opts: {
         grid.forEach((row, r) =>
           row.forEach((text, c) => {
             const k = `${r + 1},${c + 1}`;
-            if (onlyCell && k !== onlyCell) return;
+            if (onlyBlock && k !== onlyBlock) return;
             const old = names[k];
-            if (!old || (replaceUnconfirmed && !old.confirmed) || (onlyCell && text !== null)) names[k] = { text: text ?? "", confirmed: false };
+            if (!old || (replaceUnconfirmed && !old.confirmed) || (onlyBlock && text !== null)) names[k] = { text: text ?? "", confirmed: false };
           }),
         );
-        return { ...cur, names, namesCorners: onlyCell ? cur.namesCorners : s.corners };
+        return { ...cur, names, namesCorners: onlyBlock ? cur.namesCorners : s.corners };
       });
       return true;
     } catch {
@@ -53,7 +53,7 @@ export function useNameReading(opts: {
       setReading(false);
     }
   }
-  const rereadSquare = async (k: string) => {
+  const rereadBlock = async (k: string) => {
     setRereading(true);
     await readAll(false, k);
     setRereading(false);
@@ -72,8 +72,8 @@ export function useNameReading(opts: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missing, img, retry, canEdit]);
 
-  // If the grid moved after the names were read, they may belong to other squares.
+  // If the grid moved after the names were read, they may belong to other blocks.
   const gridMoved = !!sheet?.namesCorners && canEdit && cornerShift(sheet.corners, sheet.namesCorners) > 0.3;
 
-  return { reading, rereading, missing, gridMoved, readAll, rereadSquare };
+  return { reading, rereading, missing, gridMoved, readAll, rereadBlock };
 }

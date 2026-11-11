@@ -13,7 +13,7 @@ interface Props {
 /** Fix the teams, digits, game and overtime rule, or delete the sheet. Editors only. */
 export function EditTab({ id, token, sheet, update, onChangeGame }: Props) {
   async function remove() {
-    if (!confirm("Delete this sheet and its photo for good? Anyone with the link loses it too.")) return;
+    if (!confirm("Delete this sheet? It disappears for everyone with the link. If it was a mistake, ask the owner to bring it back.")) return;
     try {
       await deleteSheet(id, token);
       location.assign("/");

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SETTINGS, freshness, periodResults } from "@bpc/engine";
+import { freshness, periodResults } from "@bpc/engine";
 import { EspnNfl, ManualScoreProvider, mapStatus } from "../src/index.js";
 
 const fx = (n: string) => JSON.parse(readFileSync(new URL(`./fixtures/${n}.json`, import.meta.url), "utf8"));
@@ -32,7 +32,7 @@ describe("getScore", () => {
     expect(s).toMatchObject({ source: "espn", status: "final", fetchedAt: NOW.toISOString(), total: { home: 31, away: 25 } });
     expect(s.home.abbr).toBe("IND");
     expect(s.periods).toEqual({ home: [13, 0, 0, 12, 6], away: [7, 7, 3, 8, 0] });
-    expect(periodResults(s, DEFAULT_SETTINGS)[3]!.score).toEqual({ home: 31, away: 25 });
+    expect(periodResults(s, { finalIncludesOvertime: true })[3]!.score).toEqual({ home: 31, away: 25 });
     expect(periodResults(s, { finalIncludesOvertime: false })[3]!.score).toEqual({ home: 25, away: 25 });
     expect(freshness(s, NOW)).toBe("final");
   });
@@ -103,6 +103,32 @@ describe("game suggestions", () => {
     const times = games.map((g) => Date.parse(g.kickoff));
     expect(times).toEqual([...times].sort((a, b) => b - a));
     expect(games.every((g) => g.home.abbr === "PHI" || g.away.abbr === "PHI")).toBe(true);
+  });
+  it("upcoming(team) lists that team's games that have not started, soonest first, within two months", async () => {
+    const games = await espn().upcoming("eagles");
+    expect(games.length).toBeGreaterThan(0);
+    const times = games.map((g) => Date.parse(g.kickoff));
+    expect(times).toEqual([...times].sort((a, b) => a - b));
+    for (const g of games) {
+      expect(g.status).toBe("scheduled");
+      expect(Date.parse(g.kickoff)).toBeGreaterThan(NOW.getTime());
+      expect(Date.parse(g.kickoff)).toBeLessThan(NOW.getTime() + 61 * 86_400_000);
+      expect(g.home.abbr === "PHI" || g.away.abbr === "PHI").toBe(true);
+    }
+  });
+  it("upcoming() with no team walks forward through the coming weeks", async () => {
+    const seen: string[] = [];
+    const e = new EspnNfl(
+      async (url) => {
+        const key = url.replace(/^.*\/nfl/, "");
+        seen.push(key);
+        return key === "/scoreboard" ? routes["/scoreboard"] : { week: { number: Number(/week=(\d+)/.exec(key)![1]) }, events: [] };
+      },
+      () => NOW,
+    );
+    await e.upcoming(undefined, 50);
+    expect(seen[0]).toBe("/scoreboard");
+    expect(seen.slice(1, 3)).toEqual(["/scoreboard?seasontype=2&week=9", "/scoreboard?seasontype=2&week=10"]);
   });
   it("recent() lists current-week games without walking back when it has enough", async () => {
     calls.length = 0;

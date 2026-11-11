@@ -23,7 +23,7 @@ export function GridBanners(p: Props) {
     <>
       {lost && (
         <section className="warn" role="alert">
-          <p>A corner of the grid is outside the photo, so the winners may be boxed in the wrong squares.</p>
+          <p>A corner of the grid is outside the photo, so the winners may be boxed in the wrong blocks.</p>
           <button
             onClick={() => {
               p.history.push(p.corners);
@@ -33,12 +33,12 @@ export function GridBanners(p: Props) {
           >
             Fix the grid
           </button>
-          <p className="sub">Then check the lines sit on the printed squares, and drag a corner if they don't.</p>
+          <p className="sub">Then check the lines sit on the printed blocks, and drag a corner if they don't.</p>
         </section>
       )}
       {p.gridMoved && (
         <section className="warn" role="status">
-          <p>You moved the grid after the names were read, so some names may belong to other squares.</p>
+          <p>You moved the grid after the names were read, so some names may belong to other blocks.</p>
           <button disabled={p.readingNames} onClick={p.onReread}>
             {p.readingNames ? "Reading…" : "Read the names again"}
           </button>

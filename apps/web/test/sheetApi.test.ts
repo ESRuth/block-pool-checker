@@ -15,7 +15,7 @@ vi.stubGlobal("localStorage", {
 afterEach(() => vi.unstubAllGlobals);
 
 describe("loadSheet", () => {
-  it("sends the edit token when it has one, so marked squares come back and are not overwritten by the next save", async () => {
+  it("sends the edit token when it has one, so marked blocks come back and are not overwritten by the next save", async () => {
     let seen: Record<string, string> = {};
     vi.stubGlobal("fetch", async (_url: string, init: { headers: Record<string, string> }) => {
       seen = init.headers;

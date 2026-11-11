@@ -27,7 +27,7 @@ export const SheetDocSchema = z.object({
     .array(z.string().regex(/^(10|[1-9]),(10|[1-9])$/))
     .max(100)
     .default([]),
-  /** Where the grid corners were when the names were read: if the grid later moves, those names may belong to other squares. */
+  /** Where the grid corners were when the names were read: if the grid later moves, those names may belong to other blocks. */
   namesCorners: z.tuple([Point, Point, Point, Point]).readonly().optional(),
 });
 export type SheetDoc = z.infer<typeof SheetDocSchema>;

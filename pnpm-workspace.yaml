@@ -16,3 +16,5 @@ overrides:
   # and workbox-build updates; check with `pnpm why glob minimatch -r`.
   glob: ">=14.0.2"
   minimatch: ">=11.0.1"
+  # Advisory in the XML parser that @google-cloud/storage pulls in (patched in 5.12.0). Check with `pnpm why fast-xml-parser -r`; drop once Google's library requires it.
+  fast-xml-parser: ">=5.12.0"

@@ -16,7 +16,7 @@ export async function createSheet(page: Page) {
   await page.getByRole("link", { name: "Add a sheet from a photo" }).click();
   await page.locator("input[type=file]").setInputFiles(SAMPLE);
   await page.locator(".games button", { hasText: "PHI @ WSH" }).first().click();
-  await expect(page.getByText("Do the lines sit on the squares?")).toBeVisible();
+  await expect(page.getByText("Do the lines sit on the blocks?")).toBeVisible();
   await page.getByRole("button", { name: /Looks right/ }).click();
   await page.waitForURL(/\/s\/.+#k=/);
   const m = /\/s\/([^#]+)#k=(.+)$/.exec(page.url())!;

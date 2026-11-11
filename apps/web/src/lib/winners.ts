@@ -1,4 +1,4 @@
-import { PERIODS, orientation, parsePool, periodResults, toPoolScore, winningCell, type Period, type ScoreSnapshot } from "@bpc/engine";
+import { PERIODS, orientation, parsePool, periodResults, toPoolScore, winningBlock, type Period, type ScoreSnapshot } from "@bpc/engine";
 import type { DigitsOutcome } from "@bpc/engine";
 
 export interface PeriodRow {
@@ -8,8 +8,8 @@ export interface PeriodRow {
   score?: { top: number; left: number };
   /** Score endings that win this period. */
   ending?: { top: number; left: number };
-  /** Winning square, 1-based. Official = final winner; in_progress = "currently winning" (provisional). */
-  cell?: { row: number; col: number };
+  /** Winning block, 1-based. Official = final winner; in_progress = "currently winning" (provisional). */
+  block?: { row: number; col: number };
 }
 
 export type WinnersOutcome =
@@ -24,7 +24,7 @@ export type WinnersOutcome =
     }
   | { ok: false; reason: string };
 
-/** Per-period box score and winning square for a game, given the sheet's teams and digits. Pure; nothing is guessed. */
+/** Per-period box score and winning block for a game, given the sheet's teams and digits. Pure; nothing is guessed. */
 export function computeWinners(
   snapshot: ScoreSnapshot,
   topTeam: string,
@@ -41,8 +41,8 @@ export function computeWinners(
     const r = results.find((x) => x.period === period)!;
     if (!r.score) return { period, state: r.state };
     const score = toPoolScore(r.score, o);
-    const w = winningCell(pool, period, score.top, score.left);
-    return { period, state: r.state, score, ending: { top: w.topEnding, left: w.leftEnding }, cell: { row: w.row, col: w.col } };
+    const w = winningBlock(pool, period, score.top, score.left);
+    return { period, state: r.state, score, ending: { top: w.topEnding, left: w.leftEnding }, block: { row: w.row, col: w.col } };
   });
   const poss = snapshot.status === "in_progress" ? snapshot.situation?.possession : undefined;
   const ball = poss ? (o.top === poss ? "top" : "left") : undefined;

@@ -74,6 +74,7 @@ export const stubGames: GameDirectory = {
   recent: async () => GAMES.map(ref),
   forTeams: async () => GAMES.map(ref),
   search: async () => GAMES.map(ref),
+  upcoming: async () => GAMES.map(ref).filter((g) => g.status === "scheduled"),
 };
 export const stubScores: ScoreProvider = {
   getScore: async (id) => {

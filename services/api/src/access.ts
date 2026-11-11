@@ -27,7 +27,7 @@ export function assertStrongOwnerCode(code: string | undefined): void {
 }
 
 /**
- * Who is asking, and how much they may spend. The owner code (INVITE_CODE) is the master key and runs /admin;
+ * Who is asking, and how much they may spend. The owner code (INVITE_CODE) is the master key and runs /owner;
  * everyone else uses a personal key the owner made for them.
  */
 export function createAccess(deps: AccessDeps) {

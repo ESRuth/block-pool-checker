@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { newEditToken } from "../../lib/sheetApi";
+import { newEditToken, type SheetSettings as Settings } from "../../lib/sheetApi";
+import { SheetSettings } from "./SheetSettings";
 
 interface Props {
   id: string;
@@ -7,10 +8,12 @@ interface Props {
   token: string;
   canEdit: boolean;
   title: string;
+  meta: { title?: string; expiresAt: string; settings?: Settings };
+  onMeta: (m: { title?: string; settings?: Settings; expiresAt?: string }) => void;
 }
 
 /** Copy the view link, and (for editors) the edit link. A maker who opened the sheet through their key can mint an edit link. */
-export function ShareTab({ id, token, canEdit, title }: Props) {
+export function ShareTab({ id, token, canEdit, title, meta, onMeta }: Props) {
   const [copied, setCopied] = useState("");
   const [editLink, setEditLink] = useState("");
 
@@ -21,7 +24,7 @@ export function ShareTab({ id, token, canEdit, title }: Props) {
       setCopied(which);
       setTimeout(() => setCopied(""), 2000);
     } catch {
-      /* cancelled */
+      /* canblocked */
     }
   }
 
@@ -29,8 +32,9 @@ export function ShareTab({ id, token, canEdit, title }: Props) {
     <div className="share">
       <h2>Share</h2>
       <p className="sub">
-        Anyone with the view link can watch this sheet.{canEdit ? " Send the edit link only to someone who should be able to change it." : ""} Sheets are
-        removed 30 days after the game.
+        {meta.settings?.venueId ? "People open this sheet with the venue's QR code and PIN." : "Anyone with the view link can watch this sheet."}
+        {canEdit ? " Send the edit link only to someone who should be able to change it." : ""}{" "}
+        {meta.expiresAt ? `This sheet is removed on ${new Date(meta.expiresAt).toLocaleDateString()}.` : ""}
       </p>
       <div className="actions">
         <button onClick={() => copy("view", `${location.origin}/s/${id}`)}>{copied === "view" ? "Copied" : "Copy view link"}</button>
@@ -56,6 +60,7 @@ export function ShareTab({ id, token, canEdit, title }: Props) {
           </div>
         </div>
       )}
+      {canEdit && <SheetSettings id={id} token={token} title={meta.title ?? ""} settings={meta.settings} onChanged={onMeta} />}
     </div>
   );
 }

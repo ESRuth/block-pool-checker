@@ -33,7 +33,7 @@ describe("computeWinners", () => {
     const r = computeWinners(snap(), "EAGLES", "COMMANDERS", digits, true);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.rows.map((x) => [x.period, x.state, x.score, x.cell])).toEqual([
+    expect(r.rows.map((x) => [x.period, x.state, x.score, x.block])).toEqual([
       ["Q1", "official", { top: 10, left: 3 }, { row: 8, col: 6 }],
       ["Half", "official", { top: 10, left: 13 }, { row: 7, col: 6 }],
       ["Q3", "official", { top: 10, left: 16 }, { row: 5, col: 8 }],
@@ -49,8 +49,8 @@ describe("computeWinners", () => {
     const live = snap({ status: "in_progress", periods: { home: [3, 10, 3], away: [10, 0, 0] }, total: { home: 16, away: 10 } });
     const r = computeWinners(live, "EAGLES", "COMMANDERS", digits, true);
     expect(r.ok && r.rows.map((x) => x.state)).toEqual(["official", "official", "in_progress", "not_started"]);
-    expect(r.ok && r.rows[2]!.cell).toEqual({ row: 5, col: 8 }); // same square as when it ends 10-16
-    expect(r.ok && r.rows[3]!.cell).toBeUndefined();
+    expect(r.ok && r.rows[2]!.block).toEqual({ row: 5, col: 8 }); // same block as when it ends 10-16
+    expect(r.ok && r.rows[3]!.block).toBeUndefined();
   });
   it("maps who has the ball onto the sheet's teams, only while the game is in progress", () => {
     const live = snap({
@@ -79,7 +79,7 @@ describe("computeWinners", () => {
   it("not started: no winners", () => {
     const pre = snap({ status: "scheduled", periods: { home: [], away: [] }, total: { home: 0, away: 0 } });
     const r = computeWinners(pre, "EAGLES", "COMMANDERS", digits, true);
-    expect(r.ok && r.rows.every((x) => x.state === "not_started" && !x.cell)).toBe(true);
+    expect(r.ok && r.rows.every((x) => x.state === "not_started" && !x.block)).toBe(true);
   });
   it("refuses when the sheet's teams are not the game's teams", () => {
     const r = computeWinners(snap(), "PATRIOTS", "RAMS", digits, true);
