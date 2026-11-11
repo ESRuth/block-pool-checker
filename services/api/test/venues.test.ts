@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EspnNfl } from "@bpc/scores";
-import { MemorySheetPhotos, MemorySheetRepository, RETENTION_DAYS, createApp } from "../src/index.js";
+import { MemorySheetPhotos, MemorySheetRepository, MemoryVenueRepository, RETENTION_DAYS, createApp } from "../src/index.js";
 
 const team = (abbr: string, name: string) => ({ abbr, name: `${abbr} ${name}`, nickname: name });
 const doc = () => ({
@@ -349,5 +349,62 @@ describe("many guesses at once", () => {
     const replies = await Promise.all(Array.from({ length: 30 }, (_, i) => s.req(`/api/venues/${v.id}/enter`, { body: { pin: String(1000 + i) } })));
     expect(replies.filter((r) => r.status === 403)).toHaveLength(5); // exactly the free tries; every other guess found the PIN locked
     expect(replies.filter((r) => r.status === 429)).toHaveLength(25);
+  });
+});
+
+describe("showing a PIN to the people who run it", () => {
+  it("the owner and the venue's runners can read the venue PIN; viewers and other keys cannot; it follows a change; the database holds only a sealed copy", async () => {
+    const sheets = new MemorySheetRepository(() => clock);
+    const venues = new MemoryVenueRepository();
+    const app = createApp({
+      scores: { getScore: async () => Promise.reject(new Error("n/a")) },
+      games: new EspnNfl(async () => Promise.reject(new Error("n/a"))),
+      sheets,
+      venues,
+      sheetPhotos: new MemorySheetPhotos(),
+      inviteCode: OWNER,
+      now: () => clock,
+    });
+    const call = (path: string, o: { method?: string; body?: unknown; key?: string } = {}) =>
+      app.request(path, {
+        method: o.method ?? (o.body === undefined ? "GET" : "POST"),
+        body: o.body === undefined ? undefined : JSON.stringify(o.body),
+        headers: { "Content-Type": "application/json", ...(o.key ? { "X-Invite-Code": o.key } : {}) },
+      });
+    const runner = (await (await call("/api/owner/users", { body: { name: "Riley" }, key: OWNER })).json()) as any;
+    const other = (await (await call("/api/owner/users", { body: { name: "Other" }, key: OWNER })).json()) as any;
+    const v = (await (await call("/api/owner/venues", { body: { name: "Test Lodge", pin: "4821", runnerIds: [runner.id] }, key: OWNER })).json()) as any;
+    const pinOf = async (key?: string) => call(`/api/venues/${v.id}/pin`, { key });
+    expect(((await (await pinOf(OWNER)).json()) as any).pin).toBe("4821");
+    expect(((await (await pinOf(runner.key)).json()) as any).pin).toBe("4821");
+    expect((await pinOf()).status).toBe(403);
+    expect((await pinOf(other.key)).status).toBe(403);
+    expect((await call("/api/venues/nope/pin", { key: OWNER })).status).toBe(404);
+    // Only a sealed copy is stored, never the PIN itself.
+    const stored = JSON.stringify(await venues.get(v.id));
+    expect(stored).not.toContain("4821");
+    expect(stored).toContain("pinSealed");
+    // A new PIN replaces it, and the new one is what is shown (and what works).
+    await call(`/api/venues/${v.id}`, { method: "PATCH", body: { pin: "9137" }, key: runner.key });
+    expect(((await (await pinOf(runner.key)).json()) as any).pin).toBe("9137");
+    expect((await call(`/api/venues/${v.id}/enter`, { body: { pin: "9137" } })).status).toBe(200);
+    expect((await call(`/api/venues/${v.id}/enter`, { body: { pin: "4821" } })).status).toBe(403);
+    // A venue whose PIN was set before PINs could be shown has only a hash: nothing to show until it is set again.
+    const old = await venues.get(v.id);
+    await venues.put({ ...old!, pinSealed: undefined });
+    expect(((await (await pinOf(runner.key)).json()) as any).pin).toBeNull();
+  });
+
+  it("a sheet's own PIN is shown to its editors only, and clearing it removes the sealed copy", async () => {
+    const s = setup();
+    const { runner, other, v, sheet } = await venueWithSheet(s);
+    await s.req(`/api/sheets/${sheet.id}/settings`, { method: "PATCH", body: { pin: "7305" }, key: runner.key });
+    const get = (key?: string) => s.req(`/api/sheets/${sheet.id}/pin`, { key });
+    expect(((await (await get(runner.key)).json()) as any).pin).toBe("7305");
+    expect((await get(other.key)).status).toBe(403);
+    expect((await get()).status).toBe(403);
+    await s.req(`/api/sheets/${sheet.id}/settings`, { method: "PATCH", body: { pin: null }, key: runner.key });
+    expect((await get(runner.key)).status).toBe(404); // no PIN of its own any more
+    expect(v.id).toBeTruthy();
   });
 });

@@ -139,6 +139,14 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     });
   });
 
+  /** A sheet's own PIN, for the people who can edit it. Null when it was set before PINs could be shown. */
+  app.get("/api/sheets/:id/pin", async (c) => {
+    const rec = await sheets.get(c.req.param("id"));
+    if (!rec?.pinHash) return c.json({ error: "not found" }, 404);
+    if (!(await sheetAuthorized(c, rec))) return c.json({ error: "you cannot change this sheet" }, 403);
+    return c.json({ pin: pins.reveal(rec.pinSealed) });
+  });
+
   /** Enter the PIN that protects this sheet (its own, else its venue's). A right PIN sets a pass cookie; wrong tries slow down and then lock. */
   app.post("/api/sheets/:id/enter", async (c) => {
     const rec = await sheets.get(c.req.param("id"));
@@ -181,6 +189,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     if (b.showPhoto !== undefined) next.showPhoto = b.showPhoto;
     if (b.pin !== undefined) {
       next.pinHash = b.pin ? hashPin(b.pin) : undefined;
+      next.pinSealed = b.pin ? pins.seal(b.pin) : undefined;
       next.pinVersion = (rec.pinVersion ?? 0) + 1;
       next.pinFails = undefined;
       next.pinLockedUntil = undefined;

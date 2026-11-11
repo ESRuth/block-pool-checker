@@ -65,6 +65,6 @@ A sheet's **stages**, in order:
 | **Personal key** | The secret inside a personal link. Kept on the person's phone; the server keeps only a hash. Revocable. | The phone (`bpc.key`) |
 | **Access code** | What the sign-in box on Home and the photo-reading prompt ask for: the owner code or a personal key. | |
 | **Venue link** | `/v/<code>`: where the QR code points. | |
-| **PIN** | 4 to 8 digits that open a venue (or one sheet with its own). Told in person or in a group chat; never printed next to the QR code. | The record (hashed) |
+| **PIN** | 4 to 8 digits that open a venue (or one sheet with its own). Told in person or in a group chat; never printed next to the QR code. | The record (hashed to check, and encrypted so the owner and runners can be shown it) |
 | **Pass** | What the phone gets after a right PIN: a signed cookie, up to 90 days; changing the PIN signs everyone out. | The phone |
 | **Lockout** | After 5 wrong PINs in a row the PIN locks for 1, 2, 4 … up to 60 minutes. | |

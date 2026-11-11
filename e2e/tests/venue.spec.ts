@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { api, createSheet, SAMPLE, signIn, OWNER_CODE } from "./helpers";
+import { api, createSheet, makeVenue, SAMPLE, signIn, OWNER_CODE } from "./helpers";
 
 test("post a sheet, add the photo, publish: viewers need the venue PIN and see no photo, the runner does", async ({ page, browser }) => {
   // The owner sets up a venue with a runner.
@@ -137,4 +137,22 @@ test("the privacy policy opens without signing in", async ({ page }) => {
   await page.goto("/privacy");
   await expect(page.getByRole("heading", { name: "Privacy policy" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Reading names with AI" })).toBeVisible();
+});
+
+test("a runner can show the PIN, and a viewer has no way to", async ({ page, browser }) => {
+  const runner = (await (await api("/api/owner/users", { method: "POST", body: JSON.stringify({ name: "Riley" }) })).json()) as { id: string; key: string };
+  const venue = await makeVenue([runner.id]);
+  await signIn(page, runner.key);
+  await page.goto(`/v/${venue}`);
+  await page.getByRole("button", { name: "Show PIN" }).click();
+  await expect(page.locator(".pinvalue")).toHaveText("4821");
+  await page.getByRole("button", { name: "Hide" }).click();
+  await expect(page.locator(".pinvalue")).toHaveCount(0);
+
+  const viewer = await (await browser.newContext()).newPage();
+  await viewer.goto(`/v/${venue}`);
+  await viewer.getByLabel("PIN").fill("4821");
+  await viewer.getByRole("button", { name: "Open" }).click();
+  await expect(viewer.getByRole("button", { name: "Show PIN" })).toHaveCount(0);
+  expect((await api(`/api/venues/${venue}/pin`, { key: "" })).status).toBe(403);
 });

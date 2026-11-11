@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import qrcode from "qrcode-generator";
 import { GamePicker } from "../components/GamePicker";
 import { PinGate } from "../components/PinGate";
+import { PinReveal } from "../components/PinReveal";
 import type { GameRef } from "../lib/gameApi";
 import { gameDate, matchup } from "../lib/report";
-import { enterVenue, getVenue, patchVenue, postSheet, venueLink, type VenueSheet, type VenueView } from "../lib/venueApi";
+import { enterVenue, getVenue, getVenuePin, patchVenue, postSheet, venueLink, type VenueSheet, type VenueView } from "../lib/venueApi";
 
 /** A venue's QR code scans to here: the PIN, then the sheets on it. Its runners (and the owner) also get the QR to print and the tools. */
 export function VenuePage({ id }: { id: string }) {
@@ -110,6 +111,7 @@ function SheetRow({ sheet: p, runner }: { sheet: VenueSheet; runner: boolean }) 
 /** QR code and PIN: only for the people who run the venue. */
 function Manage({ id, v, reload }: { id: string; v: VenueView; reload: () => Promise<unknown> }) {
   const [pin, setPin] = useState("");
+  const [pinTick, setPinTick] = useState(0);
   const [name, setName] = useState(v.name);
   const [note, setNote] = useState("");
   const link = venueLink(id);
@@ -163,6 +165,7 @@ function Manage({ id, v, reload }: { id: string; v: VenueView; reload: () => Pro
       )}
 
       <h3>PIN</h3>
+      <PinReveal key={pinTick} load={() => getVenuePin(id)} />
       <label className="field">
         New PIN (4 to 8 digits)
         <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} inputMode="numeric" maxLength={8} autoComplete="off" />
@@ -174,6 +177,7 @@ function Manage({ id, v, reload }: { id: string; v: VenueView; reload: () => Pro
             run(async () => {
               await patchVenue(id, { pin });
               setPin("");
+              setPinTick((t) => t + 1); // the PIN on show (if any) is the old one
             }, "PIN changed. Everyone has to enter the new one.")
           }
         >

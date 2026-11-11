@@ -145,6 +145,11 @@ export async function deleteSheet(id: string): Promise<void> {
   if (!res.ok) throw new SheetError("could not delete", res.status);
 }
 
+/** A sheet's own PIN, for the people who can edit it. Null when it cannot be shown (set before PINs could be shown). */
+export async function getSheetPin(id: string): Promise<string | null> {
+  return (await json<{ pin: string | null }>(await fetch(`/api/sheets/${encodeURIComponent(id)}/pin`, { headers: auth() }), "could not get the PIN")).pin;
+}
+
 /** Undo a delete (whoever could edit the sheet). */
 export async function restoreSheet(id: string): Promise<void> {
   const res = await fetch(`/api/sheets/${encodeURIComponent(id)}/restore`, {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { patchSettings, type SheetSettings as Settings } from "../../lib/sheetApi";
+import { PinReveal } from "../../components/PinReveal";
+import { getSheetPin, patchSettings, type SheetSettings as Settings } from "../../lib/sheetApi";
 import { myVenues, type VenueSummary } from "../../lib/venueApi";
 
 interface Props {
@@ -17,6 +18,7 @@ export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Pro
   const [name, setName] = useState(title);
   const [venues, setVenues] = useState<VenueSummary[]>([]);
   const [pin, setPin] = useState("");
+  const [pinTick, setPinTick] = useState(0);
   const [note, setNote] = useState("");
 
   useEffect(() => {
@@ -75,8 +77,9 @@ export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Pro
       <p className="sub">
         {settings?.hasPin
           ? "This sheet has its own PIN, which replaces the venue's. Choosing a new one signs everyone out."
-          : "Optional. A PIN here protects just this sheet, even without a venue. Use 4 to 8 digits."}
+          : "Optional. A PIN here protects just this sheet, in place of the venue's. Use 4 to 8 digits."}
       </p>
+      {settings?.hasPin && <PinReveal key={pinTick} load={() => getSheetPin(id)} />}
       <label className="field">
         PIN
         <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} inputMode="numeric" maxLength={8} autoComplete="off" />
@@ -86,6 +89,7 @@ export function SheetSettings({ id, title, expiresAt, settings, onChanged }: Pro
           disabled={pin.length < 4}
           onClick={() => {
             save({ pin }, "PIN saved.");
+            setPinTick((t) => t + 1);
             setPin("");
           }}
         >

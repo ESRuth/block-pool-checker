@@ -48,6 +48,8 @@ export interface VenueSummary {
 }
 
 export const getVenue = (id: string) => call<VenueView>(`/api/venues/${encodeURIComponent(id)}`);
+/** The venue's current PIN, for its runners and the owner. Null when it cannot be shown (set before PINs could be shown). */
+export const getVenuePin = async (id: string) => (await call<{ pin: string | null }>(`/api/venues/${encodeURIComponent(id)}/pin`)).pin;
 export const enterVenue = (id: string, pin: string) => call<{ ok: true }>(`/api/venues/${encodeURIComponent(id)}/enter`, "POST", { pin });
 export const myVenues = async () => (await call<{ venues: VenueSummary[] }>("/api/my/venues")).venues;
 export const createVenue = (v: { name: string; pin: string; runnerIds: string[] }) => call<VenueSummary>("/api/owner/venues", "POST", v);

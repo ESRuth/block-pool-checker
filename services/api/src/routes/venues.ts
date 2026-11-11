@@ -68,6 +68,14 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
     return r.ok ? c.json({ ok: true }) : c.json({ error: r.error, retryAfter: r.retryAfter }, r.status);
   });
 
+  /** The venue's current PIN, for the owner and its runners (so they can tell people). Null when it was set before PINs could be shown: set it again once. */
+  app.get("/api/venues/:id/pin", async (c) => {
+    const v = await venues.get(c.req.param("id"));
+    if (!v) return c.json({ error: "not found" }, 404);
+    if (!(await runs(c, v))) return c.json({ error: "you don't run this venue" }, 403);
+    return c.json({ pin: pins.reveal(v.pinSealed) });
+  });
+
   /** The venues this person runs (all of them for the owner), for finding their QR and tools. */
   app.get("/api/my/venues", async (c) => {
     const who = await a.access(c, false);
@@ -85,6 +93,7 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
       id: newVenueId(),
       name: b.name,
       pinHash: hashPin(b.pin),
+      pinSealed: pins.seal(b.pin),
       pinVersion: 1,
       runnerIds: b.runnerIds,
       createdAt: now().toISOString(),
@@ -107,6 +116,7 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
     if (b.runnerIds) next.runnerIds = b.runnerIds;
     if (b.pin) {
       next.pinHash = hashPin(b.pin);
+      next.pinSealed = pins.seal(b.pin);
       next.pinVersion = v.pinVersion + 1;
       next.pinFails = undefined;
       next.pinLockedUntil = undefined;

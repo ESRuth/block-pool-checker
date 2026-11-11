@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHmac, hkdfSync, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import type { Context } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 
@@ -32,6 +32,8 @@ export type PinKind = "v" | "s";
 /** The fields of a venue or sheet record that hold its PIN state. */
 export interface PinState {
   pinHash?: string;
+  /** The PIN encrypted with a server-side key, so the owner and the runners can be shown it again. Absent for a PIN set before this existed. */
+  pinSealed?: string;
   pinVersion?: number;
   pinFails?: number;
   pinLockedUntil?: string;
@@ -46,6 +48,28 @@ export function createPins(secret: string, now: () => Date) {
   const sign = (kind: PinKind, id: string, version: number, exp: number) =>
     createHmac("sha256", secret).update(`${kind}:${id}:${version}:${exp}`).digest("base64url");
   const cookieName = (id: string) => `bp_${id}`;
+
+  // The PIN is also kept encrypted (AES-256-GCM) under a key derived from the same server secret, so a runner can be shown it again. Someone with only
+  // the database cannot read it; the key lives in the server's environment. The hash still does the checking.
+  const sealKey = Buffer.from(hkdfSync("sha256", secret, "", "pin-display", 32));
+  const seal = (pin: string): string => {
+    const iv = randomBytes(12);
+    const c = createCipheriv("aes-256-gcm", sealKey, iv);
+    const ct = Buffer.concat([c.update(pin, "utf8"), c.final()]);
+    return ["v1", iv, c.getAuthTag(), ct].map((p) => (typeof p === "string" ? p : p.toString("base64url"))).join(".");
+  };
+  /** The PIN behind a sealed copy, or null when there is none or it cannot be read (the server's secret changed). */
+  const reveal = (sealed?: string): string | null => {
+    try {
+      const [v, iv, tag, ct] = (sealed ?? "").split(".");
+      if (v !== "v1" || !iv || !tag || !ct) return null;
+      const d = createDecipheriv("aes-256-gcm", sealKey, Buffer.from(iv, "base64url"));
+      d.setAuthTag(Buffer.from(tag, "base64url"));
+      return Buffer.concat([d.update(Buffer.from(ct, "base64url")), d.final()]).toString("utf8");
+    } catch {
+      return null;
+    }
+  };
 
   function issue(c: Context, kind: PinKind, id: string, version: number) {
     const exp = now().getTime() + PASS_DAYS * DAY;
@@ -110,6 +134,6 @@ export function createPins(secret: string, now: () => Date) {
     });
   }
 
-  return { issue, valid, attempt };
+  return { issue, valid, attempt, seal, reveal };
 }
 export type Pins = ReturnType<typeof createPins>;

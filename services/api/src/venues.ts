@@ -53,6 +53,7 @@ export class FirestoreVenueRepository implements VenueRepository {
       id,
       name: d.name,
       pinHash: d.pinHash,
+      pinSealed: d.pinSealed ?? undefined,
       pinVersion: d.pinVersion ?? 1,
       pinFails: d.pinFails ?? undefined,
       pinLockedUntil: d.pinLockedUntil ?? undefined,
@@ -68,6 +69,7 @@ export class FirestoreVenueRepository implements VenueRepository {
     await this.col.doc(v.id).set({
       name: v.name,
       pinHash: v.pinHash,
+      pinSealed: v.pinSealed ?? null,
       pinVersion: v.pinVersion,
       pinFails: v.pinFails ?? null,
       pinLockedUntil: v.pinLockedUntil ?? null,

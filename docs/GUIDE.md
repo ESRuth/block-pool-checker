@@ -52,7 +52,7 @@ Post a second sheet for the same game and give each its own name, for example â€
 
 ### Changing things
 
-- **The PIN.** On the venue page, enter a new PIN (4 to 8 digits). Everyone has to enter the new one. One sheet can have its own PIN instead, in its Settings tab, which replaces the venue's for that sheet only.
+- **The PIN.** On the venue page, **Show PIN** reveals the current one for a few seconds, so you can tell people; to change it, enter a new PIN (4 to 8 digits). Everyone has to enter the new one. One sheet can have its own PIN instead, in its Settings tab, which replaces the venue's for that sheet only.
 - **The photo.** To let viewers see the photo of a sheet, turn it on in that sheet's Settings tab. Remember that it can show phone numbers.
 - **Hide it again.** A published sheet can go back to a draft from its Settings tab. Viewers stop seeing it until you publish it again.
 - **A wrong name or a moved grid.** Fix them on the sheet at any time, even after publishing. Changes save by themselves.

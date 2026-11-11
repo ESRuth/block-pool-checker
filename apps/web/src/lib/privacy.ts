@@ -35,7 +35,7 @@ export const PRIVACY: GuideSection[] = [
           "**A sheet:** the teams, the game, the digits, the names (as the app read them or as someone typed them), which blocks an editor marked as theirs, a name you choose for the sheet, and the name of the person who made it.",
           "**The photo of the sheet.** Your phone shrinks it and removes location and camera details before it is sent. It may show handwriting and, if people wrote them, phone numbers.",
           "**A person with a personal link:** the name the owner typed when making the link, a scrambled copy of the key (the key itself is not stored), how many times it was used and when it was last used.",
-          "**A venue:** its name, a scrambled copy of its PIN, who runs it, and how many wrong PINs were tried lately.",
+          "**A venue:** its name, its PIN (a scrambled copy to check against, and an encrypted copy so the owner and the venue's runners can be shown it again), who runs it, and how many wrong PINs were tried lately.",
           "**Server logs.** The hosting service (Google Cloud Run) records each request: the time, the address asked for (which includes a sheet's or venue's code), the result, and the visitor's IP address. By default Google keeps these for about 30 days. The app itself never writes names, photos, PINs or keys to its logs.",
         ],
       },
@@ -156,7 +156,7 @@ export const PRIVACY: GuideSection[] = [
       {
         ul: [
           "Everything travels over an encrypted connection.",
-          "PINs and keys are stored scrambled and checked on the server. Wrong PINs lock out guessing for longer each time.",
+          "Keys are stored scrambled. A PIN is stored scrambled (for checking) and encrypted with a key that lives on the server, not in the database, so someone who got only the database could not read it. The owner and a venue's runners can ask the app to show them the PIN, so they can tell people; nobody else can. PINs are checked on the server, and wrong PINs lock out guessing for longer each time.",
           "No system is perfect. A PIN works for anyone who learns it, like the paper sheet on the wall; change it if it has spread.",
           "To report a security problem, use the private “Report a vulnerability” button on the project's GitHub page.",
         ],

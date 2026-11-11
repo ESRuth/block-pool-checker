@@ -1363,3 +1363,13 @@ details.allnames > summary {
   color: inherit;
   white-space: nowrap;
 }
+
+.pinreveal {
+  margin: 8px 0;
+}
+.pinvalue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  font-variant-numeric: tabular-nums;
+}

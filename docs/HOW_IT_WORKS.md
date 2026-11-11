@@ -55,7 +55,7 @@ An unreachable server never looks like being signed out. A code is checked befor
 ## Venues
 A venue (lodge, bar or club) runs pools every week, sometimes two for one game. A link that is the only secret leaks when a QR code is photographed, so a PIN guards the venue.
 
-- **Record.** `venues` collection: name, code (the QR, 128 bits), PIN hash (scrypt) and version, runner ids. The owner makes venues in the Venues tab; runners and the owner manage them at `/v/<code>`, which also draws the printable QR in the browser.
+- **Record.** `venues` collection: name, code (the QR, 128 bits), PIN hash (scrypt), an encrypted copy of the PIN (AES-256-GCM, key derived from the server secret, so the owner and runners can be shown it; absent for a PIN set before this existed), version, runner ids. The owner makes venues in the Venues tab; runners and the owner manage them at `/v/<code>`, which also draws the printable QR in the browser.
 - **Sheet fields.** `venueId`, `title` (editable; `game.label` is the provider's and untouched), `showPhoto`, its own PIN fields, and the stage (`posted`, `draft`, `deletedAt`). The effective PIN is the sheet's own, else the venue's.
 - **Entry.** `POST /api/venues/:id/enter` or `/api/sheets/:id/enter`. A right PIN sets a signed pass: HttpOnly, SameSite=Strict, path `/api`, 90 days, bound to the PIN version, signed with a key derived from `INVITE_CODE`. After 5 wrong tries in a row the PIN locks for 1, 2, 4 … 60 minutes; the runner sees the count.
 - **What viewers get.** Before the PIN: the venue name only. After it: names and winners, no `mine`, no photo unless `showPhoto`. Editors and the owner are never asked for a PIN. Anyone can send a photo to a runner, so there is no public upload.
