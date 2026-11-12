@@ -51,3 +51,20 @@ test("a corner that is already off the photo shows a banner, and Fix the grid br
   await expect(page.getByText("A corner of the grid is outside the photo")).toHaveCount(0);
   await expect(page.locator("circle.handle")).toHaveCount(4); // shown so the repair can be checked
 });
+
+test("a corner can be moved with the arrow keys, and Undo puts it back", async ({ page }) => {
+  await signIn(page, OWNER_CODE);
+  await createSheet(page);
+  await page.getByRole("button", { name: "Show grid" }).click();
+  await page.waitForSelector("circle.handle");
+  const start = (await handles(page))[0]!;
+  await page.getByRole("button", { name: /Move the top-left corner/ }).focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Shift+ArrowDown");
+  const moved = (await handles(page))[0]!;
+  expect(moved[0]).toBeGreaterThan(start[0]);
+  expect(moved[1]).toBeGreaterThan(start[1] + 5);
+  await page.getByRole("button", { name: "Undo" }).click(); // the run of key presses is one undo step
+  expect((await handles(page))[0]).toEqual(start);
+});

@@ -23,7 +23,7 @@ export function Results({ lines, names, reading, onName, onConfirm, readOnly, mi
         const n = l.block ? names[l.block] : undefined;
         const yours = !!l.block && !!mine?.has(l.block);
         return (
-          <li key={l.period} style={{ color: l.color, ...({ "--c": l.color } as object) }} className={l.dim ? "dim" : ""}>
+          <li key={l.period} data-period={l.period} style={{ "--c": l.color } as object} className={l.dim ? "dim" : ""}>
             <span className="plabel" aria-label={`Period ${l.label}`}>
               {l.label}
             </span>

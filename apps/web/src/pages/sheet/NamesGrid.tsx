@@ -5,7 +5,7 @@ export function NamesGrid({ names, mine, onOpen }: { names: Record<string, NameE
   const blocks: string[] = [];
   for (let r = 1; r <= 10; r++) for (let c = 1; c <= 10; c++) blocks.push(`${r},${c}`);
   return (
-    <div className="ng" role="grid" aria-label="All names">
+    <div className="ng" role="group" aria-label="All names">
       {blocks.map((k) => {
         const n = names[k];
         const cls = [mine.has(k) ? "mine" : "", !n?.text ? "empty" : "", n && !n.confirmed && n.text ? "unsure" : ""].join(" ").trim();

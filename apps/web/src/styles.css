@@ -8,6 +8,11 @@
   --lead: #fef9c3;
   --mine: #2563eb;
   --warn: #b45309;
+  /* The period colours as text: the boxes on the photo use the plain colours (lib/boxes.ts), these are tuned to be readable (4.5:1) on the cards. */
+  --t-Q1: #b34700;
+  --t-Half: #00629a;
+  --t-Q3: #00694f;
+  --t-Final: #5b1a8c;
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -21,10 +26,21 @@
     --lead: #3f3a12;
     --mine: #60a5fa;
     --warn: #fbbf24;
+    --t-Q1: #ff8c42;
+    --t-Half: #56b4e9;
+    --t-Q3: #3dd6a0;
+    --t-Final: #c79bff;
   }
+}
+a {
+  color: var(--accent);
 }
 * {
   box-sizing: border-box;
+}
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 body {
   margin: 0;
@@ -262,6 +278,11 @@ form button {
   color: #fff;
   font: inherit;
   font-weight: 600;
+}
+@media (prefers-color-scheme: dark) {
+  form button {
+    color: #0e1511;
+  }
 }
 form button:disabled {
   opacity: 0.4;
@@ -866,6 +887,18 @@ ol.lines .plabel {
   place-items: center;
   font-weight: 800;
 }
+ol.lines li[data-period="Q1"] {
+  color: var(--t-Q1);
+}
+ol.lines li[data-period="Half"] {
+  color: var(--t-Half);
+}
+ol.lines li[data-period="Q3"] {
+  color: var(--t-Q3);
+}
+ol.lines li[data-period="Final"] {
+  color: var(--t-Final);
+}
 ol.lines .pscore {
   font-variant-numeric: tabular-nums;
 }
@@ -1402,4 +1435,10 @@ details.allnames > summary {
 .danger-btn {
   border-color: #b3261e;
   color: #b3261e;
+}
+@media (prefers-color-scheme: dark) {
+  .danger-btn {
+    border-color: #f87171;
+    color: #f87171;
+  }
 }

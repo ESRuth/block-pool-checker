@@ -67,7 +67,7 @@ export const GUIDE: GuideSection[] = [
       {
         ol: [
           "**Post the sheet.** Tap **Post a new sheet**, pick the game (games that haven't started are listed, soonest first), and say which team you wrote across the top of the paper sheet. Put the paper sheet on the wall. People with the PIN now see it listed as “Open for blocks”.",
-          "**Add the photo.** When the blocks are filled and the digits are drawn, open the posted sheet and tap **Add the photo (digits drawn)**. Take a photo with the whole sheet in view: the team names, every digit and every block. The app reads it. Confirm any digits it couldn't read (each row needs 0 to 9 exactly once; nothing is guessed), then drag the grid corners until the lines sit on the printed blocks, and tap **Looks right: save**.",
+          "**Add the photo.** When the blocks are filled and the digits are drawn, open the posted sheet and tap **Add the photo (digits drawn)**. Take a photo with the whole sheet in view: the team names, every digit and every block. The app reads it. Confirm any digits it couldn't read (each row needs 0 to 9 exactly once; nothing is guessed), then drag the grid corners until the lines sit on the printed blocks (with a keyboard, tab to a corner and use the arrow keys; Shift moves it further), and tap **Looks right: save**.",
           "**Check the names.** The sheet is now a **draft**: only you, the other runners and the owner can see it. Open the Names tab and look over the names. Tap a “?” when the name is right, or retype it. Expect most names to be right and a few to be a letter off.",
           "**Publish.** Tap **Publish**. Now people with the PIN can open it.",
           "**Watch the game.** The winners fill in as the periods end. Nothing more to do.",

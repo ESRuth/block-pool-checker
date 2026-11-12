@@ -119,6 +119,21 @@ export function GridOverlay({
     onChange(next);
   };
   const r = width / 60;
+  // The arrow keys move a focused corner (a step is 0.25% of the photo's width, ten times that with Shift), so the grid can be fixed without dragging.
+  // One undo step for a run of key presses, not one per press.
+  const lastKey = useRef(0);
+  const nudge = (i: number) => (e: React.KeyboardEvent<SVGCircleElement>) => {
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    const step = (e.shiftKey ? 10 : 1) * (width / 400);
+    if (Date.now() - lastKey.current > 800) onDragStart?.();
+    lastKey.current = Date.now();
+    const c = corners[i]!;
+    const nx = Math.min(width, Math.max(0, c[0] + d[0]! * step)),
+      ny = Math.min(height, Math.max(0, c[1] + d[1]! * step));
+    onChange(corners.map((p, j) => (j === i ? [nx, ny] : p)) as unknown as Quad);
+  };
 
   return (
     <div
@@ -186,8 +201,10 @@ export function GridOverlay({
                 cy={c[1]}
                 r={r * 2.2}
                 className="hit"
-                role="slider"
-                aria-label={`Drag the ${NAMES[i]} corner`}
+                role="button"
+                tabIndex={0}
+                aria-label={`Move the ${NAMES[i]} corner: drag it, or use the arrow keys`}
+                onKeyDown={nudge(i)}
                 onPointerDown={start(i)}
                 onPointerMove={drag(i)}
               />
