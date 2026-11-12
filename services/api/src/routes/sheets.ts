@@ -329,6 +329,8 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     if ((c.req.header("Content-Type") ?? "").split(";")[0]!.trim() !== "image/jpeg") return c.json({ error: "send a JPEG" }, 415);
     const bytes = new Uint8Array(await c.req.arrayBuffer());
     if (bytes.length === 0) return c.json({ error: "empty body" }, 400);
+    // The header says JPEG; the first bytes have to agree (FF D8 FF), so nothing else is stored under a sheet's photo.
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) return c.json({ error: "that file is not a JPEG" }, 415);
     await photos.put(rec.id, bytes, rec.expiresAt);
     // The photo is what takes a posted sheet to the next stage: it joins the venue as a draft, to be checked before it is published.
     await sheets.put({ ...rec, hasPhoto: true, posted: undefined, draft: rec.posted ? true : rec.draft, updatedAt: now().toISOString() });

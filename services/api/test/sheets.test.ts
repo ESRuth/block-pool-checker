@@ -135,11 +135,19 @@ describe("saved sheets", () => {
     const s = setup();
     const { runner, venueId } = await venue(s);
     const { body } = await create(s, venueId, runner.key);
-    const jpg = new Uint8Array([0xff, 0xd8, 1, 2, 3]);
+    const jpg = new Uint8Array([0xff, 0xd8, 0xff, 1, 2, 3]);
     const put = (key?: string, type = "image/jpeg") => s.req(`/api/sheets/${body.id}/photo`, { method: "PUT", raw: jpg, type, key });
     expect((await s.req(`/api/sheets/${body.id}/photo`, { key: runner.key })).status).toBe(404);
     expect((await put()).status).toBe(403);
     expect((await put(runner.key, "image/png")).status).toBe(415);
+    const notJpeg = await s.req(`/api/sheets/${body.id}/photo`, {
+      method: "PUT",
+      raw: new TextEncoder().encode("<html>not a photo</html>"),
+      type: "image/jpeg",
+      key: runner.key,
+    });
+    expect(notJpeg.status).toBe(415); // the header says JPEG but the bytes are not
+    expect(await s.photos.get(body.id)).toBeNull();
     expect((await put(runner.key)).status).toBe(204);
     const got = await s.req(`/api/sheets/${body.id}/photo`, { key: runner.key });
     expect(got.headers.get("Content-Type")).toBe("image/jpeg");
@@ -157,7 +165,7 @@ describe("saved sheets", () => {
     const s = setup();
     const { runner, venueId } = await venue(s);
     const { body } = await create(s, venueId, runner.key);
-    const put = await s.req(`/api/sheets/${body.id}/photo`, { method: "PUT", raw: new Uint8Array([1, 2, 3]), type: "image/jpeg", key: runner.key });
+    const put = await s.req(`/api/sheets/${body.id}/photo`, { method: "PUT", raw: new Uint8Array([0xff, 0xd8, 0xff, 1]), type: "image/jpeg", key: runner.key });
     expect(put.status).toBe(204);
     const first = s.photos.expiry.get(body.id);
     expect(first).toBe(body.expiresAt);

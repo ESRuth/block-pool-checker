@@ -51,7 +51,7 @@ async function venueWithSheet(s: S, over: { pin?: string; publish?: boolean } = 
     await s.req("/api/owner/venues", { body: { name: "Test Lodge", pin: over.pin ?? "4821", runnerIds: [runner.id] }, key: OWNER })
   ).json()) as any;
   const made = (await (await s.req("/api/sheets", { body: { venueId: v.id, doc: doc() }, key: runner.key })).json()) as any; // a sheet made from a photo starts as a draft
-  await s.req(`/api/sheets/${made.id}/photo`, { method: "PUT", raw: new Uint8Array([1, 2, 3]), type: "image/jpeg", key: runner.key });
+  await s.req(`/api/sheets/${made.id}/photo`, { method: "PUT", raw: new Uint8Array([0xff, 0xd8, 0xff, 1]), type: "image/jpeg", key: runner.key });
   await s.req(`/api/sheets/${made.id}/settings`, { method: "PATCH", body: { tag: "$10" }, key: runner.key });
   if (over.publish !== false) await s.req(`/api/sheets/${made.id}/settings`, { method: "PATCH", body: { draft: false }, key: runner.key });
   return { runner, other: me, v, sheet: made };
@@ -232,7 +232,7 @@ describe("venues", () => {
     expect((await s.req(`/api/sheets/${posted.id}`, { method: "PUT", body: doc(), key: runner.key })).status).toBe(200);
     await s.app.request(`/api/sheets/${posted.id}/photo`, {
       method: "PUT",
-      body: new Uint8Array([1, 2, 3]),
+      body: new Uint8Array([0xff, 0xd8, 0xff, 1]),
       headers: { "Content-Type": "image/jpeg", "X-Invite-Code": runner.key },
     });
     const draft = (await (await s.req(`/api/sheets/${posted.id}`, { key: runner.key })).json()) as any;
