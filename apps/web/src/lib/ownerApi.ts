@@ -38,6 +38,11 @@ export async function renamePerson(p: Person, name: string): Promise<void> {
 export async function revokePerson(p: Person): Promise<void> {
   await fetch(`/api/owner/users/${p.id}/revoke`, { method: "POST", headers: headers(), body: "{}" });
 }
+/** Remove the record of someone who is already turned off. */
+export async function deletePerson(p: Person): Promise<void> {
+  const res = await fetch(`/api/owner/users/${p.id}`, { method: "DELETE", headers: headers() });
+  if (!res.ok) throw new Error("Could not delete them.");
+}
 /** Hand the link to the phone's share sheet, or copy it. Returns what happened, for a note. */
 export async function shareLink(link: string, who: string): Promise<string> {
   try {

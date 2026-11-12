@@ -68,6 +68,15 @@ export function venueRoutes(app: Hono, a: Access, venues: VenueRepository, sheet
     return r.ok ? c.json({ ok: true }) : c.json({ error: r.error, retryAfter: r.retryAfter }, r.status);
   });
 
+  /** Clear the wrong-PIN count and lock early, without changing the PIN or signing anyone out. */
+  app.post("/api/venues/:id/unlock", async (c) => {
+    const v = await venues.get(c.req.param("id"));
+    if (!v) return c.json({ error: "not found" }, 404);
+    if (!(await runs(c, v))) return c.json({ error: "you don't run this venue" }, 403);
+    await pins.unlock("v", v.id, () => venues.get(v.id), saveVenue(v.id));
+    return c.json({ ok: true });
+  });
+
   /** The venue's current PIN, for the owner and its runners (so they can tell people). Null when it was set before PINs could be shown: set it again once. */
   app.get("/api/venues/:id/pin", async (c) => {
     const v = await venues.get(c.req.param("id"));

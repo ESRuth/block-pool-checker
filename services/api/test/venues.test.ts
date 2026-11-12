@@ -92,6 +92,31 @@ describe("venues", () => {
     expect((await s.req(`/api/venues/${v.id}/enter`, { body: { pin: "4821" } })).status).toBe(200);
   });
 
+  it("a runner or the owner can unlock a locked PIN at once, without changing it or signing anyone out; a stranger cannot", async () => {
+    const s = setup();
+    const { v, runner, other, sheet } = await venueWithSheet(s);
+    const ok = await s.req(`/api/venues/${v.id}/enter`, { body: { pin: "4821" } });
+    const pass = cookieOf(ok);
+    for (let i = 0; i < 5; i++) await s.req(`/api/venues/${v.id}/enter`, { body: { pin: "1111" } });
+    expect((await s.req(`/api/venues/${v.id}/enter`, { body: { pin: "4821" } })).status).toBe(429);
+    expect((await s.req(`/api/venues/${v.id}/unlock`, { body: {} })).status).toBe(403); // no key
+    expect((await s.req(`/api/venues/${v.id}/unlock`, { body: {}, key: other.key })).status).toBe(403); // not a runner here
+    const seen = (await (await s.req(`/api/venues/${v.id}`, { key: runner.key })).json()) as any;
+    expect(seen.wrongTries).toBe(5);
+    expect((await s.req(`/api/venues/${v.id}/unlock`, { body: {}, key: runner.key })).status).toBe(200);
+    const after = (await (await s.req(`/api/venues/${v.id}`, { key: runner.key })).json()) as any;
+    expect(after.wrongTries).toBe(0);
+    expect((await s.req(`/api/venues/${v.id}/enter`, { body: { pin: "4821" } })).status).toBe(200); // right away, same PIN
+    expect(((await (await s.req(`/api/venues/${v.id}`, { cookie: pass })).json()) as any).pinRequired).toBeUndefined(); // the old pass still works
+    // the same for a sheet's own PIN
+    await s.req(`/api/sheets/${sheet.id}/settings`, { method: "PATCH", body: { pin: "9090" }, key: runner.key });
+    for (let i = 0; i < 5; i++) await s.req(`/api/sheets/${sheet.id}/enter`, { body: { pin: "1111" } });
+    expect((await s.req(`/api/sheets/${sheet.id}/enter`, { body: { pin: "9090" } })).status).toBe(429);
+    expect((await s.req(`/api/sheets/${sheet.id}/unlock`, { body: {}, key: other.key })).status).toBe(403);
+    expect((await s.req(`/api/sheets/${sheet.id}/unlock`, { body: {}, key: OWNER })).status).toBe(200);
+    expect((await s.req(`/api/sheets/${sheet.id}/enter`, { body: { pin: "9090" } })).status).toBe(200);
+  });
+
   it("a sheet in a venue needs the pass, hides its photo from viewers, and never shows marked blocks", async () => {
     const s = setup();
     const { v, sheet, runner } = await venueWithSheet(s);

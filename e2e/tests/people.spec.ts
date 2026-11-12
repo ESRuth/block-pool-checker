@@ -106,3 +106,17 @@ test("a person's link shows in their own card, and Replace link stops the old on
   expect((await api("/api/me", { key: keyOf(second) })).status).toBe(200);
   expect((await api("/api/me", { key: keyOf(first) })).status).toBe(403);
 });
+
+test("the owner turns a person off and then deletes their record from the People page", async ({ page }) => {
+  await signIn(page, OWNER_CODE);
+  const made = (await (await api("/api/owner/users", { method: "POST", body: JSON.stringify({ name: "Test Invite" }) })).json()) as { id: string };
+  await page.goto("/people");
+  const card = page.locator(`#person-${made.id}`);
+  page.once("dialog", (d) => void d.accept());
+  await card.getByRole("button", { name: "Turn off" }).click();
+  await page.getByText(/Turned off \(/).click();
+  await expect(page.getByText("Test Invite")).toBeVisible();
+  page.once("dialog", (d) => void d.accept());
+  await page.locator(".person.off", { hasText: "Test Invite" }).getByRole("button", { name: "Delete record" }).click();
+  await expect(page.getByText("Test Invite")).toHaveCount(0);
+});

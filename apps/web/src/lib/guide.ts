@@ -43,7 +43,7 @@ export const GUIDE: GuideSection[] = [
         ul: [
           "**Open for blocks** means the sheet is up on the wall and the game is chosen, but the blocks aren't all filled yet. Ask at the venue to get one. There is nothing more to see until the runner adds the photo and publishes the sheet.",
           "You don't see the photo of the paper sheet, because it can show handwriting and phone numbers. The runner can turn it on for a sheet.",
-          "Five wrong PINs in a row lock the PIN for a minute, then two, then four, up to an hour. Wait and try again, or ask the runner.",
+          "Five wrong PINs in a row lock the PIN for a minute, then two, then four, up to an hour. Wait and try again, or ask the runner, who can unlock it.",
           "Sheets are removed 7 days after the game.",
         ],
       },
@@ -80,7 +80,7 @@ export const GUIDE: GuideSection[] = [
       { h: "Changing things" },
       {
         ul: [
-          "**The PIN.** On the venue page, **Show PIN** reveals the current one for a few seconds, so you can tell people; to change it, enter a new PIN (4 to 8 digits). Everyone has to enter the new one. One sheet can have its own PIN instead, in its Access tab, which replaces the venue's for that sheet only.",
+          "**The PIN.** On the venue page, **Show PIN** reveals the current one for a few seconds, so you can tell people; to change it, enter a new PIN (4 to 8 digits). Everyone has to enter the new one. If friends mistyped it and it is locked, tap **Unlock** to clear the lock without changing the PIN or signing anyone out. One sheet can have its own PIN instead, in its Access tab, which replaces the venue's for that sheet only.",
           "**The photo.** To let viewers see the photo of a sheet, turn it on in that sheet's Access tab. Remember that it can show phone numbers.",
           "**Hide it again.** A published sheet can go back to a draft from its Access tab. Viewers stop seeing it until you publish it again.",
           "**A wrong name or a moved grid.** Fix them on the sheet at any time, even after publishing. Changes save by themselves.",
@@ -92,7 +92,7 @@ export const GUIDE: GuideSection[] = [
       },
       { h: "If a PIN gets out" },
       {
-        p: "The venue page tells you when wrong PINs are being tried. If a PIN has spread to people it shouldn't have, change it.",
+        p: "The venue page tells you when wrong PINs are being tried. If that was a friend mistyping, tap **Unlock**. If a PIN has spread to people it shouldn't have, change it.",
       },
     ],
   },
@@ -104,7 +104,7 @@ export const GUIDE: GuideSection[] = [
       {
         ol: [
           "Open the app and enter the owner code (the code box asks for it when you are not signed in). The code is the master key: keep it out of chat messages and screenshots. The bar at the top has three places: **Venues**, **Sheets** and **People**. To switch between the owner and a personal link on one browser, use **Use a different code** in the menu under your name.",
-          '**Invite someone** (People). Type their name and tap **Make their link**. Send them the link; opening it signs their phone in. Each card shows their link, which venues they run, and when they last used it. **Rename** fixes a name (it also updates "Added by" on their sheets). **Another link** makes an extra link and leaves the old ones working. **Replace link** makes a new link and stops every older one, for a lost phone or a link sent to the wrong person. **Turn off** ends their access for good.',
+          '**Invite someone** (People). Type their name and tap **Make their link**. Send them the link; opening it signs their phone in. Each card shows their link, which venues they run, and when they last used it. **Rename** fixes a name (it also updates "Added by" on their sheets). **Another link** makes an extra link and leaves the old ones working. **Replace link** makes a new link and stops every older one, for a lost phone or a link sent to the wrong person. **Turn off** ends their access for good. Under **Turned off**, **Delete record** removes the name and use counts.',
           "**Make a venue** (Venues). Give it a name and a first PIN and choose its runners (a main one and backups) from the people you have invited. The venue's QR code is on its page. A private pool (an office or a family pool) gets a venue too: it is only a name, a PIN and someone to run it.",
           "**Close** removes a venue and its sheets.",
         ],

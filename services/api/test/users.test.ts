@@ -232,4 +232,19 @@ describe("replacing a link", () => {
     expect((await s.call("/api/me", extra.key)).status).toBe(403); // so is the extra one
     expect((await s.call(`/api/owner/users/${u.id}/links`, u.key, { replace: true })).status).toBe(403); // owner only
   });
+
+  it("the owner deletes the record of someone turned off, and only then; they stop running venues", async () => {
+    const s = setup();
+    const { person, venueId, make } = await runnerWithSheet(s, "Jordan");
+    const made = await make();
+    expect((await s.call(`/api/owner/users/${person.id}`, person.key, undefined, "DELETE")).status).toBe(403); // not the owner
+    expect((await s.call(`/api/owner/users/${person.id}`, "owner-code", undefined, "DELETE")).status).toBe(409); // still has links
+    await s.call(`/api/owner/users/${person.id}/revoke`, "owner-code", {});
+    expect((await s.call(`/api/owner/users/${person.id}`, "owner-code", undefined, "DELETE")).status).toBe(204);
+    expect((await s.call(`/api/owner/users/${person.id}`, "owner-code", undefined, "DELETE")).status).toBe(404);
+    expect(((await (await s.call("/api/owner/users", "owner-code")).json()) as any).users).toHaveLength(0);
+    const ran = (await (await s.call("/api/my/venues", "owner-code")).json()) as any;
+    expect(ran.venues.find((v: any) => v.id === venueId).runnerIds).toEqual([]); // no longer runs it
+    expect(((await (await s.call(`/api/sheets/${made.id}`, "owner-code")).json()) as any).createdBy).toBe("Jordan"); // "Added by" keeps the name
+  });
 });

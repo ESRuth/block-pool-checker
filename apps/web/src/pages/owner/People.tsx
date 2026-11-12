@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { invitePerson, listPeople, newPersonLink, renamePerson, revokePerson, shareLink, type Person } from "../../lib/ownerApi";
+import { deletePerson, invitePerson, listPeople, newPersonLink, renamePerson, revokePerson, shareLink, type Person } from "../../lib/ownerApi";
 import { myVenues, type VenueSummary } from "../../lib/venueApi";
 
 /** "3 days ago" for a time, in the coarsest unit that fits. */
@@ -73,6 +73,18 @@ export function People() {
     await revokePerson(p);
     setLinks(({ [p.id]: _gone, ...rest }) => rest);
     void load();
+  }
+
+  async function remove(p: Person) {
+    if (!confirm(`Delete ${p.name}'s record? Their name and use counts are removed and it cannot be undone. "Added by" on their sheets keeps the name.`))
+      return;
+    try {
+      await deletePerson(p);
+      setNote("");
+      await load();
+    } catch (e) {
+      fail(e);
+    }
   }
 
   return (
@@ -197,6 +209,11 @@ export function People() {
               <div key={u.id} className="person off">
                 <b>{u.name}</b>
                 <div className="sub">Their links no longer work.</div>
+                <div className="actions">
+                  <button className="danger-btn" onClick={() => remove(u)}>
+                    Delete record
+                  </button>
+                </div>
               </div>
             ))}
           </details>

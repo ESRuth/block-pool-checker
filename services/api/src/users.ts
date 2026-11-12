@@ -25,6 +25,7 @@ export interface UserRepository {
   get(id: string): Promise<UserRecord | null>;
   put(u: UserRecord): Promise<void>;
   list(): Promise<UserRecord[]>;
+  delete(id: string): Promise<void>;
 }
 
 export class MemoryUserRepository implements UserRepository {
@@ -37,6 +38,9 @@ export class MemoryUserRepository implements UserRepository {
   }
   async put(u: UserRecord) {
     this.m.set(u.id, structuredClone(u));
+  }
+  async delete(id: string) {
+    this.m.delete(id);
   }
   async list() {
     return structuredClone([...this.m.values()]).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
@@ -85,6 +89,9 @@ export class FirestoreUserRepository implements UserRepository {
       readDay: u.readDay ?? null,
       readsToday: u.readsToday ?? null,
     });
+  }
+  async delete(id: string) {
+    await this.col.doc(id).delete();
   }
   async list() {
     return (await this.col.get()).docs.map((d) => this.from(d.id, d.data())).sort((a, b) => a.createdAt.localeCompare(b.createdAt));

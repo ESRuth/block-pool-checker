@@ -135,7 +135,18 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
       hasPhoto: rec.hasPhoto && photoVisible && !rec.deletedAt,
       canEdit,
       ...(deleted ? { deleted } : {}),
-      ...(canEdit ? { settings: { venueId: rec.venueId, showPhoto: !!rec.showPhoto, hasPin: !!rec.pinHash, draft: !!rec.draft, posted: !!rec.posted } } : {}),
+      ...(canEdit
+        ? {
+            settings: {
+              venueId: rec.venueId,
+              showPhoto: !!rec.showPhoto,
+              hasPin: !!rec.pinHash,
+              draft: !!rec.draft,
+              posted: !!rec.posted,
+              ...(rec.pinHash ? { wrongTries: rec.pinFails ?? 0, lockedUntil: rec.pinLockedUntil } : {}),
+            },
+          }
+        : {}),
     });
   });
 
@@ -145,6 +156,23 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     if (!rec?.pinHash) return c.json({ error: "not found" }, 404);
     if (!(await sheetAuthorized(c, rec))) return c.json({ error: "you cannot change this sheet" }, 403);
     return c.json({ pin: pins.reveal(rec.pinSealed) });
+  });
+
+  /** Clear the wrong-PIN count and lock on a sheet's own PIN early, without changing the PIN or signing anyone out. */
+  app.post("/api/sheets/:id/unlock", async (c) => {
+    const rec = await sheets.get(c.req.param("id"));
+    if (!rec?.pinHash) return c.json({ error: "not found" }, 404);
+    if (!(await sheetAuthorized(c, rec))) return c.json({ error: "you cannot change this sheet" }, 403);
+    await pins.unlock(
+      "s",
+      rec.id,
+      () => sheets.get(rec.id),
+      async (p) => {
+        const cur = await sheets.get(rec.id);
+        if (cur) await sheets.put({ ...cur, ...p });
+      },
+    );
+    return c.json({ ok: true });
   });
 
   /** Enter the PIN that protects this sheet (its own, else its venue's). A right PIN sets a pass cookie; wrong tries slow down and then lock. */

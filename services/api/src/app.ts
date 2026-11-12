@@ -91,7 +91,7 @@ export function createApp(deps: Deps) {
     now,
   );
 
-  ownerRoutes(app, access, deps.sheets);
+  ownerRoutes(app, access, deps.sheets, venues);
   sheetRoutes(app, access, deps.sheets, deps.sheetPhotos, venues, pins);
   venueRoutes(app, access, venues, deps.sheets, deps.sheetPhotos, pins);
   gameRoutes(app, deps.scores, deps.games, now);

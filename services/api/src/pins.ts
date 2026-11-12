@@ -134,6 +134,22 @@ export function createPins(secret: string, now: () => Date) {
     });
   }
 
-  return { issue, valid, attempt, seal, reveal };
+  /**
+   * Clear the wrong-try count and any lock, leaving the PIN and everyone's passes alone. It runs in the same queue as `attempt`, so a guess in
+   * flight cannot write its old count back over it.
+   */
+  function unlock(
+    kind: PinKind,
+    id: string,
+    load: () => Promise<PinState | null | undefined>,
+    save: (patch: { pinFails: number; pinLockedUntil?: string }) => Promise<void>,
+  ): Promise<void> {
+    return serial(`${kind}:${id}`, async () => {
+      const state = await load();
+      if (state?.pinFails || state?.pinLockedUntil) await save({ pinFails: 0, pinLockedUntil: undefined });
+    });
+  }
+
+  return { issue, valid, attempt, unlock, seal, reveal };
 }
 export type Pins = ReturnType<typeof createPins>;

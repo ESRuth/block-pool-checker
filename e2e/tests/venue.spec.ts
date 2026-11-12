@@ -216,3 +216,14 @@ test("a posted sheet can be fixed in place: its tag, which team is on top, and i
   await page.reload();
   await expect(page.getByRole("heading", { name: "Commanders vs Eagles · $10" })).toBeVisible(); // it was saved
 });
+
+test("a runner can unlock a PIN locked by wrong tries without changing it", async ({ page }) => {
+  await signIn(page, OWNER_CODE);
+  const { venueId } = await createSheet(page);
+  for (let i = 0; i < 5; i++) await api(`/api/venues/${venueId}/enter`, { method: "POST", body: JSON.stringify({ pin: "0000" }) });
+  await page.goto(`/v/${venueId}`);
+  await expect(page.getByText(/5 wrong PIN tries in a row/)).toBeVisible();
+  await page.getByRole("button", { name: "Unlock", exact: true }).click();
+  await expect(page.getByText(/Unlocked/)).toBeVisible();
+  await expect(page.getByText(/wrong PIN tries in a row/)).toHaveCount(0);
+});

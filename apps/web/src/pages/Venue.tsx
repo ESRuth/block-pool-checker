@@ -5,7 +5,7 @@ import { PinGate } from "../components/PinGate";
 import { PinReveal } from "../components/PinReveal";
 import type { GameRef } from "../lib/gameApi";
 import { gameDate, gameWhen, sheetName } from "../lib/report";
-import { enterVenue, getVenue, getVenuePin, patchVenue, postSheet, venueLink, type VenueSheet, type VenueView } from "../lib/venueApi";
+import { enterVenue, getVenue, getVenuePin, patchVenue, postSheet, unlockVenue, venueLink, type VenueSheet, type VenueView } from "../lib/venueApi";
 
 /** A venue's QR code scans to here: the PIN, then the sheets on it. Its runners (and the owner) also get the QR to print and the tools. */
 export function VenuePage({ id }: { id: string }) {
@@ -162,9 +162,14 @@ function Manage({ id, v, reload }: { id: string; v: VenueView; reload: () => Pro
       {!!v.wrongTries && (
         <p className="warn" role="status">
           {v.wrongTries} wrong PIN {v.wrongTries === 1 ? "try" : "tries"} in a row
-          {v.lockedUntil && Date.parse(v.lockedUntil) > Date.now() ? ", so it is locked for a few minutes" : ""}. If that wasn't you or a friend, choose a new
-          PIN.
+          {v.lockedUntil && Date.parse(v.lockedUntil) > Date.now() ? ", so it is locked for a few minutes" : ""}. If that was a friend who mistyped it, tap
+          Unlock. If it wasn't, choose a new PIN.
         </p>
+      )}
+      {!!v.wrongTries && (
+        <div className="actions">
+          <button onClick={() => run(() => unlockVenue(id), "Unlocked. The PIN is the same and nobody was signed out.")}>Unlock</button>
+        </div>
       )}
 
       <h3>PIN</h3>

@@ -2,6 +2,7 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import type { Access } from "../access.js";
 import type { SheetRepository } from "../sheets.js";
+import type { VenueRepository } from "../venues.js";
 import { hashToken as hashKey, newUserId, newUserKey } from "../users.js";
 
 const userView = (u: { id: string; name: string; createdAt: string; lastUsedAt?: string; uses: number; revoked: boolean }) => ({
@@ -14,7 +15,7 @@ const userView = (u: { id: string; name: string; createdAt: string; lastUsedAt?:
 });
 
 /** Who am I, and the owner's people list: invite someone, get them a fresh link, turn them off. */
-export function ownerRoutes(app: Hono, a: Access, sheets: SheetRepository) {
+export function ownerRoutes(app: Hono, a: Access, sheets: SheetRepository, venues: VenueRepository) {
   const { users, now, ownerOnly } = a;
 
   app.get("/api/me", async (c) => {
@@ -72,5 +73,19 @@ export function ownerRoutes(app: Hono, a: Access, sheets: SheetRepository) {
     if (!u) return c.json({ error: "not found" }, 404);
     await users.put({ ...u, revoked: true });
     return c.json(userView({ ...u, revoked: true }));
+  });
+
+  /**
+   * Delete the record of someone who is already turned off (a test invite, a typo, someone who left). Their links are dead already; this removes
+   * the name and use counts, and takes them off any venue they ran. "Added by" on their sheets keeps the last name used.
+   */
+  app.delete("/api/owner/users/:id", async (c) => {
+    if (!(await ownerOnly(c))) return c.json({ error: "owner only" }, 403);
+    const u = await users.get(c.req.param("id"));
+    if (!u) return c.json({ error: "not found" }, 404);
+    if (!u.revoked) return c.json({ error: "turn them off first" }, 409);
+    for (const v of await venues.listByRunner(u.id)) await venues.put({ ...v, runnerIds: v.runnerIds.filter((id) => id !== u.id) });
+    await users.delete(u.id);
+    return c.body(null, 204);
   });
 }

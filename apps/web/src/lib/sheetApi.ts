@@ -49,6 +49,9 @@ export interface SheetSettings {
   draft: boolean;
   /** On a venue's wall but with no photo yet. */
   posted: boolean;
+  /** Only with a PIN of its own: wrong tries in a row, and when the lock ends. */
+  wrongTries?: number;
+  lockedUntil?: string;
 }
 export interface LoadedSheet {
   doc: Sheet;
@@ -151,6 +154,16 @@ export async function deleteSheet(id: string): Promise<void> {
 /** A sheet's own PIN, for the people who can edit it. Null when it cannot be shown (set before PINs could be shown). */
 export async function getSheetPin(id: string): Promise<string | null> {
   return (await json<{ pin: string | null }>(await fetch(`/api/sheets/${encodeURIComponent(id)}/pin`, { headers: auth() }), "could not get the PIN")).pin;
+}
+
+/** Clear the wrong-PIN count and lock on a sheet's own PIN now, without changing the PIN. */
+export async function unlockSheet(id: string): Promise<void> {
+  const res = await fetch(`/api/sheets/${encodeURIComponent(id)}/unlock`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...auth() },
+    body: "{}",
+  });
+  if (!res.ok) throw new SheetError("could not unlock", res.status);
 }
 
 /** Undo a delete (whoever could edit the sheet). */

@@ -58,5 +58,7 @@ export const patchVenue = (id: string, p: { name?: string; pin?: string; runnerI
 /** Post a sheet on the venue's wall: the game and the teams' places. Its photo comes later. */
 export const postSheet = (id: string, b: { teams: { top: string; left: string }; game: Sheet["game"]; tag?: string }) =>
   call<{ id: string }>(`/api/venues/${encodeURIComponent(id)}/sheets`, "POST", b);
+/** Clear the wrong-PIN count and lock now, without changing the PIN. */
+export const unlockVenue = (id: string) => call<{ ok: true }>(`/api/venues/${encodeURIComponent(id)}/unlock`, "POST", {});
 export const deleteVenue = (id: string) => call<void>(`/api/venues/${encodeURIComponent(id)}`, "DELETE");
 export const venueLink = (id: string) => `${location.origin}/v/${id}`;

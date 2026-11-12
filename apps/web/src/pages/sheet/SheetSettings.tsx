@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { PinReveal } from "../../components/PinReveal";
 import { useAuth } from "../../lib/auth";
-import { getSheetPin, patchSettings, type SheetSettings as Settings } from "../../lib/sheetApi";
+import { getSheetPin, patchSettings, unlockSheet, type SheetSettings as Settings } from "../../lib/sheetApi";
 import { myVenues, type VenueSummary } from "../../lib/venueApi";
 
 interface Props {
@@ -108,6 +108,28 @@ export function SheetSettings({ id, expiresAt, settings, onChanged }: Props) {
           : "Optional. A PIN here protects just this sheet, in place of the venue's. Use 4 to 8 digits."}
       </p>
       {settings?.hasPin && <PinReveal key={pinTick} load={() => getSheetPin(id)} />}
+      {!!settings?.wrongTries && (
+        <>
+          <p className="warn" role="status">
+            {settings.wrongTries} wrong PIN {settings.wrongTries === 1 ? "try" : "tries"} in a row
+            {settings.lockedUntil && Date.parse(settings.lockedUntil) > Date.now() ? ", so it is locked for a few minutes" : ""}.
+          </p>
+          <div className="actions">
+            <button
+              onClick={() =>
+                unlockSheet(id)
+                  .then(() => {
+                    onChanged({ settings: { ...settings, wrongTries: 0, lockedUntil: undefined }, expiresAt });
+                    setNote("Unlocked. The PIN is the same and nobody was signed out.");
+                  })
+                  .catch(() => setNote("That didn't work."))
+              }
+            >
+              Unlock
+            </button>
+          </div>
+        </>
+      )}
       <label className="field">
         PIN
         <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} inputMode="numeric" maxLength={8} autoComplete="off" />
