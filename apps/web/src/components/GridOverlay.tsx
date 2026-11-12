@@ -1,5 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apply, gridTransform, type Quad } from "@bpc/engine";
+
+/** The magnifier is this many CSS pixels across, and shows about this many times the photo's on-screen scale. */
+const LOUPE = 120;
+const loupeSpan = (photoWidth: number) => (photoWidth / 370) * (LOUPE / 3.5);
 
 const NAMES = ["top-left", "top-right", "bottom-right", "bottom-left"];
 
@@ -102,13 +106,17 @@ export function GridOverlay({
   };
   // Where inside the circle the finger landed, so the corner follows the finger instead of jumping to it.
   const grab = useRef<[number, number]>([0, 0]);
+  // While a corner is dragged, a magnifier floats above the finger (which would otherwise hide the corner): the photo and the grid lines, close up.
+  const [loupe, setLoupe] = useState<{ at: [number, number]; screen: [number, number] } | null>(null);
   const start = (i: number) => (e: React.PointerEvent<SVGCircleElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     onDragStart?.();
     const [x, y] = toImage(e);
     const c = corners[i]!;
     grab.current = [c[0] - x, c[1] - y];
+    setLoupe({ at: [c[0], c[1]], screen: [e.clientX, e.clientY] });
   };
+  const end = () => setLoupe(null);
   const drag = (i: number) => (e: React.PointerEvent<SVGCircleElement>) => {
     if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
     const [x, y] = toImage(e);
@@ -117,8 +125,9 @@ export function GridOverlay({
       ny = Math.min(height, Math.max(0, y + grab.current[1]));
     const next = corners.map((c, j) => (j === i ? [nx, ny] : c)) as unknown as Quad;
     onChange(next);
+    setLoupe({ at: [nx, ny], screen: [e.clientX, e.clientY] });
   };
-  const r = width / 60;
+  const r = width / 45;
   // The arrow keys move a focused corner (a step is 0.25% of the photo's width, ten times that with Shift), so the grid can be fixed without dragging.
   // One undo step for a run of key presses, not one per press.
   const lastKey = useRef(0);
@@ -199,7 +208,7 @@ export function GridOverlay({
               <circle
                 cx={c[0]}
                 cy={c[1]}
-                r={r * 2.2}
+                r={r * 2.4}
                 className="hit"
                 role="button"
                 tabIndex={0}
@@ -207,10 +216,42 @@ export function GridOverlay({
                 onKeyDown={nudge(i)}
                 onPointerDown={start(i)}
                 onPointerMove={drag(i)}
+                onPointerUp={end}
+                onPointerCancel={end}
               />
             </g>
           ))}
       </svg>
+      {loupe && (
+        <svg
+          className="loupe"
+          aria-hidden="true"
+          style={{
+            left: Math.max(8, Math.min(window.innerWidth - LOUPE - 8, loupe.screen[0] - LOUPE / 2)),
+            top: loupe.screen[1] - LOUPE - 56 >= 8 ? loupe.screen[1] - LOUPE - 56 : loupe.screen[1] + 56,
+          }}
+          viewBox={`${loupe.at[0] - loupeSpan(width) / 2} ${loupe.at[1] - loupeSpan(width) / 2} ${loupeSpan(width)} ${loupeSpan(width)}`}
+        >
+          <image href={url} width={width} height={height} />
+          {lines}
+          <line
+            x1={loupe.at[0] - loupeSpan(width) / 6}
+            x2={loupe.at[0] + loupeSpan(width) / 6}
+            y1={loupe.at[1]}
+            y2={loupe.at[1]}
+            className="cross"
+            strokeWidth={loupeSpan(width) / 150}
+          />
+          <line
+            y1={loupe.at[1] - loupeSpan(width) / 6}
+            y2={loupe.at[1] + loupeSpan(width) / 6}
+            x1={loupe.at[0]}
+            x2={loupe.at[0]}
+            className="cross"
+            strokeWidth={loupeSpan(width) / 150}
+          />
+        </svg>
+      )}
     </div>
   );
 }

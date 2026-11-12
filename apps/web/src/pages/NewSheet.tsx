@@ -97,7 +97,13 @@ export function NewSheet() {
       setPhoto(p);
       await read(p);
     } catch {
-      setError({ message: "That file could not be opened as a photo. Try a JPEG or PNG.", needInvite: false });
+      const heic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+      setError({
+        message: heic
+          ? "This browser cannot open HEIC photos (the iPhone's space-saving format). Choose the photo on the phone itself, or set the camera to Most Compatible, and try again."
+          : "That file could not be opened as a photo. Try a JPEG or PNG.",
+        needInvite: false,
+      });
       setPhase("error");
     }
   }

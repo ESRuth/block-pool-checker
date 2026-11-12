@@ -425,6 +425,22 @@ tr.lead {
   fill: rgba(0, 200, 255, 0.18);
   stroke: #00c8ff;
 }
+.photo-wrap .loupe {
+  inset: auto;
+  position: fixed;
+  width: 120px !important;
+  height: 120px !important;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  background: #000;
+  pointer-events: none;
+  z-index: 20;
+  overflow: hidden;
+}
+.loupe .cross {
+  stroke: #00c8ff;
+}
 .hit {
   fill: transparent;
   cursor: grab;

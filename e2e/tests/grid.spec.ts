@@ -68,3 +68,23 @@ test("a corner can be moved with the arrow keys, and Undo puts it back", async (
   await page.getByRole("button", { name: "Undo" }).click(); // the run of key presses is one undo step
   expect((await handles(page))[0]).toEqual(start);
 });
+
+test("while a corner is dragged a magnifier shows above the finger, and goes away on release", async ({ page, context }) => {
+  await signIn(page, OWNER_CODE);
+  await createSheet(page);
+  await page.getByRole("button", { name: "Show grid" }).click();
+  await page.waitForSelector("circle.handle");
+  await expect(page.locator(".loupe")).toHaveCount(0);
+  const cdp = await context.newCDPSession(page);
+  const touch = (type: "touchStart" | "touchMove" | "touchEnd", x: number, y: number) =>
+    cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+  const box = (await page.locator("circle.hit").nth(2).boundingBox())!;
+  const [sx, sy] = [box.x + box.width / 2, box.y + box.height / 2];
+  await touch("touchStart", sx, sy);
+  await touch("touchMove", sx - 10, sy - 10);
+  await expect(page.locator(".loupe")).toBeVisible();
+  const l = (await page.locator(".loupe").boundingBox())!;
+  expect(l.y + l.height).toBeLessThan(sy); // above the finger, not under it
+  await touch("touchEnd", 0, 0);
+  await expect(page.locator(".loupe")).toHaveCount(0);
+});
