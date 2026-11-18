@@ -13,7 +13,7 @@
   "dependencies": {
     "@bpc/engine": "workspace:*",
     "@bpc/vision": "workspace:*",
-    "qrcode-generator": "1.4.4",
+    "qrcode-generator": "1.5.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
