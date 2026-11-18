@@ -132,11 +132,12 @@ describe("My Sheets", () => {
 });
 
 describe("My Sheets for the owner", () => {
-  it("includes sheets saved before creators were recorded (and before every sheet was on a venue)", async () => {
+  it("includes sheets saved before creators were recorded", async () => {
     const sheets = new MemorySheetRepository();
     await sheets.put({
       id: "old",
       doc: { ...(doc as any), schema_version: 1 },
+      venueId: "somewhere",
       hasPhoto: true,
       createdAt: "2026-11-03T00:00:00.000Z",
       updatedAt: "2026-11-03T00:00:00.000Z",

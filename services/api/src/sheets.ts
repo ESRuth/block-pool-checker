@@ -13,8 +13,8 @@ export interface SheetRecord extends PinState {
   /** Id of the person who made it (owner for the owner code); that person can always edit it. */
   createdById?: string;
   updatedBy?: string;
-  /** The venue this sheet is on. Its PIN protects the sheet unless the sheet has its own (`pinHash`). Every sheet has one; a record without it is an older standalone sheet that only its maker and the owner can open. */
-  venueId?: string;
+  /** The venue this sheet is on. Its PIN protects the sheet unless the sheet has its own (`pinHash`). Every sheet is on one. */
+  venueId: string;
   /** A short label the runner adds when starting a sheet ("$10"), to tell two pools for one game apart. Everything else shown about a sheet (the teams, the day) comes from its game. */
   tag?: string;
   /** Whether people with the PIN also get the photo. Photos show handwriting and phone numbers, so viewers do not get it by default. */
@@ -109,7 +109,7 @@ export class FirestoreSheetRepository implements SheetRepository {
       createdBy: d.createdBy ?? undefined,
       createdById: d.createdById ?? undefined,
       updatedBy: d.updatedBy ?? undefined,
-      venueId: d.venueId ?? undefined,
+      venueId: d.venueId,
       tag: d.tag ?? undefined,
       showPhoto: d.showPhoto ?? undefined,
       deletedAt: d.deletedAt ?? undefined,
@@ -132,7 +132,7 @@ export class FirestoreSheetRepository implements SheetRepository {
       createdBy: rec.createdBy ?? null,
       createdById: rec.createdById ?? null,
       updatedBy: rec.updatedBy ?? null,
-      venueId: rec.venueId ?? null,
+      venueId: rec.venueId,
       tag: rec.tag ?? null,
       showPhoto: rec.showPhoto ?? null,
       deletedAt: rec.deletedAt ?? null,

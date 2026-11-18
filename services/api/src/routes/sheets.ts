@@ -39,9 +39,9 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     return new Date(base + RETENTION_DAYS * DAY).toISOString();
   };
 
-  /** What asks for a PIN here: the sheet's own PIN, else its venue's. "orphan" = no venue any more, or an older sheet from before every sheet had one (only editors get in). */
+  /** What asks for a PIN here: the sheet's own PIN, else its venue's. null = its venue is gone (only editors get in). */
   type Lock = { kind: PinKind; id: string; version: number; state: PinState; save: (p: { pinFails: number; pinLockedUntil?: string }) => Promise<void> };
-  const lockOf = async (rec: SheetRecord): Promise<Lock | "orphan"> => {
+  const lockOf = async (rec: SheetRecord): Promise<Lock | null> => {
     if (rec.pinHash)
       return {
         kind: "s",
@@ -53,9 +53,8 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
           if (cur) await sheets.put({ ...cur, ...p });
         },
       };
-    if (!rec.venueId) return "orphan";
     const v = await venues.get(rec.venueId);
-    if (!v) return "orphan";
+    if (!v) return null;
     return {
       kind: "v",
       id: v.id,
@@ -84,7 +83,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     const who = await a.access(c, false);
     if (!who) return false;
     if (who.owner || who.id === rec.createdById) return true;
-    return !!rec.venueId && !!(await venues.get(rec.venueId))?.runnerIds.includes(who.id);
+    return !!(await venues.get(rec.venueId))?.runnerIds.includes(who.id);
   };
 
   /** Make a sheet from a photo on a venue (a runner of it, or the owner). It starts as a draft: only the people who run the venue see it until a runner publishes it. */
@@ -122,7 +121,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     const deleted = rec.deletedAt ? { at: rec.deletedAt, goneOn: rec.expiresAt, canErase: (await a.access(c, false))?.owner === true } : undefined;
     const lock = await lockOf(rec);
     if (!canEdit) {
-      if (lock === "orphan") return c.json({ error: "not found" }, 404);
+      if (!lock) return c.json({ error: "not found" }, 404);
       // Nothing about the sheet is shown before the PIN.
       if (!pins.valid(c, lock.kind, lock.id, lock.version)) return c.json({ error: "PIN required", pinRequired: true }, 401);
     }
@@ -180,7 +179,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     const rec = await sheets.get(c.req.param("id"));
     if (!rec) return c.json({ error: "not found" }, 404);
     const lock = await lockOf(rec);
-    if (lock === "orphan" || rec.draft || rec.posted) return c.json({ error: "not found" }, 404);
+    if (!lock || rec.draft || rec.posted) return c.json({ error: "not found" }, 404);
     const { pin } = z.object({ pin: z.string().max(20) }).parse(await c.req.json());
     const r = await pins.attempt(
       c,
@@ -344,7 +343,7 @@ export function sheetRoutes(app: Hono, a: Access, allSheets: SheetRepository, ph
     const lock = await lockOf(rec);
     if ((rec.draft || rec.posted) && !(await sheetAuthorized(c, rec))) return c.json({ error: "not found" }, 404);
     if (!(await sheetAuthorized(c, rec))) {
-      if (lock === "orphan" || !pins.valid(c, lock.kind, lock.id, lock.version)) return c.json({ error: "PIN required" }, 401);
+      if (!lock || !pins.valid(c, lock.kind, lock.id, lock.version)) return c.json({ error: "PIN required" }, 401);
       if (!rec.showPhoto) return c.json({ error: "the photo is only for the people who run this sheet" }, 403);
     }
     const bytes = await photos.get(rec.id);

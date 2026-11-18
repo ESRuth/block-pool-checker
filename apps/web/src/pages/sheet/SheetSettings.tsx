@@ -69,8 +69,8 @@ export function SheetSettings({ id, expiresAt, settings, onChanged }: Props) {
         <>
           <h3>Move to a venue</h3>
           <p className="sub">
-            Owner only. {venue ? `It is on ${venue.name}.` : "It is not on a venue."} Moving it makes it a draft there, gives it a fresh week, and that venue's
-            PIN applies (a PIN of its own is removed).
+            Owner only. {venue ? `It is on ${venue.name}.` : ""} Moving it makes it a draft there, gives it a fresh week, and that venue's PIN applies (a PIN of
+            its own is removed).
           </p>
           <label className="field">
             Venue
