@@ -1458,3 +1458,56 @@ details.allnames > summary {
     color: #f87171;
   }
 }
+
+/* Turn and crop a photo (components/PhotoPrep.tsx). The grips are real buttons so the keyboard can move them. */
+.prepbox {
+  width: 100%;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 14px; /* room around the photo so the corner grips are not cut off at its edge */
+  touch-action: none;
+}
+.prepinner {
+  position: relative;
+}
+.prepbox canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.prepbox .crop {
+  position: absolute;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+.prepbox .cropgrip {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin: -22px 0 0 -22px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  touch-action: none;
+  cursor: grab;
+}
+.prepbox .cropgrip::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  background: #00c8ff;
+  border: 2px solid #fff;
+}
+.choices button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-top: 12px;
+}
+.choices .sub {
+  margin: 4px 2px 8px;
+}

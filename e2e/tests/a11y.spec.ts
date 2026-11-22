@@ -46,6 +46,9 @@ for (const scheme of ["light", "dark"] as const) {
       await page.goto(`/new?venue=${encodeURIComponent(venueId)}`);
       await scan(page, "new sheet: choose a photo");
       await page.locator("input[type=file]").setInputFiles(SAMPLE);
+      await expect(page.getByRole("heading", { name: "Is the sheet the right way up?" })).toBeVisible();
+      await scan(page, "new sheet: turn and crop");
+      await page.getByRole("button", { name: /Use this photo/ }).click();
       await page.locator(".games button", { hasText: "PHI @ WSH" }).first().click();
       await expect(page.getByText("Do the lines sit on the blocks?")).toBeVisible();
       await scan(page, "new sheet: the grid step");
@@ -75,6 +78,13 @@ for (const scheme of ["light", "dark"] as const) {
       await expect(page.getByText(/deleted/i).first()).toBeVisible();
       await scan(page, "a deleted sheet");
       await api(`/api/sheets/${sheetId}/restore`, { method: "POST", body: "{}" });
+      // switching the photo: the choice screen
+      await page.goto(`/new?sheet=${sheetId}&replace=1`);
+      await scan(page, "switch the photo: choose a photo");
+      await page.locator("input[type=file]").setInputFiles(SAMPLE);
+      await page.getByRole("button", { name: /Use this photo/ }).click();
+      await expect(page.getByRole("heading", { name: "What should happen to the names and digits?" })).toBeVisible();
+      await scan(page, "switch the photo: keep or read again");
       // a viewer: enters the PIN, sees the list and the sheet
       const viewer = await (await browser.newContext({ colorScheme: scheme })).newPage();
       await viewer.goto(`/v/${venueId}`);

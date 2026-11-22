@@ -22,6 +22,8 @@ interface Props {
   highlights: Highlight[];
   onTap: (p: [number, number]) => void;
   incomplete: boolean;
+  /** Where an editor goes to switch the photo (shown with the cut-off warning). */
+  switchHref?: string;
 }
 
 /** The photo with the winners boxed, plus the grid tools (show/hide, snap, undo, zoom). */
@@ -70,6 +72,12 @@ export function PhotoCard(p: Props) {
       {p.incomplete && (
         <p className="warn" role="alert">
           Part of the sheet is cut off in this photo, so some winners may not be boxed. Retake it with the whole sheet in view.
+          {p.switchHref && (
+            <>
+              {" "}
+              <a href={p.switchHref}>Switch the photo</a>
+            </>
+          )}
         </p>
       )}
     </section>

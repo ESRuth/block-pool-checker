@@ -319,6 +319,7 @@ export function SheetPage({ id }: { id: string }) {
               highlights={blocks.highlights}
               onTap={blocks.tapPhoto}
               incomplete={!!extent?.incomplete}
+              switchHref={canEdit ? `/new?sheet=${encodeURIComponent(id)}&replace=1` : undefined}
             />
           )}
         </>

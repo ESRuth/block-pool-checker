@@ -153,6 +153,11 @@ describe("saved sheets", () => {
     expect(got.headers.get("Content-Type")).toBe("image/jpeg");
     expect(got.headers.get("Cache-Control")).toBe("no-store");
     expect(new Uint8Array(await got.arrayBuffer())).toEqual(jpg);
+    // a switched photo replaces the old one (same sheet, new bytes), and the old bytes are gone
+    const jpg2 = new Uint8Array([0xff, 0xd8, 0xff, 9, 9, 9, 9]);
+    expect((await s.req(`/api/sheets/${body.id}/photo`, { method: "PUT", raw: jpg2, type: "image/jpeg", key: runner.key })).status).toBe(204);
+    expect(new Uint8Array(await (await s.req(`/api/sheets/${body.id}/photo`, { key: runner.key })).arrayBuffer())).toEqual(jpg2);
+    await s.req(`/api/sheets/${body.id}/photo`, { method: "PUT", raw: jpg, type: "image/jpeg", key: runner.key });
     expect((await s.req(`/api/sheets/${body.id}/photo`)).status).toBe(404); // a stranger never gets a draft's photo
     await s.req(`/api/sheets/${body.id}`, { method: "DELETE", key: runner.key });
     expect(await s.photos.get(body.id)).not.toBeNull(); // a runner's delete only hides the sheet, so it can be restored

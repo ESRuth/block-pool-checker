@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Quad } from "@bpc/engine";
-import { cornerShift, outsideCorners, repairCorners } from "../src/lib/grid";
+import { carryCorners, cornerShift, outsideCorners, repairCorners } from "../src/lib/grid";
 
 const q = (a: number[][]) => a as any;
 describe("grid repair", () => {
@@ -98,5 +98,24 @@ describe("cornerShift", () => {
         [100, 900],
       ]),
     ).toBeCloseTo(0.5);
+  });
+});
+
+describe("carryCorners", () => {
+  const old = [
+    [100, 100],
+    [900, 100],
+    [900, 700],
+    [100, 700],
+  ] as unknown as Parameters<typeof carryCorners>[0];
+  it("scales the corners onto a new photo of the same shape", () => {
+    const c = carryCorners(old, { width: 1000, height: 800 }, { width: 2000, height: 1600 });
+    expect(c[0]).toEqual([200, 200]);
+    expect(c[2]).toEqual([1800, 1400]);
+  });
+  it("starts as a rectangle inside the photo when the shape changed (turned or cropped)", () => {
+    const c = carryCorners(old, { width: 1000, height: 800 }, { width: 800, height: 1000 });
+    expect(c[0]).toEqual([80, 150]);
+    expect(c[2]).toEqual([720, 850]);
   });
 });

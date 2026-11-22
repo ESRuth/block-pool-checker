@@ -36,6 +36,7 @@ test("the wizard shows the grid; a saved sheet hides it until Show grid", async 
   await signIn(page, OWNER_CODE);
   await page.goto(`/new?venue=${encodeURIComponent(await makeVenue())}`);
   await page.locator("input[type=file]").setInputFiles(SAMPLE);
+  await page.getByRole("button", { name: /Use this photo/ }).click();
   await page.locator(".games button", { hasText: "PHI @ WSH" }).first().click();
   await expect(page.locator("circle.handle")).toHaveCount(4); // setting up: the grid is shown
   await page.getByRole("button", { name: /Looks right/ }).click();

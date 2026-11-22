@@ -5,8 +5,10 @@ import { snapGrid } from "@bpc/vision";
 import { GamePicker } from "../components/GamePicker";
 import { GridOverlay } from "../components/GridOverlay";
 import { DigitsEditor } from "../components/DigitsEditor";
+import { PhotoPrep } from "../components/PhotoPrep";
 import type { GameRef } from "../lib/gameApi";
 import { badRows, rowsFromRead, setsFor, type RowText } from "../lib/digits";
+import { carryCorners } from "../lib/grid";
 import { loadPhoto, type LoadedPhoto } from "../lib/photo";
 import { ReadError, readPhoto, setInviteCode, type ReadResponse } from "../lib/readApi";
 import { createSheet, fillSheet, loadSheet, type Sheet } from "../lib/sheetApi";
@@ -18,7 +20,7 @@ const fitsGame = (top: string, left: string, g: Sheet["game"]) =>
 
 const toPx = (read: ReadResult, w: number, h: number) => read.grid_corners.map(([x, y]) => [(x * w) / 1000, (y * h) / 1000]) as unknown as Quad;
 
-type Phase = "pick" | "reading" | "saving" | "error" | "questions";
+type Phase = "pick" | "prep" | "choose" | "reading" | "saving" | "error" | "questions";
 
 /** Set-up flow: each question appears only if it's needed and disappears once answered. */
 export function NewSheet() {
@@ -40,13 +42,21 @@ export function NewSheet() {
   const q = useMemo(() => new URLSearchParams(location.search), []);
   const sheetId = q.get("sheet");
   const venueId = q.get("venue");
+  // `?sheet=<id>&replace=1` switches out the photo of a sheet that already has one. The person chooses to keep what the sheet has (names, digits) and only
+  // re-fit the grid on the new photo, or to read the new photo again.
+  const replace = !!sheetId && q.get("replace") === "1";
+  const [existing, setExisting] = useState<Sheet | null>(null);
+  const [keep, setKeep] = useState(false);
   const [posted, setPosted] = useState<{ teams: Sheet["teams"]; game: Sheet["game"] } | null>(null);
   // The posted sheet's game has to be known before a photo is read (it decides whether "Which game?" is asked), so the photo step waits for it.
   const [postedLoading, setPostedLoading] = useState(!!sheetId);
   useEffect(() => {
     if (sheetId)
       loadSheet(sheetId)
-        .then((p) => setPosted({ teams: p.doc.teams, game: p.doc.game }))
+        .then((p) => {
+          setPosted({ teams: p.doc.teams, game: p.doc.game });
+          setExisting(p.doc);
+        })
         .catch(() => undefined) // without it the game is simply asked for
         .finally(() => setPostedLoading(false));
   }, [sheetId]);
@@ -95,7 +105,7 @@ export function NewSheet() {
     try {
       const p = await loadPhoto(file);
       setPhoto(p);
-      await read(p);
+      setPhase("prep");
     } catch {
       const heic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
       setError({
@@ -108,23 +118,46 @@ export function NewSheet() {
     }
   }
 
+  /** The person is happy with the photo (turned and cropped, or as it was): a switched photo asks what to keep, a new one is read. */
+  async function usePhoto(p: LoadedPhoto) {
+    setPhoto(p);
+    if (replace) setPhase("choose");
+    else await read(p);
+  }
+  /** Keep the sheet's names and digits: only the picture changes, and the grid is lined up on it again. Nothing is read. */
+  function keepEverything() {
+    if (!photo || !existing) return;
+    let start = carryCorners(existing.corners, existing, photo);
+    try {
+      start = snapGrid(photo.gray, start).corners;
+    } catch {
+      /* keep the carried corners */
+    }
+    setCorners(start);
+    setGame(existing.game);
+    setKeep(true);
+    setPhase("questions");
+  }
+
   async function finish() {
-    if (!photo || !corners || !resp || !game) return;
+    if (!photo || !corners || !game || (!keep && !resp)) return;
     setPhase("saving");
     try {
-      const doc: Sheet = {
-        schema_version: 1,
-        width: photo.width,
-        height: photo.height,
-        corners,
-        teams: { top: teams.top.trim(), left: teams.left.trim() },
-        mode: resp.read.digit_sets,
-        rows,
-        game,
-        finalIncludesOvertime: true,
-        names: {},
-        mine: [],
-      };
+      const doc: Sheet = keep
+        ? { ...existing!, width: photo.width, height: photo.height, corners, namesCorners: corners }
+        : {
+            schema_version: 1,
+            width: photo.width,
+            height: photo.height,
+            corners,
+            teams: { top: teams.top.trim(), left: teams.left.trim() },
+            mode: resp!.read.digit_sets,
+            rows,
+            game,
+            finalIncludesOvertime: true,
+            names: {},
+            mine: existing?.mine ?? [], // a switched photo keeps the person's marked blocks
+          };
       if (sheetId) {
         // The pool was posted before it had a photo: add the photo to it. It becomes a draft; the runner is already signed in by their key.
         await fillSheet(sheetId, doc, photo.blob);
@@ -141,16 +174,16 @@ export function NewSheet() {
   }
 
   // Four steps shown to the person: photo, details (teams and digits, only if needed), game, grid.
-  const step = phase === "questions" && resp ? (!teamsDone || !digitsDone ? 2 : !game ? 3 : 4) : phase === "saving" ? 4 : 1;
+  const step = keep && phase === "questions" ? 4 : phase === "questions" && resp ? (!teamsDone || !digitsDone ? 2 : !game ? 3 : 4) : phase === "saving" ? 4 : 1;
   const stillBad = useMemo(() => badRows(rows).length > 0, [rows]);
 
   return (
     <main className="steps">
       <header className="top">
-        <a href="/" className="back" aria-label="Home">
+        <a href={replace ? `/s/${sheetId}` : "/"} className="back" aria-label={replace ? "Back to the sheet" : "Home"}>
           ‹
         </a>
-        <h1>New sheet</h1>
+        <h1>{replace ? "Switch the photo" : "New sheet"}</h1>
       </header>
       <div className="stepbar" role="img" aria-label={`Step ${step} of 4`}>
         {[1, 2, 3, 4].map((n) => (
@@ -163,9 +196,14 @@ export function NewSheet() {
           Loading the sheet…
         </p>
       )}
-      {phase === "pick" && !postedLoading && (
+      {phase === "pick" && !postedLoading && replace && !existing && (
+        <p className="msg" role="alert">
+          That sheet could not be opened, so its photo cannot be switched.
+        </p>
+      )}
+      {phase === "pick" && !postedLoading && !(replace && !existing) && (
         <section>
-          <h2>Start with a photo</h2>
+          <h2>{replace ? "Choose the new photo" : "Start with a photo"}</h2>
           <p className="sub">Get the whole sheet in view: the team names, every digit and every block.</p>
           <label className="bigbtn">
             Take or choose a photo
@@ -173,7 +211,47 @@ export function NewSheet() {
           </label>
           <p className="sub">
             The photo is shrunk and stripped of location and camera data on your phone first. It's kept privately and deleted 7 days after the game.
+            {replace ? " The new photo replaces the old one, which is deleted." : ""}
           </p>
+        </section>
+      )}
+
+      {phase === "prep" && photo && (
+        <PhotoPrep
+          photo={photo}
+          onUse={usePhoto}
+          onOther={() => {
+            setPhoto(null);
+            setPhase("pick");
+          }}
+        />
+      )}
+
+      {phase === "choose" && photo && (
+        <section>
+          <h2>What should happen to the names and digits?</h2>
+          <div className="choices">
+            <button className="primary" onClick={keepEverything}>
+              Keep my names and digits
+            </button>
+            <p className="sub">
+              Only the picture changes. You line the grid up on the new photo next. Nothing is read, so it costs nothing and your confirmed names stay.
+            </p>
+            <button onClick={() => void read(photo)}>Read it again</button>
+            <p className="sub">
+              The new photo is read like a new sheet: digits first, then every name. Names you confirmed are lost; the blocks you marked stay. Use this if the
+              first reading was wrong.
+            </p>
+          </div>
+          <button
+            className="linkbtn"
+            onClick={() => {
+              setPhoto(null);
+              setPhase("pick");
+            }}
+          >
+            Choose a different photo
+          </button>
         </section>
       )}
 
@@ -262,9 +340,10 @@ export function NewSheet() {
         </section>
       )}
 
-      {phase === "questions" && resp && photo && corners && game && (
+      {phase === "questions" && (resp || keep) && photo && corners && game && (
         <section>
           <h2>Do the lines sit on the blocks?</h2>
+          {keep && <p className="sub">Your digits and names are kept. Line the grid up on the new photo.</p>}
           <p className="sub">
             The winning blocks and every name are found from this grid, so get it right now. Drag a corner circle, or tap “Snap to the lines”.
           </p>

@@ -100,6 +100,13 @@ export function SheetDetails({ id, sheet, update, tag, onTag, onChangeGame, post
 
       {!posted && (
         <>
+          <h3>Photo</h3>
+          <p className="sub">Switch it for a better or straighter one. You choose whether to keep the names and digits you have or read the new photo again.</p>
+          <div className="actions">
+            <a className="bigbtn" href={`/new?sheet=${encodeURIComponent(id)}&replace=1`}>
+              Switch the photo
+            </a>
+          </div>
           <h3>Digits</h3>
           {badRows(sheet.rows).length > 0 && (
             <p className="warn" role="alert">

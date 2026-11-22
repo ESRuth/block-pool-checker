@@ -21,6 +21,7 @@ export async function createSheet(page: Page, venueId?: string) {
   const venue = venueId ?? (await makeVenue());
   await page.goto(`/new?venue=${encodeURIComponent(venue)}`);
   await page.locator("input[type=file]").setInputFiles(SAMPLE);
+  await page.getByRole("button", { name: /Use this photo/ }).click();
   await page.locator(".games button", { hasText: "PHI @ WSH" }).first().click();
   await expect(page.getByText("Do the lines sit on the blocks?")).toBeVisible();
   await page.getByRole("button", { name: /Looks right/ }).click();

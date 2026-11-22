@@ -43,6 +43,7 @@ test("post a sheet, add the photo, publish: viewers need the venue PIN and see n
   const id = /\/s\/([^#/]+)/.exec(page.url())![1]!;
   await page.getByRole("link", { name: "Add the photo (digits drawn)" }).click();
   await page.locator("input[type=file]").setInputFiles(SAMPLE);
+  await page.getByRole("button", { name: /Use this photo/ }).click();
   await expect(page.getByText("Do the lines sit on the blocks?")).toBeVisible();
   await expect(page.getByText("Which game?")).toHaveCount(0);
   await page.getByRole("button", { name: /Looks right/ }).click();

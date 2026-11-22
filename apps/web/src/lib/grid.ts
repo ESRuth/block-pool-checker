@@ -44,3 +44,23 @@ export function cornerShift(a: Quad, b: Quad): number {
   const block = Math.hypot(a[1][0] - a[0][0], a[1][1] - a[0][1]) / 10 || 1;
   return Math.max(...a.map((p, i) => Math.hypot(p[0] - b[i]![0], p[1] - b[i]![1]))) / block;
 }
+
+/**
+ * Where the grid corners start on a new photo of a sheet that already has a grid. If the new photo has the same shape as the old (a retake from
+ * the same distance) the corners keep their place on it; otherwise (rotated, cropped, another shape) they start as a rectangle inside the photo,
+ * for Snap to the lines to find the real ones.
+ */
+export function carryCorners(old: Quad, from: { width: number; height: number }, to: { width: number; height: number }): Quad {
+  const sameShape = Math.abs(from.width / from.height - to.width / to.height) < 0.02;
+  if (sameShape) return old.map(([x, y]) => [(x * to.width) / from.width, (y * to.height) / from.height]) as unknown as Quad;
+  const l = to.width * 0.1,
+    r = to.width * 0.9,
+    t = to.height * 0.15,
+    b = to.height * 0.85;
+  return [
+    [l, t],
+    [r, t],
+    [r, b],
+    [l, b],
+  ];
+}
